@@ -4,6 +4,8 @@ import AdminDashboard from '@/views/admin/Dashboard.vue'
 import StaffDashboard from '@/views/staff/Dashboard.vue'
 import BarangManager from '@/views/admin/BarangManager.vue'
 import AddBarang from '@/views/admin/AddBarang.vue'
+import ManagementCategory from '@/views/admin/ManagementCategory.vue'
+import FormCategory from '@/views/admin/FormCategory.vue'
 import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
 import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
 
@@ -36,6 +38,24 @@ const router = createRouter({
       path: '/admin/barang/add',
       name: 'admin-barang-add',
       component: AddBarang,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/kategori',
+      name: 'admin-kategori',
+      component: ManagementCategory,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/kategori/add',
+      name: 'admin-kategori-add',
+      component: FormCategory,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/kategori/edit/:id',
+      name: 'admin-kategori-edit',
+      component: FormCategory,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
