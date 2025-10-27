@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,10 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Barang routes
         Route::apiResource('barang', BarangController::class);
+        
+        // User management routes
+        Route::apiResource('users', UserController::class);
+        Route::patch('/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
     });
     
     // Staff routes

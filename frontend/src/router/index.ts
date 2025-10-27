@@ -8,6 +8,8 @@ import ManagementCategory from '@/views/admin/ManagementCategory.vue'
 import FormCategory from '@/views/admin/FormCategory.vue'
 import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
 import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
+import UserManagement from '@/views/admin/UserManagement.vue'
+import FormUserManagement from '@/views/admin/FormUserManagement.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -68,6 +70,24 @@ const router = createRouter({
       path: '/admin/sales-orders',
       name: 'admin-sales-orders',
       component: SalesOrdersAdmin,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: UserManagement,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/users/add',
+      name: 'admin-users-add',
+      component: FormUserManagement,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/users/edit/:id',
+      name: 'admin-users-edit',
+      component: FormUserManagement,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
