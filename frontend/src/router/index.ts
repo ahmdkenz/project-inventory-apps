@@ -10,6 +10,8 @@ import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
 import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
 import UserManagement from '@/views/admin/UserManagement.vue'
 import FormUserManagement from '@/views/admin/FormUserManagement.vue'
+import SupplierManagement from '@/views/admin/SupplierManagement.vue'
+import FormSupplier from '@/views/admin/FormSupplier.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -88,6 +90,24 @@ const router = createRouter({
       path: '/admin/users/edit/:id',
       name: 'admin-users-edit',
       component: FormUserManagement,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/supplier',
+      name: 'admin-supplier',
+      component: SupplierManagement,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/supplier/add',
+      name: 'admin-supplier-add',
+      component: FormSupplier,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/supplier/edit/:id',
+      name: 'admin-supplier-edit',
+      component: FormSupplier,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
