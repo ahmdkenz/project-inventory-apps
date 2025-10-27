@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/auth/Login.vue'
 import AdminDashboard from '@/views/admin/Dashboard.vue'
 import StaffDashboard from '@/views/staff/Dashboard.vue'
+import BarangManager from '@/views/admin/BarangManager.vue'
+import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
+import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +23,24 @@ const router = createRouter({
       path: '/admin/dashboard',
       name: 'admin-dashboard',
       component: AdminDashboard,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/barang',
+      name: 'admin-barang',
+      component: BarangManager,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/purchase-orders',
+      name: 'admin-purchase-orders',
+      component: PurchaseOrdersAdmin,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/sales-orders',
+      name: 'admin-sales-orders',
+      component: SalesOrdersAdmin,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

@@ -18,12 +18,12 @@ const adminMenuItems: MenuItem[] = [
     icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15h.008'
   },
   {
-    path: '/admin/barang-masuk',
+    path: '/admin/purchase-orders',
     name: 'Barang Masuk',
     icon: 'M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
   },
   {
-    path: '/admin/barang-keluar',
+    path: '/admin/sales-orders',
     name: 'Barang Keluar',
     icon: 'M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
   },
