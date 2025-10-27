@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir Barang - Aplikasi Inventori</title>
+    
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Memuat font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Alpine.js untuk dropdown -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+            <!-- Logo/Header Sidebar -->
+            <div class="p-6 flex items-center space-x-3">
+                <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                </svg>
+                <span class="text-white text-2xl font-semibold">Inventori</span>
+            </div>
+            
+            <!-- Menu Navigasi Admin -->
+            <nav class="mt-6 flex-1 px-4 space-y-1">
+                <a href="dashboard_admin.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12M3.75 3h16.5M3.75 3v16.5M19.5 3v11.25A2.25 2.25 0 0117.25 16.5H6M6 16.5h12M18 20.25h-12A2.25 2.25 0 013.75 18v-2.25m16.5 4.5v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25v2.25m16.5 0h-16.5" /></svg>
+                    <span>Dashboard</span>
+                </a>
+                <!-- Link Aktif -->
+                <a href="item_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15h.008" /></svg>
+                    <span>Data Barang</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Barang Masuk</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Barang Keluar</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    <span>Laporan</span>
+                </a>
+                <a href="user_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                    <span>Pengguna</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Riwayat Aktivitas</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.75 18H7.5m3-6h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.75 12H7.5" /></svg>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+            
+            <!-- User Info di Bawah Sidebar -->
+            <div class="absolute bottom-0 left-0 w-full p-4 border-t border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
+                    <div>
+                        <p class="text-sm font-medium text-white">Admin</p>
+                        <p class="text-xs text-gray-400">Administrator</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Latar belakang overlay untuk mobile -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+        
+        <!-- Konten Utama -->
+        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+            
+            <!-- Header/Navbar Atas -->
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
+                <button id="hamburger-btn" class="text-gray-600 lg:hidden">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <div class="relative hidden sm:block">
+                    <!-- Placeholder -->
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-500 hover:text-gray-700 relative">
+                        <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                    </button>
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="flex items-center space-x-2">
+                            <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
+                            <span class="hidden md:block text-sm font-medium text-gray-700">Admin</span>
+                        </button>
+                        <div x-show="open" @click.outside="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
+                            <a href="login.html" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Konten Halaman Utama -->
+            <main class="flex-1 p-6 overflow-y-auto">
+                
+                <!-- Tombol Kembali -->
+                <div class="mb-6">
+                    <a href="item_list.html" class="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                        <span>Kembali ke Daftar Barang</span>
+                    </a>
+                </div>
+
+                <!-- Header Halaman -->
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">
+                    Tambah Barang Baru
+                    <!-- Judul bisa dinamis: "Edit Barang" jika dalam mode edit -->
+                </h1>
+
+                <!-- Formulir -->
+                <div class="bg-white rounded-lg shadow-md">
+                    <form action="#" method="POST" id="item-form">
+                        <!-- Bagian Isi Form -->
+                        <div class="p-6">
+                            <!-- UPDATE: Layout disesuaikan untuk field harga baru -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Kode Barang -->
+                                <div>
+                                    <label for="item-code" class="block text-sm font-medium leading-6 text-gray-900">Kode Barang</label>
+                                    <div class="mt-2">
+                                        <input type="text" name="item-code" id="item-code" required
+                                               class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                               placeholder="Contoh: BRG-001">
+                                    </div>
+                                </div>
+
+                                <!-- Nama Barang -->
+                                <div>
+                                    <label for="item-name" class="block text-sm font-medium leading-6 text-gray-900">Nama Barang</label>
+                                    <div class="mt-2">
+                                        <input type="text" name="item-name" id="item-name" required
+                                               class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                               placeholder="Contoh: Kertas A4 80gr">
+                                    </div>
+                                </div>
+
+                                <!-- Kategori / Jenis -->
+                                <div>
+                                    <label for="item-category" class="block text-sm font-medium leading-6 text-gray-900">Kategori / Jenis</label>
+                                    <div class="mt-2">
+                                        <select id="item-category" name="item-category" required
+                                                class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                                            <option value="" disabled selected>Pilih kategori</option>
+                                            <option value="atk">ATK</option>
+                                            <option value="elektronik">Elektronik</option>
+                                            <option value="dapur">Perlengkapan Dapur</option>
+                                            <option value="lainnya">Lainnya</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Satuan -->
+                                <div>
+                                    <label for="item-unit" class="block text-sm font-medium leading-6 text-gray-900">Satuan</label>
+                                    <div class="mt-2">
+                                        <input type="text" name="item-unit" id="item-unit" required
+                                               class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                               placeholder="Contoh: Rim, Pcs, Unit, Box">
+                                    </div>
+                                </div>
+
+                                <!-- UPDATE: Harga Beli -->
+                                <div>
+                                    <label for="item-buy-price" class="block text-sm font-medium leading-6 text-gray-900">Harga Beli (Satuan)</label>
+                                    <div class="mt-2 relative rounded-md shadow-sm">
+                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                                            <span class="text-gray-500 sm:text-sm">Rp</span>
+                                        </div>
+                                        <input type="number" name="item-buy-price" id="item-buy-price" required min="0"
+                                               class="block w-full rounded-md border-0 p-3 pl-12 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                               placeholder="55000">
+                                    </div>
+                                </div>
+
+                                <!-- UPDATE: Harga Jual -->
+                                <div>
+                                    <label for="item-sell-price" class="block text-sm font-medium leading-6 text-gray-900">Harga Jual (Satuan)</label>
+                                    <div class="mt-2 relative rounded-md shadow-sm">
+                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                                            <span class="text-gray-500 sm:text-sm">Rp</span>
+                                        </div>
+                                        <input type="number" name="item-sell-price" id="item-sell-price" required min="0"
+                                               class="block w-full rounded-md border-0 p-3 pl-12 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                               placeholder="60000">
+                                    </div>
+Click to copy
+                                </div>
+                            </div>
+
+                            <!-- UPDATE: Stok Awal dipindah ke baris baru (full width) -->
+                            <div class="mt-6">
+                                <label for="item-stock" class="block text-sm font-medium leading-6 text-gray-900">Stok Awal</label>
+                                <div class="mt-2">
+                                    <input type="number" name="item-stock" id="item-stock" required min="0" value="0"
+                                           class="block w-full max-w-xs rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Stok akan bertambah otomatis melalui 'Barang Masuk'.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer Form (Tombol Aksi) -->
+                        <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                            <a href="item_list.html" class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-150">
+                                Batal
+                            </a>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                                Simpan Barang
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Kotak Pesan Kustom (Pengganti alert()) -->
+    <div id="message-box" class="hidden fixed top-5 right-5 p-4 rounded-md shadow-lg text-white transition-all duration-300 z-50">
+        <!-- Pesan akan diisi oleh JavaScript -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Script Sidebar Mobile ---
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+            hamburgerBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+
+            // --- Script Form Handling ---
+            const form = document.getElementById('item-form');
+            const messageBox = document.getElementById('message-box');
+
+            function showMessage(message, isError = false) {
+                messageBox.textContent = message;
+                messageBox.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
+                messageBox.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault(); // Mencegah submit form
+                
+                // --- Logika Simpan Tiruan (Mock Logic) ---
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                console.log("Data barang yang akan disimpan:", data);
+
+                // Validasi sederhana
+                const buyPrice = parseFloat(data['item-buy-price']);
+                const sellPrice = parseFloat(data['item-sell-price']);
+
+                if (sellPrice < buyPrice) {
+                    showMessage('Harga Jual tidak boleh lebih rendah dari Harga Beli.', true);
+                    return; // Hentikan proses
+                }
+
+                // Tampilkan pesan sukses
+                showMessage('Data barang berhasil disimpan.', false);
+
+                // Alihkan kembali ke daftar barang setelah 1.5 detik
+                setTimeout(() => {
+                    window.location.href = 'item_list.html';
+                }, 1500);
+            });
+        });
+    </script>
+
+</body>
+</html>
+

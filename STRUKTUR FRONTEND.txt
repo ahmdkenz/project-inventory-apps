@@ -1,0 +1,136 @@
+frontend/
+├── index.html
+├── vite.config.js
+├── package.json
+├── public/
+│   └── assets/
+│       ├── logo.png
+│       └── favicon.ico
+└── src/
+    ├── assets/
+    │   ├── fonts/
+    │   ├── images/
+    │   │   └── logo.png
+    │   └── styles/
+    │       ├── main.css
+    │       └── _variables.css
+    │       └── print.css                  # print-only css (laporan)
+    │
+    ├── components/
+    │   ├── common/
+    │   │   ├── AppButton.vue
+    │   │   ├── AppModal.vue
+    │   │   ├── AppInput.vue
+    │   │   ├── AppSpinner.vue
+    │   │   └── AppTable.vue
+    │   │
+    │   ├── layout/
+    │   │   ├── Navbar.vue
+    │   │   ├── Sidebar.vue
+    │   │   ├── NotificationDropdown.vue   # menampilkan notifikasi + unread
+    │   │   └── AppHeader.vue
+    │   │
+    │   ├── charts/
+    │   │   └── StockByCategoryChart.vue
+    │   │
+    │   ├── print/
+    │   │   ├── PrintHeader.vue
+    │   │   └── TransactionPrintLayout.vue
+    │   │
+    │   └── dashboard/
+    │       ├── AdminDashboardWidgets.vue
+    │       ├── StaffDashboardShortcuts.vue
+    │       └── LowStockWarning.vue
+    │
+    ├── composables/
+    │   ├── useAuth.js
+    │   ├── useAlert.js
+    │   └── useDebounce.js
+    │
+    ├── layouts/
+    │   ├── MainLayout.vue
+    │   ├── AuthLayout.vue
+    │   ├── AdminLayout.vue               # LAYOUT KHUSUS ADMIN (sidebar + menu admin)
+    │   └── StaffLayout.vue               # LAYOUT KHUSUS STAFF (sidebar + menu staff)
+    │
+    ├── router/
+    │   ├── index.js
+    │   └── guards.js
+    │
+    ├── services/
+    │   ├── api.js
+    │   ├── authService.js
+    │   ├── userService.js
+    │   ├── itemService.js
+    │   ├── transactionService.js
+    │   ├── purchaseOrderService.js      # PO specific
+    │   ├── salesOrderService.js         # SO specific
+    │   ├── reportService.js
+    │   ├── logService.js
+    │   └── settingsService.js
+    │
+    ├── stores/
+    │   ├── auth.js
+    │   ├── users.js
+    │   ├── items.js
+    │   ├── transactions.js
+    │   ├── purchaseOrders.js
+    │   ├── salesOrders.js
+    │   ├── dashboard.js                 # admin & staff fetch endpoints
+    │   ├── notifications.js             # polling / mark-as-read
+    │   ├── settings.js
+    │   └── logs.js
+    │
+    ├── utils/
+    │   ├── formatters.js
+    │   ├── validators.js
+    │   └── print.js
+    │
+    ├── views/
+    │   ├── auth/
+    │   │   └── Login.vue
+    │   │
+    │   ├── admin/
+    │   │   ├── Dashboard.vue            # admin dashboard page (uses AdminDashboardWidgets)
+    │   │   ├── BarangManager.vue        # CRUD barang & stok
+    │   │   ├── SupplierManager.vue      # CRUD supplier
+    │   │   ├── PenggunaManager.vue      # CRUD user
+    │   │   ├── PurchaseOrdersAdmin.vue  # view all PO, approve, receive
+    │   │   ├── SalesOrdersAdmin.vue     # view all SO, ship
+    │   │   ├── LaporanAdmin.vue         # full report hub + print views
+    │   │   └── Aktivitas.vue            # activity log admin view
+    │   │
+    │   ├── staff/
+    │   │   ├── Dashboard.vue            # staff dashboard page (uses StaffDashboardShortcuts)
+    │   │   ├── PurchaseOrderCreate.vue  # create/edit PO
+    │   │   ├── PurchaseOrderList.vue
+    │   │   ├── SalesOrderCreate.vue     # create/edit SO
+    │   │   ├── SalesOrderList.vue
+    │   │   └── Notifikasi.vue
+    │   │
+    │   ├── items/
+    │   │   └── ItemList.vue             # public list view (read-only or admin controls based on role)
+    │   │
+    │   ├── transactions/
+    │   │   ├── IncomingList.vue
+    │   │   ├── IncomingForm.vue
+    │   │   ├── OutgoingList.vue
+    │   │   ├── OutgoingForm.vue
+    │   │   └── TransactionDetail.vue
+    │   │
+    │   ├── reports/
+    │   │   ├── ReportHub.vue
+    │   │   ├── ReportStock.vue
+    │   │   ├── ReportTransactions.vue
+    │   │   └── ReportUsers.vue
+    │   │
+    │   ├── logs/
+    │   │   └── ActivityLog.vue
+    │   │
+    │   ├── settings/
+    │   │   └── AppSettings.vue
+    │   │
+    │   └── NotFound.vue
+    │
+    ├── App.vue
+    └── main.js

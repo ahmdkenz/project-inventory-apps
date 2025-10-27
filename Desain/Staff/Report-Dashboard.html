@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Laporan - Aplikasi Inventori</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Load Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar Admin -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+            <div class="p-6 flex items-center space-x-3">
+                <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                <span class="text-white text-2xl font-semibold">Inventori</span>
+            </div>
+            
+            <nav class="mt-6 flex-1 px-4 space-y-1">
+                <a href="dashboard_admin.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Dashboard</span></a>
+                <a href="item_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Data Barang</span></a>
+                <a href="po_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Barang Masuk (PO)</span></a>
+                <a href="so_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Barang Keluar (SO)</span></a>
+                <!-- Link Aktif -->
+                <a href="report_hub.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    <span>Laporan</span>
+                </a>
+                <a href="user_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Pengguna</span></a>
+                <a href="activity_log.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Riwayat Aktivitas</span></a>
+                <a href="app_settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Pengaturan</span></a>
+            </nav>
+        </aside>
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+        
+        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+            
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10" id="main-header">
+                <button id="hamburger-btn" class="text-gray-600 lg:hidden">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <div class="flex items-center space-x-4" x-data="{ open: false }">
+                    <!-- ... header icons & profile ... -->
+                </div>
+            </header>
+
+            <main class="flex-1 p-6 overflow-y-auto">
+                <!-- Header dan Filter Tanggal -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-900">Dashboard Laporan</h1>
+                    <div class="mt-4 md:mt-0" x-data="{ open: false, range: '30 Hari Terakhir' }">
+                        <div class="relative">
+                            <button @click="open = !open" class="flex items-center justify-between w-48 bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <span x-text="range"></span>
+                                <svg class="ml-2 -mr-1 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+                            <div x-show="open" @click.outside="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20" x-cloak>
+                                <div class="py-1">
+                                    <a href="#" @click.prevent="range = 'Hari Ini'; open = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Hari Ini</a>
+                                    <a href="#" @click.prevent="range = '7 Hari Terakhir'; open = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">7 Hari Terakhir</a>
+                                    <a href="#" @click.prevent="range = '30 Hari Terakhir'; open = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">30 Hari Terakhir</a>
+                                    <a href="#" @click.prevent="range = 'Bulan Ini'; open = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Bulan Ini</a>
+                                    <a href="#" @click.prevent="range = 'Tahun Ini'; open = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Tahun Ini</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white p-5 rounded-lg shadow-sm">
+                        <p class="text-sm text-gray-500 font-medium">Total Nilai Inventori</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">Rp 16,3 Jt</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm">
+                        <p class="text-sm text-gray-500 font-medium">Pembelian (30 Hari)</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">Rp 4,0 Jt</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm">
+                        <p class="text-sm text-gray-500 font-medium">Pengeluaran (30 Hari)</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">Rp 2,1 Jt</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-sm">
+                        <p class="text-sm text-gray-500 font-medium">Stok Menipis</p>
+                        <p class="text-3xl font-bold text-yellow-600 mt-1">15 <span class="text-lg text-gray-500">barang</span></p>
+                    </div>
+                </div>
+
+                <!-- 2. Grafik Tren dan Komposisi -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Grafik Tren Transaksi (Line) -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Tren Transaksi (30 Hari Terakhir)</h2>
+                        <div class="h-80">
+                            <canvas id="transactionTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Grafik Komposisi Stok (Doughnut) -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Nilai Stok per Kategori</h2>
+                        <div class="h-80">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Top 5 Barang dan Link Laporan -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Top 5 Barang Keluar -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Top 5 Barang Keluar (30 Hari)</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-max">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
+                                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Jml Keluar</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Kertas A4 70gr</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-center">150</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Spidol Whiteboard</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-center">80</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Kopi Sachet (Box)</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-center">65</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Baterai AA (Pack)</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-center">50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Mouse Wireless</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 text-center">30</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Link Laporan Detail -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Laporan Detail</h2>
+                        <div class="space-y-4">
+                            <a href="laporan_stok.html" class="block bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-150">
+                                <h3 class="text-base font-semibold text-gray-800">Laporan Stok Barang</h3>
+                                <p class="text-sm text-gray-600">Lihat rincian stok dan nilai inventori.</p>
+                            </a>
+                            <a href="laporan_masuk.html" class="block bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-150">
+                                <h3 class="text-base font-semibold text-gray-800">Laporan Barang Masuk</h3>
+                                <p class="text-sm text-gray-600">Rincian pembelian barang per periode.</p>
+                            </a>
+                            <a href="laporan_keluar.html" class="block bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-150">
+                                <h3 class="text-base font-semibold text-gray-800">Laporan Barang Keluar</h3>
+                                <p class="text-sm text-gray-600">Rincian pengeluaran barang per periode.</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Script Sidebar Mobile
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+            hamburgerBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+
+            // --- Inisialisasi Grafik Chart.js ---
+
+            // 1. Grafik Tren Transaksi
+            const trendCtx = document.getElementById('transactionTrendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1 Okt', '5 Okt', '10 Okt', '15 Okt', '20 Okt', '25 Okt', '27 Okt'],
+                    datasets: [
+                        {
+                            label: 'Barang Masuk (Rp Jt)',
+                            data: [0.5, 1.2, 0.8, 2.0, 1.5, 0, 4.0],
+                            borderColor: '#3B82F6', // Biru
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Barang Keluar (Rp Jt)',
+                            data: [0.2, 0.5, 0.3, 1.0, 0.8, 1.5, 2.1],
+                            borderColor: '#F59E0B', // Kuning/Orange
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + value + ' Jt';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': Rp ' + context.parsed.y + ' Jt';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Grafik Komposisi Kategori
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Elektronik', 'ATK', 'Pantry'],
+                    datasets: [{
+                        data: [9600000, 6750000, 1000000], // Nilai dari laporan stok
+                        backgroundColor: [
+                            '#3B82F6', // Biru
+                            '#10B981', // Hijau
+                            '#F59E0B'  // Kuning/Orange
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.chart.getDataTotal();
+                                    const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                    return label + ': Rp ' + value.toLocaleString('id-ID') + ' (' + percentage + ')';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

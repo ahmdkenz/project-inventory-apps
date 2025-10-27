@@ -1,0 +1,161 @@
+Bagus banget, ini pertanyaan penting sebelum lanjut ke implementasi 👏
+Berikut pembagian fitur **antara Admin dan Staff Gudang** secara **jelas, rapi, dan realistis** — disesuaikan dengan rancangan *final* kita sebelumnya (yang sudah mencakup stok, notifikasi, dan log aktivitas).
+
+---
+
+## 🧭 **RANCANGAN PEMBAGIAN FITUR**
+
+### 🔹 1. Role: **Admin**
+
+Admin memiliki hak akses penuh untuk **mengelola semua data** dan memantau seluruh aktivitas sistem.
+
+#### 🧩 **Fitur Utama Admin**
+
+1. **Dashboard Admin**
+
+   * Menampilkan ringkasan data:
+
+     * Total Barang
+     * Total Pengguna
+     * Barang Stok Menipis (contoh: < 10)
+     * Barang Habis
+   * Grafik sederhana (opsional) aktivitas barang masuk/keluar.
+   * Tabel log aktivitas terbaru.
+
+2. **Manajemen Barang**
+
+   * CRUD Barang (tambah, edit, hapus, lihat detail)
+   * Atur kategori, satuan, harga, stok minimal, dsb.
+   * Lihat riwayat pergerakan stok per barang.
+
+3. **Manajemen Supplier**
+
+   * CRUD data supplier/vendor.
+   * Dapat dihubungkan ke *Purchase Order*.
+
+4. **Manajemen Pengguna**
+
+   * CRUD akun pengguna (Admin dan Staff).
+   * Reset password, aktif/nonaktifkan akun.
+
+5. **Purchase Order (Barang Masuk)**
+
+   * Lihat semua PO (dari staff atau dirinya sendiri).
+   * Tambah/edit/konfirmasi penerimaan barang.
+   * Update stok otomatis saat barang diterima.
+
+6. **Sales Order (Barang Keluar)**
+
+   * Lihat semua SO.
+   * Konfirmasi pengeluaran barang dari stok.
+
+7. **Laporan & Print**
+
+   * Cetak laporan periodik:
+
+     * Barang masuk
+     * Barang keluar
+     * Stok barang
+     * Supplier
+   * Filter berdasarkan tanggal atau kategori.
+
+8. **Notifikasi Otomatis**
+
+   * Menerima notifikasi stok menipis atau habis.
+   * Dapat melihat semua notifikasi di panel notifikasi.
+
+9. **Riwayat Aktivitas (Activity Log)**
+
+    * Melihat log seluruh aktivitas sistem:
+
+      * Siapa yang menambah/menghapus/mengubah data.
+      * Kapan dan dari modul apa.
+
+---
+
+### 🔹 2. Role: **Staff Gudang**
+
+Staff hanya berfokus pada **operasional gudang harian**, seperti penerimaan dan pengeluaran barang, serta mencetak laporan periodik.
+
+#### 🧩 **Fitur Utama Staff Gudang**
+
+1. **Dashboard Staff**
+
+   * Ringkasan cepat:
+
+     * Total Barang Tersedia
+     * Barang Stok Menipis
+     * Barang Habis
+   * Notifikasi stok menipis/habis.
+   * Riwayat aktivitas pribadinya (opsional).
+
+2. **Purchase Order (Barang Masuk)**
+
+   * Membuat PO baru ke supplier.
+   * Input barang yang diterima.
+   * Melihat daftar PO dan statusnya.
+
+3. **Sales Order (Barang Keluar)**
+
+   * Membuat permintaan barang keluar.
+   * Menginput data barang keluar (nama barang, jumlah, tujuan).
+   * Melihat daftar pengeluaran yang telah dilakukan.
+
+4. **Laporan & Print**
+
+   * Mencetak laporan periodik:
+
+     * Barang masuk
+     * Barang keluar
+     * Stok barang
+   * Menggunakan tombol *Print* (tanpa ekspor PDF).
+
+5. **Notifikasi Otomatis**
+
+   * Melihat notifikasi stok menipis/habis.
+   * Notifikasi muncul otomatis di dashboard atau icon notifikasi.
+
+---
+
+## ⚖️ **Perbandingan Singkat**
+
+| Fitur                      | Admin                         | Staff Gudang                          |
+| -------------------------- | ----------------------------- | ------------------------------------- |
+| Dashboard (Data Ringkasan) | ✅ Lengkap (Barang, User, Log) | ✅ Ringkas (Stok, Notifikasi)          |
+| CRUD Barang                | ✅                             | ❌                                     |
+| CRUD Kategori              | ✅                             | ❌                                     |
+| CRUD Supplier              | ✅                             | ❌                                     |
+| CRUD Pengguna              | ✅                             | ❌                                     |
+| Purchase Order             | ✅ Lihat & konfirmasi          | ✅ Buat & kelola sendiri               |
+| Sales Order                | ✅ Lihat & konfirmasi          | ✅ Buat & kelola sendiri               |
+| Laporan (Print)            | ✅ Semua jenis laporan         | ✅ Barang masuk/keluar/stok            |
+| Notifikasi Stok            | ✅                             | ✅                                     |
+| Activity Log               | ✅ Semua pengguna              | 🔸 Hanya aktivitas sendiri (opsional) |
+| Manajemen Hak Akses        | ✅                             | ❌                                     |
+
+---
+
+## 🧱 **Tampilan / Halaman yang Akan Dibuat**
+
+**Admin**
+
+* `/admin/dashboard`
+* `/admin/barang`
+* `/admin/kategori`
+* `/admin/supplier`
+* `/admin/pengguna`
+* `/admin/purchase-order`
+* `/admin/sales-order`
+* `/admin/laporan`
+* `/admin/aktivitas`
+* `/admin/notifikasi`
+
+**Staff Gudang**
+
+* `/staff/dashboard`
+* `/staff/purchase-order`
+* `/staff/sales-order`
+* `/staff/laporan`
+* `/staff/notifikasi`
+
+---

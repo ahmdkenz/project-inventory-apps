@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>Riwayat Barang Masuk - Aplikasi Inventori</title>
+    
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Memuat font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Alpine.js untuk dropdown -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+            <!-- Logo/Header Sidebar -->
+            <div class="p-6 flex items-center space-x-3">
+                <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                <span class="text-white text-2xl font-semibold">Inventori</span>
+            </div>
+            
+            <!-- Menu Navigasi Admin -->
+            <nav class="mt-6 flex-1 px-4 space-y-1">
+                <a href="dashboard_admin.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12M3.75 3h16.5M3.75 3v16.5M19.5 3v11.25A2.25 2.25 0 0117.25 16.5H6M6 16.5h12M18 20.25h-12A2.25 2.25 0 013.75 18v-2.25m16.5 4.5v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25v2.25m16.5 0h-16.5" /></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="item_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15h.008" /></svg>
+                    <span>Data Barang</span>
+                </a>
+                <!-- Link Aktif -->
+                <a href="incoming_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Barang Masuk</span>
+                </a>
+                <a href="outgoing_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Barang Keluar</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    <span>Laporan</span>
+                </a>
+                <a href="user_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                    <span>Pengguna</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Riwayat Aktivitas</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.75 18H7.5m3-6h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.75 12H7.5" /></svg>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+        
+        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+            
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
+                <button id="hamburger-btn" class="text-gray-600 lg:hidden">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <div class="relative hidden sm:block"></div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-500 hover:text-gray-700 relative">
+                        <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                    </button>
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="flex items-center space-x-2">
+                            <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
+                            <span class="hidden md:block text-sm font-medium text-gray-700">Admin</span>
+                        </button>
+                        <div x-show="open" @click.outside="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
+                            <a href="login.html" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 p-6 overflow-y-auto">
+                <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+                    <h1 class="text-3xl font-bold text-gray-900">Riwayat Barang Masuk</h1>
+                    <a href="incoming_form.html" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        <span>Catat Barang Masuk</span>
+                    </a>
+                </div>
+
+                <!-- Kontrol Filter -->
+                <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="filter-distributor" class="block text-sm font-medium text-gray-700 mb-1">Distributor</label>
+                            <input type="text" name="filter-distributor" id="filter-distributor" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Nama Distributor...">
+                        </div>
+                        <div>
+                            <label for="filter-date-start" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                            <input type="date" name="filter-date-start" id="filter-date-start" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="filter-date-end" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
+                            <input type="date" name="filter-date-end" id="filter-date-end" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabel Data -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-max">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Faktur</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distributor</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Item</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dicatat Oleh</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">FAK-2023-001</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">25 Okt 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">PT. Sumber ATK</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3 Jenis</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Staff Gudang</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="transaction_detail.html" class="text-green-600 hover:text-green-900">Detail/Cetak</a>
+                                        <a href="incoming_form.html" class="text-blue-600 hover:text-blue-900 ml-4">Edit</a>
+                                        <button data-id="1" class="open-delete-modal text-red-600 hover:text-red-900 ml-4">Hapus</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">FAK-2023-002</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">24 Okt 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Toko Elektronik Jaya</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1 Jenis</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Admin</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="transaction_detail.html" class="text-green-600 hover:text-green-900">Detail/Cetak</a>
+                                        <a href="incoming_form.html" class="text-blue-600 hover:text-blue-900 ml-4">Edit</a>
+                                        <button data-id="2" class="open-delete-modal text-red-600 hover:text-red-900 ml-4">Hapus</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden transition-opacity duration-300">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all scale-95 opacity-0" id="delete-modal-content">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Hapus Transaksi</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600">
+                    Apakah Anda yakin ingin menghapus transaksi ini? Stok barang yang terkait akan dikembalikan (dibatalkan). Tindakan ini tidak dapat dibatalkan.
+                </p>
+                <input type="hidden" id="item-to-delete-id">
+            </div>
+            <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                <button id="close-modal-btn" type="button" class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-150">
+                    Batal
+                </button>
+                <button id="confirm-delete-btn" type="button" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-box" class="hidden fixed top-5 right-5 p-4 rounded-md shadow-lg text-white transition-all duration-300 z-50"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Script Sidebar Mobile
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+            hamburgerBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+
+            // Script Modal Hapus
+            const deleteModal = document.getElementById('delete-modal');
+            const deleteModalContent = document.getElementById('delete-modal-content');
+            const openModalButtons = document.querySelectorAll('.open-delete-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const itemToDeleteId = document.getElementById('item-to-delete-id');
+            const messageBox = document.getElementById('message-box');
+
+            function showMessage(message) {
+                messageBox.textContent = message;
+                messageBox.classList.remove('hidden', 'bg-green-500');
+                messageBox.classList.add('bg-green-500');
+                setTimeout(() => { messageBox.classList.add('hidden'); }, 3000);
+            }
+
+            function openModal(event) {
+                itemToDeleteId.value = event.target.dataset.id; 
+                deleteModal.classList.remove('hidden');
+                setTimeout(() => { deleteModalContent.classList.remove('scale-95', 'opacity-0'); }, 10);
+            }
+
+            function closeModal() {
+                deleteModalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => { deleteModal.classList.add('hidden'); }, 150);
+            }
+
+            openModalButtons.forEach(button => button.addEventListener('click', openModal));
+            closeModalBtn.addEventListener('click', closeModal);
+
+            confirmDeleteBtn.addEventListener('click', () => {
+                const itemId = itemToDeleteId.value;
+                console.log(`Menghapus transaksi dengan ID: ${itemId}`);
+                
+                const button = document.querySelector(`.open-delete-modal[data-id="${itemId}"]`);
+                if (button) { button.closest('tr').remove(); }
+                
+                closeModal();
+                showMessage('Transaksi berhasil dihapus.');
+            });
+
+            deleteModal.addEventListener('click', (event) => {
+                if (event.target === deleteModal) { closeModal(); }
+            });
+        });
+    </script>
+</body>
+</html>

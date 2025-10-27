@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail PO - Aplikasi Inventori</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* CSS untuk menyembunyikan elemen saat dicetak */
+        @media print {
+            body {
+                background-color: white;
+            }
+            /* Sembunyikan sidebar, header, dan tombol aksi */
+            #sidebar, #main-header, #action-buttons, #main-content > .flex {
+                display: none !important;
+            }
+            /* Konten utama mengambil seluruh layar */
+            #main-content {
+                margin-left: 0 !important;
+                padding: 0 !important;
+            }
+            /* Area cetak mengambil seluruh layar */
+            #print-area-container {
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+            }
+            #print-area {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 1rem !important;
+            }
+            /* Pastikan teks tidak terlalu kecil */
+            body {
+                font-size: 12pt;
+            }
+            /* Hentikan page breaks di dalam tabel atau baris */
+            tr, td, th {
+                page-break-inside: avoid;
+            }
+            table {
+                page-break-inside: auto;
+            }
+            thead {
+                display: table-header-group; /* Pastikan header tabel muncul di setiap halaman */
+            }
+            tfoot {
+                display: table-footer-group; /* Pastikan footer tabel muncul di setiap halaman */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar Admin -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+            <div class="p-6 flex items-center space-x-3">
+                <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                <span class="text-white text-2xl font-semibold">Inventori</span>
+            </div>
+            
+            <nav class="mt-6 flex-1 px-4 space-y-1">
+                <a href="dashboard_admin.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12M3.75 3h16.5M3.75 3v16.5M19.5 3v11.25A2.25 2.25 0 0117.25 16.5H6M6 16.5h12M18 20.25h-12A2.25 2.25 0 013.75 18v-2.25m16.5 4.5v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25v2.25m16.5 0h-16.5" /></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="item_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15h.008" /></svg>
+                    <span>Data Barang</span>
+                </a>
+                <!-- Link Aktif -->
+                <a href="po_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Barang Masuk (PO)</span>
+                </a>
+                <a href="outgoing_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Barang Keluar</span>
+                </a>
+                <!-- ... menu lainnya ... -->
+                <a href="report_hub.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    <span>Laporan</span>
+                </a>
+                <a href="user_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                    <span>Pengguna</span>
+                </a>
+                <a href="activity_log.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Riwayat Aktivitas</span>
+                </a>
+                <a href="app_settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.75 18H7.5m3-6h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.75 12H7.5" /></svg>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+        
+        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+            
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10" id="main-header">
+                <button id="hamburger-btn" class="text-gray-600 lg:hidden">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <div class="relative hidden sm:block"></div>
+                <div class="flex items-center space-x-4" x-data="{ open: false }">
+                    <!-- ... header icons & profile ... -->
+                    <button class="text-gray-500 hover:text-gray-700 relative">
+                        <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                    </button>
+                    <div class="relative">
+                        <button @click="open = !open" class="flex items-center space-x-2">
+                            <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
+                            <span class="hidden md:block text-sm font-medium text-gray-700">Admin</span>
+                        </button>
+                        <div x-show="open" @click.outside="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
+                            <a href="login.html" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 p-6 overflow-y-auto">
+                <div class="flex items-center justify-between mb-6" id="action-buttons">
+                    <h1 class="text-3xl font-bold text-gray-900">Detail Purchase Order</h1>
+                    <div class="flex space-x-3">
+                        <a href="po_list.html" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                            <span>Kembali</span>
+                        </a>
+                        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.23a1.125 1.125 0 01-1.12-1.227L6.34 18m11.318 0c1.096 1.21 1.096 2.51 0 3.717s-2.67 1.209-3.717 0m0 0c-.39.39-.79.749-1.198 1.077a4.5 4.5 0 01-6.364 0c-.408-.328-.808-.687-1.198-1.077m0 0A4.509 4.509 0 003 13.5a4.5 4.5 0 018.006-2.006l.115.115a.5.5 0 00.707 0l.115-.115A4.5 4.5 0 0116.5 13.5a4.509 4.509 0 00-2.682 4.171m0 0c-.39.39-.79.749-1.198 1.077a4.5 4.5 0 01-6.364 0c-.408-.328-.808-.687-1.198-1.077" /></svg>
+                            <span>Cetak PO</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Area Cetak -->
+                <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-gray-200" id="print-area-container">
+                    <div id="print-area">
+                        <!-- Header Dokumen -->
+                        <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900">
+                            <div>
+                                <h2 class="text-3xl font-bold text-gray-900">PURCHASE ORDER</h2>
+                                <p class="text-lg font-semibold text-blue-600">PO-2024-001</p>
+                            </div>
+                            <div class="text-right">
+                                <img src="https://placehold.co/150x50/000000/FFFFFF?text=LOGO+PERUSAHAAN" alt="Logo Perusahaan" class="h-12 mb-2 ml-auto">
+                                <p class="text-sm font-semibold text-gray-800">Nama Perusahaan Anda</p>
+                                <p class="text-sm text-gray-600">Jl. Jend. Sudirman No. 1, Jakarta</p>
+                                <p class="text-sm text-gray-600">Telepon: (021) 123456</p>
+                            </div>
+                        </div>
+
+                        <!-- Info PO dan Supplier -->
+                        <div class="grid grid-cols-2 gap-8 my-6">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-500 uppercase mb-2">DITUJUKAN KEPADA:</p>
+                                <p class="text-lg font-bold text-gray-900">PT. Supplier Jaya</p>
+                                <p class="text-sm text-gray-600">Jl. Raya Industri No. 45</p>
+                                <p class="text-sm text-gray-600">Bekasi, Jawa Barat 17530</p>
+                                <p class="text-sm text-gray-600">UP: Bapak Budi</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="mb-2">
+                                    <span class="text-sm font-semibold text-gray-500 uppercase">Tanggal PO: </span>
+                                    <span class="text-sm font-medium text-gray-800">15 Oktober 2024</span>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-500 uppercase">Estimasi Tiba: </span>
+                                    <span class="text-sm font-medium text-gray-800">20 Oktober 2024</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Item -->
+                        <div class="overflow-x-auto border rounded-lg mb-6">
+                            <table class="w-full min-w-max">
+                                <thead class="bg-gray-100 text-gray-700">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No.</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
+                                        <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Harga Satuan</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">1.</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Kertas A4 70gr (Rim)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">100</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">Rp 45.000</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">Rp 4.500.000</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2.</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Mouse Wireless (Pcs)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">50</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">Rp 120.000</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">Rp 1.000.000</td>
+                                    </tr>
+                                </tbody>
+                                <!-- Footer Kalkulasi -->
+                                <tfoot class="bg-gray-100 border-t-2 border-gray-300">
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-800">Subtotal</td>
+                                        <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">Rp 5.500.000</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-800">PPN (11%)</td>
+                                        <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">Rp 50.000</td>
+                                    </tr>
+                                    <tr class="text-base">
+                                        <td colspan="4" class="px-6 py-4 text-right font-bold text-gray-900 uppercase">Total</td>
+                                        <td class="px-6 py-4 text-right font-bold text-gray-900">Rp 5.550.000</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Catatan dan Tanda Tangan -->
+                        <div class="grid grid-cols-2 gap-8 pt-6 border-t border-gray-200">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-500 uppercase mb-2">Catatan:</p>
+                                <p class="text-sm text-gray-600">Mohon sertakan No. PO pada surat jalan Anda.</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-center">
+                                <div>
+                                    <p class="text-sm text-gray-700 mb-16">Dibuat oleh,</p>
+                                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">Admin</p>
+                                    <p class="text-xs text-gray-500">Staff Pembelian</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
+                                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Manajer)</p>
+                                    <p class="text-xs text-gray-500">Manajer Operasional</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Script Sidebar Mobile
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+            hamburgerBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,70 @@
+backend/
+├── app/
+│   ├── Console/
+│   ├── Exceptions/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   └── Api/
+│   │   │       ├── AuthController.php
+│   │   │       ├── DashboardController.php
+│   │   │       ├── BarangController.php
+│   │   │       ├── KategoriController.php
+│   │   │       ├── SupplierController.php
+│   │   │       ├── PurchaseOrderController.php
+│   │   │       ├── SalesOrderController.php
+│   │   │       ├── NotificationController.php
+│   │   │       └── ActivityLogController.php
+│   │   ├── Middleware/
+│   │   │   ├── Authenticate.php
+│   │   │   ├── RoleMiddleware.php         # untuk admin / staff
+│   │   │   └── LogActivityMiddleware.php  # mencatat aktivitas user
+│   │   └── Requests/
+│   ├── Models/
+│   │   ├── User.php
+│   │   ├── Barang.php
+│   │   ├── Kategori.php
+│   │   ├── Supplier.php
+│   │   ├── PurchaseOrder.php
+│   │   ├── PurchaseOrderItem.php
+│   │   ├── SalesOrder.php
+│   │   ├── SalesOrderItem.php
+│   │   ├── Notification.php
+│   │   └── ActivityLog.php
+│   ├── Observers/
+│   │   └── BarangObserver.php             # pantau perubahan stok
+│   └── Services/
+│       ├── DashboardService.php
+│       ├── NotificationService.php
+│       └── ActivityLogService.php
+│
+├── config/
+│   ├── app.php
+│   ├── database.php
+│   └── sanctum.php                        # untuk token auth
+│
+├── database/
+│   ├── migrations/
+│   │   ├── xxxx_create_users_table.php
+│   │   ├── xxxx_create_barang_table.php
+│   │   ├── xxxx_create_kategori_table.php
+│   │   ├── xxxx_create_supplier_table.php
+│   │   ├── xxxx_create_purchase_orders_table.php
+│   │   ├── xxxx_create_sales_orders_table.php
+│   │   ├── xxxx_create_notifications_table.php
+│   │   └── xxxx_create_activity_logs_table.php
+│   ├── seeders/
+│   │   └── DatabaseSeeder.php
+│   └── factories/
+│
+├── routes/
+│   ├── api.php   # Semua endpoint API
+│   └── web.php
+│
+├── storage/
+│   └── logs/
+│
+├── tests/
+├── .env.example
+├── artisan
+└── composer.json
+s

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Barang Keluar - Aplikasi Inventori</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @media print {
+            body > * { display: none; }
+            .print-hidden { display: none !important; }
+            #printable-area { display: block !important; margin: 0; padding: 0; width: 100%; }
+            #printable-area-content { box-shadow: none !important; border: none !important; }
+            .print-no-break { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out print-hidden" id="sidebar">
+            <div class="p-6 flex items-center space-x-3">
+                <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                <span class="text-white text-2xl font-semibold">Inventori</span>
+            </div>
+            
+            <nav class="mt-6 flex-1 px-4 space-y-1">
+                <!-- ... menu navigasi ... -->
+                <a href="dashboard_admin.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Dashboard</span></a>
+                <a href="item_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Data Barang</span></a>
+                <a href="incoming_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Barang Masuk</span></a>
+                <a href="outgoing_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Barang Keluar</span></a>
+                <!-- Link Aktif -->
+                <a href="report_hub.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    <span>Laporan</span>
+                </a>
+                <a href="user_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Pengguna</span></a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Riwayat Aktivitas</span></a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Pengaturan</span></a>
+            </nav>
+        </aside>
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+        
+        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+            
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10 print-hidden">
+                <button id="hamburger-btn" class="text-gray-600 lg:hidden">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <div class="relative hidden sm:block"></div>
+                <div class="flex items-center space-x-4" x-data="{ open: false }">
+                    <!-- ... header icons & profile ... -->
+                </div>
+            </header>
+
+            <main class="flex-1 p-6 overflow-y-auto">
+                
+                <!-- Tombol Aksi (Kembali & Cetak) -->
+                <div class="mb-6 flex flex-col md:flex-row justify-between md:items-center gap-4 print-hidden">
+                    <a href="report_hub.html" class="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                        <span>Kembali ke Pusat Laporan</span>
+                    </a>
+                    <button id="print-btn" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.23a1.125 1.125 0 01-1.12-1.227L6.34 18m11.319 0H6.34m11.319 0l.044.506A1.125 1.125 0 0117.003 20H6.997a1.125 1.125 0 01-1.122-1.494l.044-.506M6.34 18v-4.172c0-.224.03-.447.086-.665A41.4 41.4 0 0112 3c1.83 0 3.597.133 5.28.362.057.218.086.44.086.665v4.172M6.34 18L4.26 7.5h15.48L17.66 18" /></svg>
+                        <span>Cetak Laporan</span>
+                    </button>
+                </div>
+                
+                <!-- Filter -->
+                <div class="mb-6 bg-white p-6 rounded-lg shadow-sm print-hidden">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Filter Laporan Barang Keluar</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="filter-date-start" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</Dinput>
+                            <input type="date" name="filter-date-start" id="filter-date-start" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="filter-date-end" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
+                            <input type="date" name="filter-date-end" id="filter-date-end" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="filter-penerima" class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
+                            <input type="text" name="filter-penerima" id="filter-penerima" placeholder="Cth: Divisi Marketing" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-end">
+                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                                Terapkan Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Area Cetak -->
+                <div id="printable-area">
+                    <div class="bg-white rounded-lg shadow-md p-8 md:p-12" id="printable-area-content">
+                        
+                        <!-- Laporan Barang Keluar -->
+                        <div>
+                            <!-- Header Dokumen -->
+                            <div class="border-b-2 border-gray-900 pb-4 mb-8">
+                                <h2 class="text-xl font-semibold text-gray-800">Nama Perusahaan Anda</h2>
+                                <h1 class="text-3xl font-bold text-gray-900 mt-2">Laporan Transaksi Barang Keluar</h1>
+                                <p class="text-gray-600">Periode: 20 Okt 2023 - 27 Okt 2025</p>
+                            </div>
+                            <!-- Tabel Laporan -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-max">
+                                    <thead class="border-b border-gray-300">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">No. Transaksi</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Tanggal</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Penerima</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Keterangan</th>
+                                            <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 uppercase">Total Item</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Dicatat Oleh</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr class="print-no-break">
+                                            <td class="px-4 py-4 text-sm text-gray-800">OUT-2023-001</td>
+                                            <td class="px-4 py-4 text-sm text-gray-800">25 Okt 2023</td>
+                                            <td class="px-4 py-4 text-sm font-medium text-gray-900">Divisi Marketing</td>
+                                            <td class="px-4 py-4 text-sm text-gray-800">Untuk event bulanan</td>
+                                            <td class="px-4 py-4 text-sm text-gray-800 text-center">2 Jenis</td>
+                                            <td class="px-4 py-4 text-sm text-gray-800">Staff Gudang</td>
+                                        </tr>
+                                        <tr class="print-no-break">
+                                            <td class="px-4 py-4 text-sm text-gray-800">OUT-2023-002</td>
+                                            <td class="px-4 py-4 text-sm text-gray-800">26 Okt 2023</td>
+                                            <td class="px-4 py-4 text-sm font-medium text-gray-900">Divisi IT</td>
+                                            <td class="px-4 py-4 text-sm text-gray-800">-</td>
+                                            <td class="px-4 py-4 text-sm text-gray-800 text-center">1 Jenis</td>
+                                            <td class="px-4 py-4 text-sm text-gray-800">Admin</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> <!-- End #printable-area -->
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+            hamburgerBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+            
+            // Script Cetak
+            const printBtn = document.getElementById('print-btn');
+            printBtn.addEventListener('click', () => window.print());
+        });
+    </script>
+</body>
+</html>
