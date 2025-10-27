@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\KategoriController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +27,12 @@ Route::middleware('auth:sanctum')->group(function () {
                 'message' => 'Admin Dashboard Data'
             ]);
         });
+        
+        // Kategori routes
+        Route::get('kategori', [KategoriController::class, 'index']);
+        
+        // Barang routes
+        Route::apiResource('barang', BarangController::class);
     });
     
     // Staff routes
