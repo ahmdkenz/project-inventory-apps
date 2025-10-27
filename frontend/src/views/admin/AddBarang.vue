@@ -1,0 +1,351 @@
+<template>
+  <div class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+      <!-- Logo/Header Sidebar -->
+      <div class="p-6 flex items-center space-x-3">
+        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        </svg>
+        <span class="text-white text-2xl font-semibold">Inventori</span>
+      </div>
+      
+      <!-- Menu Navigasi Admin -->
+      <AdminNavigation :current-path="$route.path" />
+      
+      <!-- User Info di Bawah Sidebar -->
+      <div class="absolute bottom-0 left-0 w-full p-4 border-t border-gray-700">
+        <div class="flex items-center space-x-3">
+          <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
+          <div>
+            <p class="text-sm font-medium text-white">{{ user.name }}</p>
+            <p class="text-xs text-gray-400">Administrator</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Latar belakang overlay untuk mobile -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay" @click="toggleSidebar"></div>
+    
+    <!-- Konten Utama -->
+    <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+      <!-- Header/Navbar Atas -->
+      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
+        <button id="hamburger-btn" @click="toggleSidebar" class="text-gray-600 lg:hidden">
+          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        <div class="relative hidden sm:block">
+          <!-- Placeholder -->
+        </div>
+        <div class="flex items-center space-x-4">
+          <button class="text-gray-500 hover:text-gray-700 relative">
+            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+            </svg>
+          </button>
+          <div class="relative">
+            <button @click="showProfileMenu = !showProfileMenu" class="flex items-center space-x-2">
+              <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
+              <span class="hidden md:block text-sm font-medium text-gray-700">{{ user.name }}</span>
+            </button>
+            <div v-if="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
+              <a @click.prevent="handleLogout" href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Konten Halaman Utama -->
+      <main class="flex-1 p-6 overflow-y-auto">
+        <!-- Tombol Kembali -->
+        <div class="mb-6">
+          <router-link to="/admin/barang" class="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Kembali ke Daftar Barang</span>
+          </router-link>
+        </div>
+
+        <!-- Header Halaman -->
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">
+          Tambah Barang Baru
+          <!-- Judul bisa dinamis: "Edit Barang" jika dalam mode edit -->
+        </h1>
+
+        <!-- Formulir -->
+        <div class="bg-white rounded-lg shadow-md">
+          <form @submit.prevent="handleSubmit" id="item-form">
+            <!-- Bagian Isi Form -->
+            <div class="p-6">
+              <!-- UPDATE: Layout disesuaikan untuk field harga baru -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Kode Barang -->
+                <div>
+                  <label for="item-code" class="block text-sm font-medium leading-6 text-gray-900">Kode Barang</label>
+                  <div class="mt-2">
+                    <input 
+                      type="text" 
+                      name="item-code" 
+                      id="item-code" 
+                      v-model="formData.code"
+                      required
+                      class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                      placeholder="Contoh: BRG-001">
+                  </div>
+                </div>
+
+                <!-- Nama Barang -->
+                <div>
+                  <label for="item-name" class="block text-sm font-medium leading-6 text-gray-900">Nama Barang</label>
+                  <div class="mt-2">
+                    <input 
+                      type="text" 
+                      name="item-name" 
+                      id="item-name" 
+                      v-model="formData.name"
+                      required
+                      class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                      placeholder="Contoh: Kertas A4 80gr">
+                  </div>
+                </div>
+
+                <!-- Kategori / Jenis -->
+                <div>
+                  <label for="item-category" class="block text-sm font-medium leading-6 text-gray-900">Kategori / Jenis</label>
+                  <div class="mt-2">
+                    <select 
+                      id="item-category" 
+                      name="item-category" 
+                      v-model="formData.category"
+                      required
+                      class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                      <option value="" disabled selected>Pilih kategori</option>
+                      <option value="atk">ATK</option>
+                      <option value="elektronik">Elektronik</option>
+                      <option value="dapur">Perlengkapan Dapur</option>
+                      <option value="lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <!-- Satuan -->
+                <div>
+                  <label for="item-unit" class="block text-sm font-medium leading-6 text-gray-900">Satuan</label>
+                  <div class="mt-2">
+                    <input 
+                      type="text" 
+                      name="item-unit" 
+                      id="item-unit" 
+                      v-model="formData.unit"
+                      required
+                      class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                      placeholder="Contoh: Rim, Pcs, Unit, Box">
+                  </div>
+                </div>
+
+                <!-- UPDATE: Harga Beli -->
+                <div>
+                  <label for="item-buy-price" class="block text-sm font-medium leading-6 text-gray-900">Harga Beli (Satuan)</label>
+                  <div class="mt-2 relative rounded-md shadow-sm">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                      <span class="text-gray-500 sm:text-sm">Rp</span>
+                    </div>
+                    <input 
+                      type="number" 
+                      name="item-buy-price" 
+                      id="item-buy-price" 
+                      v-model="formData.buyPrice"
+                      required 
+                      min="0"
+                      class="block w-full rounded-md border-0 p-3 pl-12 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                      placeholder="55000">
+                  </div>
+                </div>
+
+                <!-- UPDATE: Harga Jual -->
+                <div>
+                  <label for="item-sell-price" class="block text-sm font-medium leading-6 text-gray-900">Harga Jual (Satuan)</label>
+                  <div class="mt-2 relative rounded-md shadow-sm">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                      <span class="text-gray-500 sm:text-sm">Rp</span>
+                    </div>
+                    <input 
+                      type="number" 
+                      name="item-sell-price" 
+                      id="item-sell-price" 
+                      v-model="formData.sellPrice"
+                      required 
+                      min="0"
+                      class="block w-full rounded-md border-0 p-3 pl-12 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                      placeholder="60000">
+                  </div>
+                </div>
+              </div>
+
+              <!-- UPDATE: Stok Awal dipindah ke baris baru (full width) -->
+              <div class="mt-6">
+                <label for="item-stock" class="block text-sm font-medium leading-6 text-gray-900">Stok Awal</label>
+                <div class="mt-2">
+                  <input 
+                    type="number" 
+                    name="item-stock" 
+                    id="item-stock" 
+                    v-model="formData.stock"
+                    required 
+                    min="0" 
+                    value="0"
+                    class="block w-full max-w-xs rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                  <p class="mt-1 text-sm text-gray-500">
+                    Stok akan bertambah otomatis melalui 'Barang Masuk'.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer Form (Tombol Aksi) -->
+            <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+              <router-link 
+                to="/admin/barang" 
+                class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-150">
+                Batal
+              </router-link>
+              <button 
+                type="submit" 
+                :disabled="isSubmitting"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                {{ isSubmitting ? 'Menyimpan...' : 'Simpan Barang' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Kotak Pesan Kustom (Pengganti alert()) -->
+  <div 
+    v-if="message.show"
+    id="message-box" 
+    :class="[
+      'fixed top-5 right-5 p-4 rounded-md shadow-lg text-white transition-all duration-300 z-50',
+      message.isError ? 'bg-red-500' : 'bg-green-500'
+    ]">
+    {{ message.text }}
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import AdminNavigation from '@/components/AdminNavigation.vue'
+
+const router = useRouter()
+
+// User state
+const user = ref({
+  name: 'Admin',
+  email: 'admin@example.com',
+  role: 'Administrator'
+})
+
+// UI state
+const showProfileMenu = ref(false)
+const isSubmitting = ref(false)
+
+// Message state
+const message = reactive({
+  show: false,
+  text: '',
+  isError: false
+})
+
+// Form data
+const formData = reactive({
+  code: '',
+  name: '',
+  category: '',
+  unit: '',
+  buyPrice: 0,
+  sellPrice: 0,
+  stock: 0
+})
+
+// Load user data
+onMounted(() => {
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    const userData = JSON.parse(storedUser)
+    user.value = userData
+  }
+})
+
+// Toggle sidebar for mobile
+const toggleSidebar = () => {
+  const sidebar = document.getElementById('sidebar')
+  const overlay = document.getElementById('overlay')
+  
+  if (sidebar && overlay) {
+    sidebar.classList.toggle('-translate-x-full')
+    overlay.classList.toggle('hidden')
+  }
+}
+
+// Show message
+const showMessage = (text: string, isError: boolean = false) => {
+  message.text = text
+  message.isError = isError
+  message.show = true
+  
+  setTimeout(() => {
+    message.show = false
+  }, 3000)
+}
+
+// Handle logout
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  router.push('/login')
+}
+
+// Handle form submit
+const handleSubmit = async () => {
+  // Validasi harga
+  if (parseFloat(formData.sellPrice.toString()) < parseFloat(formData.buyPrice.toString())) {
+    showMessage('Harga Jual tidak boleh lebih rendah dari Harga Beli.', true)
+    return
+  }
+
+  isSubmitting.value = true
+
+  try {
+    // TODO: Implement API call to save data
+    console.log('Data barang yang akan disimpan:', formData)
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    showMessage('Data barang berhasil disimpan.', false)
+    
+    // Redirect after successful save
+    setTimeout(() => {
+      router.push('/admin/barang')
+    }, 1500)
+  } catch (error) {
+    console.error('Error saving data:', error)
+    showMessage('Gagal menyimpan data barang. Silakan coba lagi.', true)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+</script>
+
+<style scoped>
+/* Additional custom styles if needed */
+</style>

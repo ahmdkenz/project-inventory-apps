@@ -3,6 +3,7 @@ import Login from '@/views/auth/Login.vue'
 import AdminDashboard from '@/views/admin/Dashboard.vue'
 import StaffDashboard from '@/views/staff/Dashboard.vue'
 import BarangManager from '@/views/admin/BarangManager.vue'
+import AddBarang from '@/views/admin/AddBarang.vue'
 import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
 import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
 
@@ -29,6 +30,12 @@ const router = createRouter({
       path: '/admin/barang',
       name: 'admin-barang',
       component: BarangManager,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/barang/add',
+      name: 'admin-barang-add',
+      component: AddBarang,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

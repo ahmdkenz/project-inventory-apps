@@ -81,7 +81,7 @@
           <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
             <h1 class="text-3xl font-bold text-gray-900">Manajemen Barang</h1>
             <router-link
-              to="/admin/barang/create"
+              to="/admin/barang/add"
               class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
             >
               <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
