@@ -181,11 +181,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
 import StaffNavigation from '@/components/StaffNavigation.vue'
 
 // Router
 const router = useRouter()
+const authStore = useAuthStore()
 
 // State
 const showProfileMenu = ref(false)
@@ -218,12 +220,14 @@ const toggleSidebar = () => {
 
 const handleLogout = async () => {
   try {
-    await axios.post('http://localhost:8000/api/auth/logout')
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.push('/login')
+    await authStore.logout()
+    await router.push('/login')
   } catch (error) {
     console.error('Error during logout:', error)
+    // Even if logout fails on server, clear local data and redirect
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    await router.push('/login')
   }
 }
 
