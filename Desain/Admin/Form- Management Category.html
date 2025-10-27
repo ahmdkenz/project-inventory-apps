@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir Kategori - Aplikasi Inventori</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar Admin -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+            <div class="p-6 flex items-center space-x-3">
+                <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                <span class="text-white text-2xl font-semibold">Inventori</span>
+            </div>
+            
+            <nav class="mt-6 flex-1 px-4 space-y-1">
+                <a href="dashboard_admin.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Dashboard</span></a>
+                <a href="item_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15h.008" /></svg>
+                    <span>Data Barang</span>
+                </a>
+                <!-- Link Baru (Aktif) -->
+                <a href="category_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.734.48l4.386-2.193c.954-.478 1.591-1.42 1.591-2.428V8.332a2.25 2.25 0 00-2.25-2.25h-5.332c-.597 0-1.17.237-1.591.659l-7.42 7.419z" /><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /></svg>
+                    <span>Kategori Barang</span>
+                </a>
+                <a href="supplier_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Supplier</span></a>
+                <a href="po_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Barang Masuk (PO)</span></a>
+                <a href="so_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Barang Keluar (SO)</span></a>
+                <a href="report_hub.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Laporan</span></a>
+                <a href="user_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Pengguna</span></a>
+                <a href="activity_log.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Riwayat Aktivitas</span></a>
+                <a href="app_settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Pengaturan</span></a>
+            </nav>
+        </aside>
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+        
+        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+            
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
+                <button id="hamburger-btn" class="text-gray-600 lg:hidden">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <div class="relative hidden sm:block"></div>
+                <div class="flex items-center space-x-4" x-data="{ open: false }">
+                    <!-- ... header icons & profile ... -->
+                </div>
+            </header>
+
+            <main class="flex-1 p-6 overflow-y-auto">
+                
+                <!-- Tombol Kembali -->
+                <div class="mb-6">
+                    <a href="category_list.html" class="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                        <span>Kembali ke Daftar Kategori</span>
+                    </a>
+                </div>
+
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">
+                    Tambah Kategori Baru
+                    <!-- Ganti jadi "Edit Kategori" jika mode edit -->
+                </h1>
+
+                <!-- Formulir -->
+                <div class="bg-white rounded-lg shadow-md max-w-2xl">
+                    <form action="#" method="POST" id="category-form">
+                        <div class="p-6">
+                            <div class="space-y-6">
+                                <!-- Nama Kategori -->
+                                <div>
+                                    <label for="category-name" class="block text-sm font-medium leading-6 text-gray-900">Nama Kategori</label>
+                                    <div class="mt-2">
+                                        <input type="text" name="category-name" id="category-name" required
+                                               class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600"
+                                               placeholder="Contoh: Elektronik">
+                                    </div>
+                                </div>
+                                
+                                <!-- Deskripsi -->
+                                <div>
+                                    <label for="description" class="block text-sm font-medium leading-6 text-gray-900">Deskripsi (Opsional)</label>
+                                    <div class="mt-2">
+                                        <textarea name="description" id="description" rows="4"
+                                                  class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600"
+                                                  placeholder="Masukkan deskripsi singkat kategori..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer Form -->
+                        <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                            <a href="category_list.html" class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-150">
+                                Batal
+                            </a>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                                Simpan Kategori
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Kotak Pesan Kustom (Pengganti alert()) -->
+    <div id="message-box" class="hidden fixed top-5 right-5 p-4 rounded-md shadow-lg text-white transition-all duration-300 z-50">
+        <!-- Pesan akan diisi oleh JavaScript -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Script Sidebar Mobile ---
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+            hamburgerBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+
+            // --- Script Form Handling ---
+            const form = document.getElementById('category-form');
+            const messageBox = document.getElementById('message-box');
+
+            function showMessage(message, isError = false) {
+                messageBox.textContent = message;
+                messageBox.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
+                messageBox.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault(); 
+                
+                // --- Logika Simpan Tiruan (Mock Logic) ---
+                showMessage('Data kategori berhasil disimpan.', false);
+
+                // Alihkan kembali ke daftar kategori setelah 1.5 detik
+                setTimeout(() => {
+                    window.location.href = 'category_list.html';
+                }, 1500);
+            });
+        });
+    </script>
+
+</body>
+</html>

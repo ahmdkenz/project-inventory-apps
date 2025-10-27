@@ -85,19 +85,29 @@
             <div class="p-6">
               <!-- UPDATE: Layout disesuaikan untuk field harga baru -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Kode Barang -->
+                <!-- Kode Barang (Auto-Generated) -->
                 <div>
                   <label for="item-code" class="block text-sm font-medium leading-6 text-gray-900">Kode Barang</label>
-                  <div class="mt-2">
+                  <div class="mt-2 flex gap-2">
                     <input 
                       type="text" 
                       name="item-code" 
                       id="item-code" 
                       v-model="formData.code"
-                      required
-                      class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      placeholder="Contoh: BRG-001">
+                      readonly
+                      class="block w-full rounded-md border-0 p-3 text-gray-900 bg-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6 cursor-not-allowed"
+                      placeholder="Kode akan dibuat otomatis">
+                    <button
+                      type="button"
+                      @click="generateCode"
+                      class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition duration-150"
+                      title="Generate ulang kode">
+                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                      </svg>
+                    </button>
                   </div>
+                  <p class="mt-1 text-xs text-gray-500">Kode dibuat otomatis: PRD-(Nama)-(Unik)</p>
                 </div>
 
                 <!-- Nama Barang -->
@@ -126,10 +136,12 @@
                       required
                       class="block w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
                       <option value="" disabled selected>Pilih kategori</option>
-                      <option value="atk">ATK</option>
-                      <option value="elektronik">Elektronik</option>
-                      <option value="dapur">Perlengkapan Dapur</option>
-                      <option value="lainnya">Lainnya</option>
+                      <option 
+                        v-for="kategori in kategoriList" 
+                        :key="kategori.id" 
+                        :value="kategori.id">
+                        {{ kategori.nama }}
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -241,9 +253,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import barangService, { type Barang } from '@/services/barang.service'
+import kategoriService, { type Kategori } from '@/services/kategori.service'
 
 const router = useRouter()
 
@@ -257,6 +271,9 @@ const user = ref({
 // UI state
 const showProfileMenu = ref(false)
 const isSubmitting = ref(false)
+
+// Kategori list
+const kategoriList = ref<Kategori[]>([])
 
 // Message state
 const message = reactive({
@@ -276,12 +293,57 @@ const formData = reactive({
   stock: 0
 })
 
-// Load user data
-onMounted(() => {
+// Load user data and kategori
+onMounted(async () => {
   const storedUser = localStorage.getItem('user')
   if (storedUser) {
     const userData = JSON.parse(storedUser)
     user.value = userData
+  }
+  
+  // Load kategori
+  await loadKategori()
+})
+
+// Load kategori from API
+const loadKategori = async () => {
+  try {
+    const response = await kategoriService.getAll()
+    if (response.success && Array.isArray(response.data)) {
+      kategoriList.value = response.data
+    }
+  } catch (error) {
+    console.error('Error loading kategori:', error)
+    showMessage('Gagal memuat data kategori', true)
+  }
+}
+
+// Generate kode barang otomatis dengan pola PRD-(Nama Barang)-(Kode Unik)
+const generateCode = () => {
+  if (formData.name && formData.name.trim() !== '') {
+    // Ambil kata pertama atau 3 karakter pertama dari nama barang
+    const namePrefix = formData.name
+      .trim()
+      .split(' ')[0] // Ambil kata pertama
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '') // Hapus karakter khusus
+      .substring(0, 5) // Maksimal 5 karakter
+    
+    // Generate kode unik 4 digit dari timestamp
+    const uniqueCode = Date.now().toString().slice(-4)
+    
+    // Format: PRD-NAMABARANG-1234
+    formData.code = `PRD-${namePrefix}-${uniqueCode}`
+  } else {
+    formData.code = ''
+  }
+}
+
+// Watch perubahan pada nama barang untuk auto-generate kode
+watch(() => formData.name, (newValue, oldValue) => {
+  // Hanya generate ulang jika nama barang berubah signifikan
+  if (newValue !== oldValue) {
+    generateCode()
   }
 })
 
@@ -322,24 +384,52 @@ const handleSubmit = async () => {
     return
   }
 
+  // Validasi kategori
+  if (!formData.category) {
+    showMessage('Silakan pilih kategori barang.', true)
+    return
+  }
+
   isSubmitting.value = true
 
   try {
-    // TODO: Implement API call to save data
-    console.log('Data barang yang akan disimpan:', formData)
+    // Prepare data for API
+    const barangData: Barang = {
+      nama: formData.name,
+      kode: formData.code,
+      kategori_id: parseInt(formData.category),
+      satuan: formData.unit,
+      harga_beli: parseFloat(formData.buyPrice.toString()),
+      harga_jual: parseFloat(formData.sellPrice.toString()),
+      stok: parseInt(formData.stock.toString()),
+      stok_minimum: 0,
+      status: true
+    }
+
+    // Send to API
+    const response = await barangService.create(barangData)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    showMessage('Data barang berhasil disimpan.', false)
-    
-    // Redirect after successful save
-    setTimeout(() => {
-      router.push('/admin/barang')
-    }, 1500)
-  } catch (error) {
+    if (response.success) {
+      showMessage('Data barang berhasil disimpan.', false)
+      
+      // Redirect after successful save
+      setTimeout(() => {
+        router.push('/admin/barang')
+      }, 1500)
+    } else {
+      showMessage(response.message || 'Gagal menyimpan data barang.', true)
+    }
+  } catch (error: any) {
     console.error('Error saving data:', error)
-    showMessage('Gagal menyimpan data barang. Silakan coba lagi.', true)
+    
+    // Handle validation errors
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors
+      const firstError = Object.values(errors)[0]
+      showMessage(Array.isArray(firstError) ? firstError[0] : 'Gagal menyimpan data barang.', true)
+    } else {
+      showMessage(error.response?.data?.message || 'Gagal menyimpan data barang. Silakan coba lagi.', true)
+    }
   } finally {
     isSubmitting.value = false
   }
