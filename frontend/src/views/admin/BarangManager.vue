@@ -178,21 +178,21 @@
                   </tr>
                   <tr v-for="item in items" :key="item.id">
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm font-medium text-gray-900">{{ item.name }}</div>
-                      <div class="text-sm text-gray-500">{{ item.code }}</div>
+                      <div class="text-sm font-medium text-gray-900">{{ item.nama }}</div>
+                      <div class="text-sm text-gray-500">{{ item.kode }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.category }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.unit }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.purchase_price) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.selling_price) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.kategori?.nama || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.satuan }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.harga_beli) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.harga_jual) }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span v-if="item.stock === 0" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                        Habis ({{ item.stock }})
+                      <span v-if="item.stok === 0" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        Habis ({{ item.stok }})
                       </span>
-                      <span v-else-if="item.stock <= item.min_stock" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                        Menipis ({{ item.stock }})
+                      <span v-else-if="item.stok <= item.stok_minimum" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        Menipis ({{ item.stok }})
                       </span>
-                      <span v-else class="text-sm font-medium text-gray-900">{{ item.stock }}</span>
+                      <span v-else class="text-sm font-medium text-gray-900">{{ item.stok }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <router-link :to="`/admin/barang/edit/${item.id}`" class="text-blue-600 hover:text-blue-900">Edit</router-link>
@@ -262,6 +262,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import barangService, { type Barang } from '@/services/barang.service'
 
 // Router & auth
 const router = useRouter()
@@ -301,7 +302,7 @@ const handleLogout = async () => {
 }
 
 // State (original)
-const items = ref<any[]>([])
+const items = ref<Barang[]>([])
 const loading = ref(false)
 const showDeleteModal = ref(false)
 const itemToDelete = ref<any>(null)
@@ -322,60 +323,16 @@ const message = ref({
 const fetchItems = async () => {
   loading.value = true
   try {
-    // TODO: Replace with actual API call
-    // const response = await itemService.getAll(filters.value)
-    // items.value = response.data
+    const response = await barangService.getAll()
     
-    // Mock data for demonstration
-    await new Promise(resolve => setTimeout(resolve, 500))
-    items.value = [
-      {
-        id: 1,
-        name: 'Kertas A4 80gr',
-        code: 'BRG-001',
-        category: 'ATK',
-        unit: 'Rim',
-        purchase_price: 55000,
-        selling_price: 60000,
-        stock: 150,
-        min_stock: 20
-      },
-      {
-        id: 2,
-        name: 'Spidol Whiteboard Hitam',
-        code: 'BRG-002',
-        category: 'ATK',
-        unit: 'Pcs',
-        purchase_price: 8000,
-        selling_price: 9500,
-        stock: 8,
-        min_stock: 10
-      },
-      {
-        id: 3,
-        name: 'Mouse Wireless',
-        code: 'BRG-003',
-        category: 'Elektronik',
-        unit: 'Unit',
-        purchase_price: 120000,
-        selling_price: 135000,
-        stock: 0,
-        min_stock: 5
-      },
-      {
-        id: 4,
-        name: 'Kopi Sachet',
-        code: 'BRG-004',
-        category: 'Perlengkapan Dapur',
-        unit: 'Box',
-        purchase_price: 25000,
-        selling_price: 30000,
-        stock: 50,
-        min_stock: 10
-      }
-    ]
-  } catch (error) {
-    showMessage('Gagal memuat data barang', true)
+    if (response.success && Array.isArray(response.data)) {
+      items.value = response.data
+    } else {
+      showMessage('Gagal memuat data barang', true)
+    }
+  } catch (error: any) {
+    console.error('Error fetching items:', error)
+    showMessage(error.response?.data?.message || 'Gagal memuat data barang', true)
   } finally {
     loading.value = false
   }
@@ -401,14 +358,18 @@ const closeDeleteModal = () => {
 
 const deleteItem = async () => {
   try {
-    // TODO: Replace with actual API call
-    // await itemService.delete(itemToDelete.value.id)
+    if (!itemToDelete.value?.id) return
     
-    items.value = items.value.filter(item => item.id !== itemToDelete.value.id)
+    await barangService.delete(itemToDelete.value.id)
+    
+    // Refresh data after delete
+    await fetchItems()
+    
     showMessage('Barang berhasil dihapus.', false)
     closeDeleteModal()
-  } catch (error) {
-    showMessage('Gagal menghapus barang', true)
+  } catch (error: any) {
+    console.error('Error deleting item:', error)
+    showMessage(error.response?.data?.message || 'Gagal menghapus barang', true)
   }
 }
 
