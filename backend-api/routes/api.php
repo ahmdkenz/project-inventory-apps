@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,9 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Admin routes
     Route::middleware('role:admin')->prefix('admin')->group(function () {
+        // Dashboard stats
+        Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
+        
         Route::get('/dashboard', function () {
             return response()->json([
                 'message' => 'Admin Dashboard Data'
