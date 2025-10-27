@@ -29,7 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
         
         // Kategori routes
-        Route::get('kategori', [KategoriController::class, 'index']);
+        Route::apiResource('kategori', KategoriController::class);
         
         // Barang routes
         Route::apiResource('barang', BarangController::class);
