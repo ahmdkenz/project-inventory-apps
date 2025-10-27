@@ -59,7 +59,7 @@
           </button>
           
           <!-- Profile Dropdown -->
-          <div class="relative" v-click-outside="closeProfileMenu">
+          <div class="relative" v-click-outside:closeProfileMenu>
             <button @click="toggleProfileMenu" class="flex items-center space-x-2">
               <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF4FF/4299E1?text=S" alt="Avatar Pengguna">
               <span class="hidden md:block text-sm font-medium text-gray-700">{{ user?.name || 'Staff' }}</span>

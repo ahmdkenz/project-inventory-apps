@@ -1,11 +1,16 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+import { onErrorCaptured } from 'vue'
+
+// Handle errors globally
+onErrorCaptured((err, instance, info) => {
+  console.error('Error captured in App.vue:', err, info)
+  return false // Prevent error from propagating
+})
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <RouterView />
 </template>
 
 <style scoped></style>

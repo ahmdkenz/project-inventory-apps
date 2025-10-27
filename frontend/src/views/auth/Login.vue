@@ -123,9 +123,10 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const loading = ref(false)
 const error = ref('')
 
@@ -140,24 +141,16 @@ const handleLogin = async () => {
   error.value = ''
 
   try {
-    const response = await axios.post('http://localhost:8000/api/auth/login', {
-      username: form.username,
-      password: form.password,
-      remember: form.remember
-    })
-
-    // Simpan token
-    localStorage.setItem('token', response.data.token)
-    localStorage.setItem('user', JSON.stringify(response.data.user))
+    await authStore.login(form.username, form.password, form.remember)
 
     // Redirect berdasarkan role
-    if (response.data.user.role === 'admin') {
-      router.push('/admin/dashboard')
+    if (authStore.user?.role === 'admin') {
+      await router.push('/admin/dashboard')
     } else {
-      router.push('/staff/dashboard')
+      await router.push('/staff/dashboard')
     }
   } catch (err: any) {
-    error.value = err.response?.data?.message || 'Terjadi kesalahan saat login'
+    error.value = err.response?.data?.message || 'Username atau password salah'
   } finally {
     loading.value = false
   }

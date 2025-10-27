@@ -171,7 +171,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import ApexCharts from 'apexcharts'
-import { vClickOutside } from 'v-click-outside-x'
 import AdminNavigation from '@/components/AdminNavigation.vue'
 
 // Router
