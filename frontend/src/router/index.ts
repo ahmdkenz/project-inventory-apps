@@ -1,8 +1,66 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Login from '@/views/auth/Login.vue'
+import AdminDashboard from '@/views/admin/Dashboard.vue'
+import StaffDashboard from '@/views/staff/Dashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [],
+  routes: [
+    {
+      path: '/',
+      redirect: '/login'
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login,
+      meta: { requiresAuth: false }
+    },
+    {
+      path: '/admin/dashboard',
+      name: 'admin-dashboard',
+      component: AdminDashboard,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/staff/dashboard',
+      name: 'staff-dashboard',
+      component: StaffDashboard,
+      meta: { requiresAuth: true, requiresStaff: true }
+    }
+  ]
+})
+
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+
+  // If route requires auth and user is not logged in
+  if (to.meta.requiresAuth && !token) {
+    next('/login')
+    return
+  }
+
+  // If route requires admin role and user is not admin
+  if (to.meta.requiresAdmin && user.role !== 'admin') {
+    next('/staff/dashboard')
+    return
+  }
+
+  // If route requires staff role and user is not staff
+  if (to.meta.requiresStaff && user.role !== 'staff') {
+    next('/admin/dashboard')
+    return
+  }
+
+  // If user is logged in and tries to access login page
+  if (to.path === '/login' && token) {
+    next(user.role === 'admin' ? '/admin/dashboard' : '/staff/dashboard')
+    return
+  }
+
+  next()
 })
 
 export default router
