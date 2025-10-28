@@ -8,6 +8,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\PurchaseOrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,11 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Supplier routes
         Route::apiResource('supplier', SupplierController::class);
+        
+        // Purchase Order routes (admin - approval)
+        Route::get('/purchase-order', [PurchaseOrderController::class, 'adminIndex']);
+        Route::post('/purchase-order/{id}/approve', [PurchaseOrderController::class, 'approve']);
+        Route::post('/purchase-order/{id}/reject', [PurchaseOrderController::class, 'reject']);
     });
     
     // Staff routes
@@ -61,5 +67,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/barang/{id}', [BarangController::class, 'show']);
         Route::get('/kategori', [KategoriController::class, 'index']);
         Route::get('/kategori/{id}', [KategoriController::class, 'show']);
+        Route::get('/supplier', [SupplierController::class, 'index']);
+        Route::get('/supplier/{id}', [SupplierController::class, 'show']);
+        
+        // Purchase Order routes (staff - create/manage own PO)
+        Route::apiResource('purchase-order', PurchaseOrderController::class);
     });
 });

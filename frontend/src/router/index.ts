@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/auth/Login.vue'
 import AdminDashboard from '@/views/admin/Dashboard.vue'
 import StaffDashboard from '@/views/staff/Dashboard.vue'
+import BarangListStaff from '@/views/staff/BarangList.vue'
+import PurchaseOrderList from '@/views/staff/PurchaseOrderList.vue'
+import FormPurchaseOrder from '@/views/staff/FormPurchaseOrder.vue'
 import BarangManager from '@/views/admin/BarangManager.vue'
 import AddBarang from '@/views/admin/AddBarang.vue'
 import ManagementCategory from '@/views/admin/ManagementCategory.vue'
@@ -12,7 +15,6 @@ import UserManagement from '@/views/admin/UserManagement.vue'
 import FormUserManagement from '@/views/admin/FormUserManagement.vue'
 import SupplierManagement from '@/views/admin/SupplierManagement.vue'
 import FormSupplier from '@/views/admin/FormSupplier.vue'
-import BarangListStaff from '@/views/staff/BarangList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -121,6 +123,24 @@ const router = createRouter({
       path: '/staff/barang',
       name: 'staff-barang',
       component: BarangListStaff,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/purchase-order',
+      name: 'staff-purchase-order',
+      component: PurchaseOrderList,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/purchase-order/create',
+      name: 'staff-purchase-order-create',
+      component: FormPurchaseOrder,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/purchase-order/edit/:id',
+      name: 'staff-purchase-order-edit',
+      component: FormPurchaseOrder,
       meta: { requiresAuth: true, requiresStaff: true }
     },
   ]
