@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Http\Controllers\AuditLogController;
 
 class SalesOrderController extends Controller
 {
@@ -149,6 +150,14 @@ class SalesOrderController extends Controller
             DB::commit();
 
             $salesOrder->load(['items.barang', 'creator']);
+
+            // Log activity
+            AuditLogController::log(
+                'create',
+                "Membuat Sales Order baru {$salesOrder->no_so} untuk customer {$salesOrder->customer_name}",
+                'SalesOrder',
+                $salesOrder->id
+            );
 
             return response()->json([
                 'success' => true,
@@ -388,6 +397,14 @@ class SalesOrderController extends Controller
 
             $salesOrder->load(['items.barang', 'creator', 'approver']);
 
+            // Log activity
+            AuditLogController::log(
+                'approve',
+                "Menyetujui Sales Order {$salesOrder->no_so} untuk customer {$salesOrder->customer_name}",
+                'SalesOrder',
+                $salesOrder->id
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'Sales order approved successfully',
@@ -435,6 +452,15 @@ class SalesOrderController extends Controller
             ]);
 
             $salesOrder->load(['items.barang', 'creator', 'approver']);
+
+            // Log activity
+            $reason = $request->reject_reason ? ": {$request->reject_reason}" : '';
+            AuditLogController::log(
+                'reject',
+                "Menolak Sales Order {$salesOrder->no_so} untuk customer {$salesOrder->customer_name}{$reason}",
+                'SalesOrder',
+                $salesOrder->id
+            );
 
             return response()->json([
                 'success' => true,

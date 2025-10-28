@@ -7,6 +7,7 @@ use App\Models\PurchaseOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AuditLogController;
 
 class PurchaseOrderController extends Controller
 {
@@ -123,6 +124,14 @@ class PurchaseOrderController extends Controller
             }
 
             DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'create',
+                'membuat Purchase Order: ' . $purchaseOrder->no_po . ' untuk supplier ' . $purchaseOrder->supplier->nama,
+                'PurchaseOrder',
+                $purchaseOrder->id
+            );
 
             $purchaseOrder->load(['supplier', 'items.barang']);
 
@@ -345,6 +354,14 @@ class PurchaseOrderController extends Controller
                 'approved_at' => now(),
             ]);
 
+            // Log activity
+            AuditLogController::log(
+                'approve',
+                'menyetujui Purchase Order: ' . $purchaseOrder->no_po,
+                'PurchaseOrder',
+                $purchaseOrder->id
+            );
+
             DB::commit();
 
             return response()->json([
@@ -394,6 +411,14 @@ class PurchaseOrderController extends Controller
                 'approved_at' => now(),
                 'reject_reason' => $request->reason,
             ]);
+
+            // Log activity
+            AuditLogController::log(
+                'reject',
+                'menolak Purchase Order: ' . $purchaseOrder->no_po . ($request->reason ? ' - Alasan: ' . $request->reason : ''),
+                'PurchaseOrder',
+                $purchaseOrder->id
+            );
 
             DB::commit();
 

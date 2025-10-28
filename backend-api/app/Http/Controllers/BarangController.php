@@ -6,6 +6,7 @@ use App\Models\Barang;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AuditLogController;
 
 class BarangController extends Controller
 {
@@ -70,6 +71,14 @@ class BarangController extends Controller
                 'status' => true,
             ]);
 
+            // Log activity
+            AuditLogController::log(
+                'create',
+                'menambahkan barang: ' . $barang->nama . ' (' . $barang->kode . ')',
+                'Barang',
+                $barang->id
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'Barang berhasil ditambahkan',
@@ -133,7 +142,17 @@ class BarangController extends Controller
 
         try {
             $barang = Barang::findOrFail($id);
+            
+            $oldNama = $barang->nama;
             $barang->update($request->all());
+
+            // Log activity
+            AuditLogController::log(
+                'update',
+                'mengedit barang: ' . $oldNama . ' (' . $barang->kode . ')',
+                'Barang',
+                $barang->id
+            );
 
             return response()->json([
                 'success' => true,
@@ -156,7 +175,18 @@ class BarangController extends Controller
     {
         try {
             $barang = Barang::findOrFail($id);
+            $namaBarang = $barang->nama;
+            $kodeBarang = $barang->kode;
+            
             $barang->delete();
+
+            // Log activity
+            AuditLogController::log(
+                'delete',
+                'menghapus barang: ' . $namaBarang . ' (' . $kodeBarang . ')',
+                'Barang',
+                $id
+            );
 
             return response()->json([
                 'success' => true,

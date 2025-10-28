@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AuditLogController;
 
 class KategoriController extends Controller
 {
@@ -55,6 +56,14 @@ class KategoriController extends Controller
                 'kode' => $request->kode,
                 'deskripsi' => $request->deskripsi,
             ]);
+
+            // Log activity
+            AuditLogController::log(
+                'create',
+                "Menambahkan kategori baru: {$kategori->nama} ({$kategori->kode})",
+                'Kategori',
+                $kategori->id
+            );
 
             return response()->json([
                 'success' => true,
@@ -115,6 +124,14 @@ class KategoriController extends Controller
             $kategori = Kategori::findOrFail($id);
             $kategori->update($request->all());
 
+            // Log activity
+            AuditLogController::log(
+                'update',
+                "Memperbarui kategori: {$kategori->nama} ({$kategori->kode})",
+                'Kategori',
+                $kategori->id
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'Kategori berhasil diperbarui',
@@ -136,7 +153,18 @@ class KategoriController extends Controller
     {
         try {
             $kategori = Kategori::findOrFail($id);
+            $kategoriName = $kategori->nama;
+            $kategoriKode = $kategori->kode;
+            
             $kategori->delete();
+
+            // Log activity
+            AuditLogController::log(
+                'delete',
+                "Menghapus kategori: {$kategoriName} ({$kategoriKode})",
+                'Kategori',
+                $id
+            );
 
             return response()->json([
                 'success' => true,

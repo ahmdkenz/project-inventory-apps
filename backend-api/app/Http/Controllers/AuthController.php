@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\AuditLogController;
 
 class AuthController extends Controller
 {
@@ -27,6 +28,14 @@ class AuthController extends Controller
         $user = User::where('username', $request->username)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Log activity
+        AuditLogController::log(
+            'login',
+            'telah login ke sistem',
+            'Auth',
+            $user->id
+        );
+
         return response()->json([
             'message' => 'Login berhasil',
             'token' => $token,
@@ -41,6 +50,14 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // Log activity before deleting token
+        AuditLogController::log(
+            'logout',
+            'telah logout dari sistem',
+            'Auth',
+            $request->user()->id
+        );
+
         $request->user()->currentAccessToken()->delete();
         
         return response()->json([

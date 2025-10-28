@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AuditLogController;
 
 class UserController extends Controller
 {
@@ -80,6 +81,14 @@ class UserController extends Controller
             ]);
 
             $user->status = 'active';
+
+            // Log activity
+            AuditLogController::log(
+                'create',
+                'menambahkan pengguna: ' . $user->name . ' (' . $user->username . ') sebagai ' . $user->role,
+                'User',
+                $user->id
+            );
 
             return response()->json([
                 'success' => true,
@@ -164,6 +173,14 @@ class UserController extends Controller
             $user->save();
             $user->status = 'active';
 
+            // Log activity
+            AuditLogController::log(
+                'update',
+                'mengedit pengguna: ' . $user->name . ' (' . $user->username . ')',
+                'User',
+                $user->id
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data pengguna berhasil diperbarui',
@@ -194,7 +211,17 @@ class UserController extends Controller
                 ], 403);
             }
 
+            $userName = $user->name;
+            $userUsername = $user->username;
             $user->delete();
+
+            // Log activity
+            AuditLogController::log(
+                'delete',
+                'menghapus pengguna: ' . $userName . ' (' . $userUsername . ')',
+                'User',
+                $id
+            );
 
             return response()->json([
                 'success' => true,

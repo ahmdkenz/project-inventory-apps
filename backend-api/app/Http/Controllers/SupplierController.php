@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Supplier;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AuditLogController;
 
 class SupplierController extends Controller
 {
@@ -64,6 +65,14 @@ class SupplierController extends Controller
                 'email' => $request->email,
                 'alamat' => $request->alamat,
             ]);
+
+            // Log activity
+            AuditLogController::log(
+                'create',
+                'menambahkan supplier: ' . $supplier->nama,
+                'Supplier',
+                $supplier->id
+            );
 
             return response()->json([
                 'success' => true,
@@ -137,6 +146,14 @@ class SupplierController extends Controller
                 'alamat' => $request->alamat,
             ]);
 
+            // Log activity
+            AuditLogController::log(
+                'update',
+                'mengedit supplier: ' . $supplier->nama,
+                'Supplier',
+                $supplier->id
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data supplier berhasil diperbarui',
@@ -158,7 +175,17 @@ class SupplierController extends Controller
     {
         try {
             $supplier = Supplier::findOrFail($id);
+            $supplierNama = $supplier->nama;
+            
             $supplier->delete();
+
+            // Log activity
+            AuditLogController::log(
+                'delete',
+                'menghapus supplier: ' . $supplierNama,
+                'Supplier',
+                $id
+            );
 
             return response()->json([
                 'success' => true,
