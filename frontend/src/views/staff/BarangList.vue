@@ -239,7 +239,7 @@ onMounted(async () => {
 const fetchBarang = async () => {
   loading.value = true
   try {
-    const response = await staffBarangService.getAll()
+    const response = await staffBarangService.getAll({ per_page: 1000 })
     if (response.success && Array.isArray(response.data)) {
       barangList.value = response.data
     }
