@@ -9,7 +9,7 @@ export interface PurchaseOrderItem {
     kode: string
   }
   qty: number
-  harga_beli: number
+  harga_satuan: number
   subtotal?: number
 }
 

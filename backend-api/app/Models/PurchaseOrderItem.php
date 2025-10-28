@@ -11,7 +11,7 @@ class PurchaseOrderItem extends Model
         'purchase_order_id',
         'barang_id',
         'qty',
-        'harga_beli',
+        'harga_satuan',
         'subtotal'
     ];
 

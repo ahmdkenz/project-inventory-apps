@@ -71,7 +71,7 @@ class PurchaseOrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barang,id',
             'items.*.qty' => 'required|integer|min:1',
-            'items.*.harga_beli' => 'required|numeric|min:0',
+            'items.*.harga_satuan' => 'required|numeric|min:0',
             'subtotal' => 'required|numeric|min:0',
             'total' => 'required|numeric|min:0',
         ], [
@@ -117,8 +117,8 @@ class PurchaseOrderController extends Controller
                     'purchase_order_id' => $purchaseOrder->id,
                     'barang_id' => $item['barang_id'],
                     'qty' => $item['qty'],
-                    'harga_beli' => $item['harga_beli'],
-                    'subtotal' => $item['qty'] * $item['harga_beli'],
+                    'harga_satuan' => $item['harga_satuan'],
+                    'subtotal' => $item['qty'] * $item['harga_satuan'],
                 ]);
             }
 
@@ -176,7 +176,7 @@ class PurchaseOrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barang,id',
             'items.*.qty' => 'required|integer|min:1',
-            'items.*.harga_beli' => 'required|numeric|min:0',
+            'items.*.harga_satuan' => 'required|numeric|min:0',
             'subtotal' => 'required|numeric|min:0',
             'total' => 'required|numeric|min:0',
         ]);
@@ -215,8 +215,8 @@ class PurchaseOrderController extends Controller
                     'purchase_order_id' => $purchaseOrder->id,
                     'barang_id' => $item['barang_id'],
                     'qty' => $item['qty'],
-                    'harga_beli' => $item['harga_beli'],
-                    'subtotal' => $item['qty'] * $item['harga_beli'],
+                    'harga_satuan' => $item['harga_satuan'],
+                    'subtotal' => $item['qty'] * $item['harga_satuan'],
                 ]);
             }
 
