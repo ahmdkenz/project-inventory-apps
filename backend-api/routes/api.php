@@ -10,6 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\SalesOrderController;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,10 @@ Route::middleware('auth:sanctum')->group(function () {
                 'message' => 'Admin Dashboard Data'
             ]);
         });
+        
+        // Audit Log routes
+        Route::get('/audit-logs', [AuditLogController::class, 'index']);
+        Route::get('/audit-logs/recent', [AuditLogController::class, 'recent']);
         
         // Kategori routes
         Route::apiResource('kategori', KategoriController::class);

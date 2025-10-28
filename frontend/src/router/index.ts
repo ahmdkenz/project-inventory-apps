@@ -20,6 +20,7 @@ import UserManagement from '@/views/admin/UserManagement.vue'
 import FormUserManagement from '@/views/admin/FormUserManagement.vue'
 import SupplierManagement from '@/views/admin/SupplierManagement.vue'
 import FormSupplier from '@/views/admin/FormSupplier.vue'
+import AuditLog from '@/views/admin/AuditLog.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -128,6 +129,12 @@ const router = createRouter({
       path: '/admin/supplier/edit/:id',
       name: 'admin-supplier-edit',
       component: FormSupplier,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/audit-log',
+      name: 'admin-audit-log',
+      component: AuditLog,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

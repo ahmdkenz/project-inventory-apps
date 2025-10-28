@@ -163,19 +163,35 @@
           
           <!-- Aktivitas Terbaru -->
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Aktivitas Terbaru (Semua)</h3>
-            <ul class="space-y-4">
-              <li v-for="activity in recentActivities" :key="activity.id" class="flex items-center space-x-3">
-                <div :class="getActivityIconClass(activity.type)">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-gray-900">Aktivitas Terbaru (Semua)</h3>
+              <router-link 
+                to="/admin/audit-log" 
+                class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                Lihat Semua
+              </router-link>
+            </div>
+            <div v-if="loadingActivities" class="flex justify-center items-center py-8">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+            <ul v-else class="space-y-4">
+              <li v-if="recentActivities.length === 0" class="text-center py-8 text-gray-500">
+                <svg class="mx-auto h-10 w-10 text-gray-400 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-sm">Tidak ada aktivitas terbaru</p>
+              </li>
+              <li v-for="activity in recentActivities" :key="activity.id" class="flex items-start space-x-3">
+                <div :class="getActivityIconClass(activity.action)">
                   <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" :d="getActivityIcon(activity.type)" />
+                    <path stroke-linecap="round" stroke-linejoin="round" :d="getActivityIcon(activity.action)" />
                   </svg>
                 </div>
-                <div>
-                  <p class="text-sm font-medium">
-                    <strong>{{ activity.user }}</strong> {{ activity.action }} <strong>{{ activity.item }}</strong>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-800">
+                    <strong>{{ activity.username }}</strong> {{ activity.description }}
                   </p>
-                  <p class="text-xs text-gray-500">{{ formatTime(activity.timestamp) }}</p>
+                  <p class="text-xs text-gray-500">{{ formatActivityTime(activity.created_at) }}</p>
                 </div>
               </li>
             </ul>
@@ -191,6 +207,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
+import auditLogService, { type AuditLog } from '@/services/auditLog.service'
 import ApexCharts from 'apexcharts'
 import AdminNavigation from '@/components/AdminNavigation.vue'
 
@@ -201,14 +218,15 @@ const authStore = useAuthStore()
 // State
 const showProfileMenu = ref(false)
 const chartContainer = ref(null)
-const user = ref(null)
+const user = ref<any>(null)
 const stats = ref({
   totalUsers: 0,
   totalItems: 0,
   lowStock: 0,
   outOfStock: 0
 })
-const recentActivities = ref([])
+const recentActivities = ref<AuditLog[]>([])
+const loadingActivities = ref(false)
 const errorMessage = ref('')
 const isLoading = ref(false)
 let refreshInterval: number | null = null
@@ -248,33 +266,48 @@ const isActiveRoute = (path: string) => {
   return router.currentRoute.value.path === path
 }
 
-const getActivityIconClass = (type: string) => {
-  const classes = {
-    add: 'bg-green-100 text-green-600',
-    remove: 'bg-red-100 text-red-600',
-    edit: 'bg-blue-100 text-blue-600'
+const getActivityIconClass = (action: string) => {
+  const classes: any = {
+    'login': 'bg-green-100 text-green-600 p-2 rounded-full',
+    'logout': 'bg-gray-100 text-gray-600 p-2 rounded-full',
+    'create': 'bg-blue-100 text-blue-600 p-2 rounded-full',
+    'update': 'bg-yellow-100 text-yellow-600 p-2 rounded-full',
+    'delete': 'bg-red-100 text-red-600 p-2 rounded-full',
+    'approve': 'bg-green-100 text-green-600 p-2 rounded-full',
+    'reject': 'bg-red-100 text-red-600 p-2 rounded-full'
   }
-  return `${classes[type as keyof typeof classes]} p-2 rounded-full`
+  return classes[action] || 'bg-gray-100 text-gray-600 p-2 rounded-full'
 }
 
-const getActivityIcon = (type: string) => {
-  const icons = {
-    add: 'M12 4.5v15m7.5-7.5h-15',
-    remove: 'M19.5 12h-15',
-    edit: 'M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z'
+const getActivityIcon = (action: string) => {
+  const icons: any = {
+    'login': 'M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9',
+    'logout': 'M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75',
+    'create': 'M12 4.5v15m7.5-7.5h-15',
+    'update': 'M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z',
+    'delete': 'M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0',
+    'approve': 'M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+    'reject': 'M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
   }
-  return icons[type as keyof typeof icons]
+  return icons[action] || 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'
 }
 
-const formatTime = (timestamp: string) => {
+const formatActivityTime = (timestamp: string) => {
+  if (!timestamp) return '-'
   const date = new Date(timestamp)
   const now = new Date()
-  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
   
-  if (diffInHours < 24) {
-    return `${diffInHours} jam lalu`
-  }
-  return `${Math.floor(diffInHours / 24)} hari lalu`
+  if (diffInMinutes < 1) return 'Baru saja'
+  if (diffInMinutes < 60) return `${diffInMinutes} menit lalu`
+  
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) return `${diffInHours} jam lalu`
+  
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays < 7) return `${diffInDays} hari lalu`
+  
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 // Fetch dashboard stats
@@ -310,11 +343,16 @@ onMounted(async () => {
   }, 10000) // 10 seconds
 
   try {
-    // Fetch recent activities (optional)
-    const activitiesResponse = await api.get('/activities/recent')
-    recentActivities.value = activitiesResponse.data
+    // Fetch recent activities
+    loadingActivities.value = true
+    const activitiesResponse = await auditLogService.getRecent(5)
+    if (activitiesResponse.success) {
+      recentActivities.value = activitiesResponse.data
+    }
   } catch (error) {
     console.error('Error fetching activities:', error)
+  } finally {
+    loadingActivities.value = false
   }
 
   // Initialize chart
