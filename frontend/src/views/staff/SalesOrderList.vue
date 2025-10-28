@@ -126,7 +126,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
                   <router-link v-if="so.status === 'pending'" :to="`/staff/sales-order/edit/${so.id}`" class="text-blue-600 hover:text-blue-900 font-medium">Edit</router-link>
                   <button v-if="so.status === 'pending'" @click="confirmDelete(so)" class="text-red-600 hover:text-red-900 font-medium">Hapus</button>
-                  <button @click="viewDetail(so)" class="text-green-600 hover:text-green-900 font-medium">Detail</button>
+                  <router-link :to="`/staff/sales-order/detail/${so.id}`" class="text-green-600 hover:text-green-900 font-medium">Detail</router-link>
                 </td>
               </tr>
             </tbody>
@@ -148,91 +148,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Modal Detail -->
-        <div v-if="showDetailModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-y-auto" @click.self="closeDetailModal">
-          <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl my-8">
-            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white">
-              <div class="flex justify-between items-center">
-                <h3 class="text-lg font-medium text-gray-900">Detail Sales Order</h3>
-                <button @click="closeDetailModal" class="text-gray-400 hover:text-gray-600">
-                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div v-if="selectedSO" class="p-6">
-              <div class="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <p class="text-sm text-gray-500">No. SO</p>
-                  <p class="font-medium">{{ selectedSO.no_so }}</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Status</p>
-                  <span :class="getStatusBadgeClass(selectedSO.status)" class="px-2 py-1 text-xs font-semibold rounded-full">
-                    {{ getStatusLabel(selectedSO.status) }}
-                  </span>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Customer</p>
-                  <p class="font-medium">{{ selectedSO.customer_name }}</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">No. Telepon</p>
-                  <p class="font-medium">{{ selectedSO.customer_phone || '-' }}</p>
-                </div>
-                <div class="col-span-2">
-                  <p class="text-sm text-gray-500">Alamat</p>
-                  <p class="font-medium">{{ selectedSO.customer_address || '-' }}</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Tanggal Order</p>
-                  <p class="font-medium">{{ formatDate(selectedSO.tgl_order) }}</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Tanggal Kirim</p>
-                  <p class="font-medium">{{ formatDate(selectedSO.tgl_kirim) }}</p>
-                </div>
-                <div v-if="selectedSO.catatan" class="col-span-2">
-                  <p class="text-sm text-gray-500">Catatan</p>
-                  <p class="font-medium">{{ selectedSO.catatan }}</p>
-                </div>
-                <div v-if="selectedSO.reject_reason" class="col-span-2">
-                  <p class="text-sm text-gray-500">Alasan Ditolak</p>
-                  <p class="font-medium text-red-600">{{ selectedSO.reject_reason }}</p>
-                </div>
-              </div>
-              <div class="border-t pt-4">
-                <h4 class="font-medium mb-3">Detail Barang</h4>
-                <table class="w-full text-sm">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-4 py-2 text-left">Barang</th>
-                      <th class="px-4 py-2 text-center">Qty</th>
-                      <th class="px-4 py-2 text-right">Harga</th>
-                      <th class="px-4 py-2 text-right">Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y">
-                    <tr v-for="item in selectedSO.items" :key="item.id">
-                      <td class="px-4 py-2">{{ item.barang?.nama || '-' }}</td>
-                      <td class="px-4 py-2 text-center">{{ item.qty }}</td>
-                      <td class="px-4 py-2 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
-                      <td class="px-4 py-2 text-right">{{ formatCurrency(item.subtotal || 0) }}</td>
-                    </tr>
-                  </tbody>
-                  <tfoot class="bg-gray-50 font-medium">
-                    <tr>
-                      <td colspan="3" class="px-4 py-2 text-right">Total</td>
-                      <td class="px-4 py-2 text-right">{{ formatCurrency(selectedSO.total || 0) }}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   </div>
@@ -250,9 +165,7 @@ const user = ref<any>(null)
 const loading = ref(false)
 const salesOrders = ref<SalesOrder[]>([])
 const showDeleteModal = ref(false)
-const showDetailModal = ref(false)
 const soToDelete = ref<SalesOrder | null>(null)
-const selectedSO = ref<SalesOrder | null>(null)
 
 const filters = ref({
   status: '',
@@ -319,26 +232,6 @@ const deleteSalesOrder = async () => {
   } catch (error: any) {
     showMessage(error.response?.data?.message || 'Gagal menghapus sales order', true)
   }
-}
-
-const viewDetail = async (so: SalesOrder) => {
-  loading.value = true
-  try {
-    const response = await salesOrderService.getById(so.id!)
-    if (response.success && !Array.isArray(response.data)) {
-      selectedSO.value = response.data
-      showDetailModal.value = true
-    }
-  } catch (error: any) {
-    showMessage('Gagal memuat detail sales order', true)
-  } finally {
-    loading.value = false
-  }
-}
-
-const closeDetailModal = () => {
-  showDetailModal.value = false
-  selectedSO.value = null
 }
 
 const getStatusBadgeClass = (status: string) => {

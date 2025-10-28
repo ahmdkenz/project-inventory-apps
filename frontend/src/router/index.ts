@@ -7,6 +7,7 @@ import PurchaseOrderList from '@/views/staff/PurchaseOrderList.vue'
 import FormPurchaseOrder from '@/views/staff/FormPurchaseOrder.vue'
 import SalesOrderList from '@/views/staff/SalesOrderList.vue'
 import FormSalesOrder from '@/views/staff/FormSalesOrder.vue'
+import SalesOrderDetail from '@/views/staff/SalesOrderDetail.vue'
 import BarangManager from '@/views/admin/BarangManager.vue'
 import AddBarang from '@/views/admin/AddBarang.vue'
 import ManagementCategory from '@/views/admin/ManagementCategory.vue'
@@ -161,6 +162,12 @@ const router = createRouter({
       path: '/staff/sales-order/edit/:id',
       name: 'staff-sales-order-edit',
       component: FormSalesOrder,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/sales-order/detail/:id',
+      name: 'staff-sales-order-detail',
+      component: SalesOrderDetail,
       meta: { requiresAuth: true, requiresStaff: true }
     },
   ]
