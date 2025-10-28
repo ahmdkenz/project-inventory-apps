@@ -241,7 +241,7 @@ import { useRouter, useRoute } from 'vue-router'
 import StaffNavigation from '@/components/StaffNavigation.vue'
 import purchaseOrderService from '@/services/purchaseOrder.service'
 import staffBarangService from '@/services/staff/barang.service'
-import staffSupplierService from '@/services/staff/supplier.service'
+import supplierService from '@/services/supplier.service'
 import type { PurchaseOrder, PurchaseOrderItem } from '@/services/purchaseOrder.service'
 import type { Barang } from '@/services/barang.service'
 import type { Supplier } from '@/services/supplier.service'
@@ -325,7 +325,7 @@ const fetchBarang = async () => {
 
 const fetchSupplier = async () => {
   try {
-    const response = await staffSupplierService.getAll()
+    const response = await supplierService.getAll()
     if (response.success && Array.isArray(response.data)) {
       supplierList.value = response.data
     }
@@ -359,7 +359,7 @@ const loadPurchaseOrder = async () => {
 const onBarangSelect = () => {
   const selectedBarang = barangList.value.find(b => b.id === newItem.barang_id)
   if (selectedBarang) {
-    newItem.harga_satuan = selectedBarang.harga_satuan || 0
+    newItem.harga_satuan = selectedBarang.harga_beli || 0
   }
 }
 
