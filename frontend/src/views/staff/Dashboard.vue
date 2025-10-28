@@ -59,14 +59,13 @@
           </button>
           
           <!-- Profile Dropdown -->
-          <div class="relative" v-click-outside:closeProfileMenu>
+          <div class="relative">
             <button @click="toggleProfileMenu" class="flex items-center space-x-2">
               <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF4FF/4299E1?text=S" alt="Avatar Pengguna">
               <span class="hidden md:block text-sm font-medium text-gray-700">{{ user?.name || 'Staff' }}</span>
             </button>
-            <div v-show="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+            <div v-show="showProfileMenu" @click.outside="closeProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
               <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
-              <hr class="my-1">
               <a href="#" @click.prevent="handleLogout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
             </div>
           </div>
@@ -185,20 +184,29 @@ import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
 import StaffNavigation from '@/components/StaffNavigation.vue'
 
+// Types
+interface Activity {
+  id: number
+  type: string
+  action: string
+  item: string
+  timestamp: string
+}
+
 // Router
 const router = useRouter()
 const authStore = useAuthStore()
 
 // State
 const showProfileMenu = ref(false)
-const user = ref(null)
+const user = ref<{ name: string; email?: string } | null>(null)
 const stats = ref({
   lowStock: 0,
   outOfStock: 0,
   todayIn: 0,
   todayOut: 0
 })
-const myActivities = ref([])
+const myActivities = ref<Activity[]>([])
 
 // Methods
 const toggleProfileMenu = () => {

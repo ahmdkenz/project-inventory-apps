@@ -31,7 +31,12 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
-        <div class="relative hidden sm:block"></div>
+        <div class="relative hidden sm:block">
+          <input type="text" class="border border-gray-300 rounded-full py-2 px-4 pl-10" placeholder="Cari...">
+          <svg class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </div>
         <div class="flex items-center space-x-4">
           <button class="text-gray-500 hover:text-gray-700 relative">
             <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
@@ -39,9 +44,15 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
             </svg>
           </button>
-          <div class="flex items-center space-x-2 cursor-pointer" @click="handleLogout">
-            <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=S" alt="Avatar Pengguna">
-            <span class="hidden md:block text-sm font-medium text-gray-700">{{ user.name }}</span>
+          <div class="relative">
+            <button @click="showProfileMenu = !showProfileMenu" class="flex items-center space-x-2">
+              <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=S" alt="Avatar Pengguna">
+              <span class="hidden md:block text-sm font-medium text-gray-700">{{ user.name }}</span>
+            </button>
+            <div v-if="showProfileMenu" @click.outside="showProfileMenu = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
+              <a @click.prevent="handleLogout" href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+            </div>
           </div>
         </div>
       </header>
@@ -124,7 +135,9 @@
                 </tr>
                 <tr v-for="po in filteredPurchaseOrders" :key="po.id">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800">
-                    {{ po.no_po }}
+                    <router-link :to="`/staff/purchase-order/${po.id}`">
+                      {{ po.no_po }}
+                    </router-link>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ po.supplier?.nama }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(po.tgl_pesan) }}</td>
@@ -205,6 +218,7 @@ const searchQuery = ref('')
 const filterStatus = ref('')
 const filterDateFrom = ref('')
 const filterDateTo = ref('')
+const showProfileMenu = ref(false)
 
 const showDeleteModal = ref(false)
 const selectedPO = ref<PurchaseOrder | null>(null)
