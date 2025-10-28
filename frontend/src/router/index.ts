@@ -5,6 +5,8 @@ import StaffDashboard from '@/views/staff/Dashboard.vue'
 import BarangListStaff from '@/views/staff/BarangList.vue'
 import PurchaseOrderList from '@/views/staff/PurchaseOrderList.vue'
 import FormPurchaseOrder from '@/views/staff/FormPurchaseOrder.vue'
+import SalesOrderList from '@/views/staff/SalesOrderList.vue'
+import FormSalesOrder from '@/views/staff/FormSalesOrder.vue'
 import BarangManager from '@/views/admin/BarangManager.vue'
 import AddBarang from '@/views/admin/AddBarang.vue'
 import ManagementCategory from '@/views/admin/ManagementCategory.vue'
@@ -141,6 +143,24 @@ const router = createRouter({
       path: '/staff/purchase-order/edit/:id',
       name: 'staff-purchase-order-edit',
       component: FormPurchaseOrder,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/sales-order',
+      name: 'staff-sales-order',
+      component: SalesOrderList,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/sales-order/create',
+      name: 'staff-sales-order-create',
+      component: FormSalesOrder,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/sales-order/edit/:id',
+      name: 'staff-sales-order-edit',
+      component: FormSalesOrder,
       meta: { requiresAuth: true, requiresStaff: true }
     },
   ]
