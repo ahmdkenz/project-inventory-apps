@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\SalesOrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +54,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/purchase-order/{id}', [PurchaseOrderController::class, 'adminShow']);
         Route::post('/purchase-order/{id}/approve', [PurchaseOrderController::class, 'approve']);
         Route::post('/purchase-order/{id}/reject', [PurchaseOrderController::class, 'reject']);
+        
+        // Sales Order routes (admin - approval)
+        Route::get('/sales-order', [SalesOrderController::class, 'adminIndex']);
+        Route::get('/sales-order/{id}', [SalesOrderController::class, 'adminShow']);
+        Route::post('/sales-order/{id}/approve', [SalesOrderController::class, 'approve']);
+        Route::post('/sales-order/{id}/reject', [SalesOrderController::class, 'reject']);
     });
     
     // Staff routes
@@ -73,5 +80,8 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Purchase Order routes (staff - create/manage own PO)
         Route::apiResource('purchase-order', PurchaseOrderController::class);
+        
+        // Sales Order routes (staff - create/manage own SO)
+        Route::apiResource('sales-order', SalesOrderController::class);
     });
 });
