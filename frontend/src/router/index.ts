@@ -190,6 +190,12 @@ const router = createRouter({
       component: SalesOrderDetail,
       meta: { requiresAuth: true, requiresStaff: true }
     },
+    {
+      path: '/staff/purchase-orders',
+      name: 'staff-purchase-orders',
+      component: () => import('@/views/staff/PurchaseOrderList.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
   ]
 })
 

@@ -224,6 +224,7 @@ const handleLogout = () => {
 }
 
 const goBack = () => {
+  console.log('Navigating back to purchase orders');
   router.push('/staff/purchase-orders')
 }
 

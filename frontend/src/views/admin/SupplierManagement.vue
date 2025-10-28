@@ -31,7 +31,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
-        <div class="relative hidden sm:block"></div>
+        <div class="flex-1"></div>
         <div class="flex items-center space-x-4">
           <button class="text-gray-500 hover:text-gray-700 relative">
             <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
@@ -43,8 +43,11 @@
             <button @click="showProfileMenu = !showProfileMenu" class="flex items-center space-x-2">
               <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
               <span class="hidden md:block text-sm font-medium text-gray-700">{{ user.name }}</span>
+              <svg class="h-4 w-4 text-gray-500 hidden md:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
             </button>
-            <div v-if="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+            <div v-if="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
               <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
               <a @click.prevent="handleLogout" href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
             </div>
@@ -66,30 +69,33 @@
         </div>
         
         <!-- Filter dan Pencarian -->
-        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
+        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input 
               v-model="searchQuery"
               @input="handleSearch"
               type="text" 
               placeholder="Cari Nama Supplier / Kontak..." 
-              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+              class="w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-blue-500 focus:ring-blue-500 text-sm">
             <input 
               v-model="searchAddress"
               @input="handleSearch"
               type="text" 
               placeholder="Cari Alamat..." 
-              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+              class="w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-blue-500 focus:ring-blue-500 text-sm">
             <button 
               @click="fetchSuppliers"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
-              Cari
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-150 flex items-center justify-center">
+              <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+              <span>Cari</span>
             </button>
           </div>
         </div>
 
         <!-- Tabel Data Supplier -->
-        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
           <div v-if="loading" class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
@@ -106,10 +112,13 @@
                   <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200">
+              <tbody class="divide-y divide-gray-200 bg-white">
                 <tr v-if="filteredSuppliers.length === 0">
                   <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                    Tidak ada data supplier.
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                    </svg>
+                    <p class="text-sm font-medium">Tidak ada data supplier.</p>
                   </td>
                 </tr>
                 <tr v-for="supplier in filteredSuppliers" :key="supplier.id">
@@ -118,17 +127,19 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ supplier.telepon }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ supplier.email }}</td>
                   <td class="px-6 py-4 text-sm text-gray-500">{{ supplier.alamat || '-' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <router-link 
-                      :to="`/admin/supplier/edit/${supplier.id}`" 
-                      class="text-indigo-600 hover:text-indigo-900">
-                      Edit
-                    </router-link>
-                    <button 
-                      @click="confirmDelete(supplier)" 
-                      class="text-red-600 hover:text-red-900">
-                      Hapus
-                    </button>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end space-x-2">
+                      <router-link 
+                        :to="`/admin/supplier/edit/${supplier.id}`" 
+                        class="text-indigo-600 hover:text-indigo-900 transition duration-150">
+                        Edit
+                      </router-link>
+                      <button 
+                        @click="confirmDelete(supplier)" 
+                        class="text-red-600 hover:text-red-900 transition duration-150">
+                        Hapus
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -137,8 +148,8 @@
         </div>
 
         <!-- Modal Konfirmasi Hapus -->
-        <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div @click.self="closeDeleteModal" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click.self="closeDeleteModal">
+          <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
             <div class="flex items-start">
               <div class="mr-4 flex-shrink-0 bg-red-100 rounded-full p-2">
                 <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -160,8 +171,13 @@
               </button>
               <button 
                 @click="deleteSupplier" 
-                class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
-                Ya, Hapus
+                :disabled="deletingSupplier"
+                :class="[
+                  'bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150',
+                  deletingSupplier ? 'opacity-50 cursor-not-allowed' : ''
+                ]">
+                <span v-if="deletingSupplier">Menghapus...</span>
+                <span v-else>Ya, Hapus</span>
               </button>
             </div>
           </div>
@@ -198,6 +214,7 @@ const user = ref({
 
 const showProfileMenu = ref(false)
 const loading = ref(false)
+const deletingSupplier = ref(false)
 const showDeleteModal = ref(false)
 const supplierToDelete = ref<Supplier | null>(null)
 const searchQuery = ref('')
@@ -272,6 +289,7 @@ const closeDeleteModal = () => {
 const deleteSupplier = async () => {
   if (!supplierToDelete.value?.id) return
   
+  deletingSupplier.value = true
   try {
     await supplierService.delete(supplierToDelete.value.id)
     showMessage('Supplier berhasil dihapus.', false)
@@ -280,6 +298,8 @@ const deleteSupplier = async () => {
   } catch (error: any) {
     console.error('Error deleting supplier:', error)
     showMessage(error.response?.data?.message || 'Gagal menghapus supplier', true)
+  } finally {
+    deletingSupplier.value = false
   }
 }
 
@@ -311,5 +331,55 @@ const handleLogout = () => {
 </script>
 
 <style scoped>
-/* Additional custom styles if needed */
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Table hover effect */
+tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Custom scrollbar for table */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Ensure consistent button sizing */
+button, a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fixed.inset-0.z-50 {
+  animation: fadeIn 0.2s ease-out;
+}
 </style>
