@@ -95,8 +95,8 @@ frontend/
     │   │   ├── BarangManager.vue        # CRUD barang & stok
     │   │   ├── SupplierManager.vue      # CRUD supplier
     │   │   ├── PenggunaManager.vue      # CRUD user
-    │   │   ├── PurchaseOrdersAdmin.vue  # view all PO, approve, receive
-    │   │   ├── SalesOrdersAdmin.vue     # view all SO, ship
+    │   │   ├── PurchaseOrdersAdmin.vue  # view all PO, approve
+    │   │   ├── SalesOrdersAdmin.vue     # view all SO, approve
     │   │   ├── LaporanAdmin.vue         # full report hub + print views
     │   │   └── Aktivitas.vue            # activity log admin view
     │   │
