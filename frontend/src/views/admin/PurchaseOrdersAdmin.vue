@@ -202,12 +202,12 @@
                       </button>
                       
                       <!-- Tombol Detail -->
-                      <button 
-                        @click="viewDetail(order)" 
+                      <router-link 
+                        :to="`/admin/purchase-orders/detail/${order.id}`" 
                         class="text-blue-600 hover:text-blue-900 font-medium"
                       >
                         Detail
-                      </button>
+                      </router-link>
                     </td>
                   </tr>
                 </tbody>
@@ -327,98 +327,6 @@
             </div>
           </div>
 
-          <!-- Modal Detail PO -->
-          <div
-            v-if="showDetailModal"
-            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300"
-            @click.self="closeDetailModal"
-          >
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl transform transition-all max-h-[90vh] overflow-y-auto">
-              <div class="p-6 border-b border-gray-200 sticky top-0 bg-white">
-                <div class="flex justify-between items-center">
-                  <h3 class="text-lg font-medium leading-6 text-gray-900">Detail Purchase Order</h3>
-                  <button @click="closeDetailModal" class="text-gray-400 hover:text-gray-600">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div v-if="selectedOrder" class="p-6">
-                <!-- Info PO -->
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <p class="text-sm text-gray-500">No. PO</p>
-                    <p class="font-medium">{{ selectedOrder.no_po }}</p>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Status</p>
-                    <span :class="getStatusBadgeClass(selectedOrder.status)" class="px-2 py-1 text-xs font-semibold rounded-full">
-                      {{ getStatusLabel(selectedOrder.status) }}
-                    </span>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Supplier</p>
-                    <p class="font-medium">{{ selectedOrder.supplier?.nama || '-' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Tanggal Pesan</p>
-                    <p class="font-medium">{{ formatDate(selectedOrder.tgl_pesan) }}</p>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Estimasi Tiba</p>
-                    <p class="font-medium">{{ formatDate(selectedOrder.tgl_estimasi) }}</p>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Dibuat Oleh</p>
-                    <p class="font-medium">{{ selectedOrder.creator?.name || '-' }}</p>
-                  </div>
-                  <div v-if="selectedOrder.approved_by" class="col-span-2">
-                    <p class="text-sm text-gray-500">Disetujui Oleh</p>
-                    <p class="font-medium">{{ selectedOrder.approver?.name || '-' }} pada {{ formatDate(selectedOrder.approved_at) }}</p>
-                  </div>
-                  <div v-if="selectedOrder.reject_reason" class="col-span-2">
-                    <p class="text-sm text-gray-500">Alasan Ditolak</p>
-                    <p class="font-medium text-red-600">{{ selectedOrder.reject_reason }}</p>
-                  </div>
-                  <div v-if="selectedOrder.catatan" class="col-span-2">
-                    <p class="text-sm text-gray-500">Catatan</p>
-                    <p class="font-medium">{{ selectedOrder.catatan }}</p>
-                  </div>
-                </div>
-
-                <!-- Items -->
-                <div class="border-t pt-4">
-                  <h4 class="font-medium mb-3">Detail Barang</h4>
-                  <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th class="px-4 py-2 text-left">Nama Barang</th>
-                        <th class="px-4 py-2 text-center">Qty</th>
-                        <th class="px-4 py-2 text-right">Harga Satuan</th>
-                        <th class="px-4 py-2 text-right">Subtotal</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                      <tr v-for="item in selectedOrder.items" :key="item.id">
-                        <td class="px-4 py-2">{{ item.barang?.nama || '-' }}</td>
-                        <td class="px-4 py-2 text-center">{{ item.qty }}</td>
-                        <td class="px-4 py-2 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
-                        <td class="px-4 py-2 text-right">{{ formatCurrency(item.subtotal) }}</td>
-                      </tr>
-                    </tbody>
-                    <tfoot class="bg-gray-50 font-medium">
-                      <tr>
-                        <td colspan="3" class="px-4 py-2 text-right">Total</td>
-                        <td class="px-4 py-2 text-right">{{ formatCurrency(selectedOrder.total) }}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Message Box -->
           <div
             v-if="message.show"
@@ -482,11 +390,9 @@ const loading = ref(false)
 const showDeleteModal = ref(false)
 const showApproveModal = ref(false)
 const showRejectModal = ref(false)
-const showDetailModal = ref(false)
 const orderToDelete = ref<any>(null)
 const orderToApprove = ref<any>(null)
 const orderToReject = ref<any>(null)
-const selectedOrder = ref<any>(null)
 const rejectReason = ref('')
 const rejectReasonError = ref('')
 
@@ -598,27 +504,6 @@ const rejectOrder = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const viewDetail = async (order: any) => {
-  loading.value = true
-  try {
-    const response = await purchaseOrderService.adminGetById(order.id)
-    if (response.success && !Array.isArray(response.data)) {
-      selectedOrder.value = response.data
-      showDetailModal.value = true
-    }
-  } catch (error: any) {
-    console.error('Error fetching order detail:', error)
-    showMessage('Gagal memuat detail purchase order', true)
-  } finally {
-    loading.value = false
-  }
-}
-
-const closeDetailModal = () => {
-  showDetailModal.value = false
-  selectedOrder.value = null
 }
 
 const confirmDelete = (order: any) => {

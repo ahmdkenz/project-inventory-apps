@@ -13,7 +13,9 @@ import AddBarang from '@/views/admin/AddBarang.vue'
 import ManagementCategory from '@/views/admin/ManagementCategory.vue'
 import FormCategory from '@/views/admin/FormCategory.vue'
 import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
+import PurchaseOrderDetailAdmin from '@/views/admin/PurchaseOrderDetailAdmin.vue'
 import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
+import SalesOrderDetailAdmin from '@/views/admin/SalesOrderDetailAdmin.vue'
 import UserManagement from '@/views/admin/UserManagement.vue'
 import FormUserManagement from '@/views/admin/FormUserManagement.vue'
 import SupplierManagement from '@/views/admin/SupplierManagement.vue'
@@ -75,9 +77,21 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/purchase-orders/detail/:id',
+      name: 'admin-purchase-order-detail',
+      component: PurchaseOrderDetailAdmin,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/admin/sales-orders',
       name: 'admin-sales-orders',
       component: SalesOrdersAdmin,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/sales-orders/detail/:id',
+      name: 'admin-sales-order-detail',
+      component: SalesOrderDetailAdmin,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
