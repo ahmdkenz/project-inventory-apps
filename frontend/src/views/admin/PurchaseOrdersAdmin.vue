@@ -93,15 +93,30 @@
 
           <!-- Kontrol Filter -->
           <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label for="filter-distributor" class="block text-sm font-medium text-gray-700 mb-1">Distributor</label>
-                <input
-                  v-model="filters.distributor"
-                  type="text"
-                  id="filter-distributor"
+                <label for="filter-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  v-model="filters.status"
+                  id="filter-status"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Nama Distributor..."
+                  @change="fetchOrders"
+                >
+                  <option value="">Semua Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              <div>
+                <label for="filter-search" class="block text-sm font-medium text-gray-700 mb-1">Cari</label>
+                <input
+                  v-model="filters.search"
+                  type="text"
+                  id="filter-search"
+                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="No. PO / Supplier..."
                   @input="handleSearch"
                 />
               </div>
@@ -139,32 +154,60 @@
               <table class="w-full min-w-max">
                 <thead class="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Faktur</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distributor</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Item</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dicatat Oleh</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. PO</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pesan</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                   <tr v-if="orders.length === 0">
-                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                    <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                       Tidak ada data purchase order.
                     </td>
                   </tr>
                   <tr v-for="order in orders" :key="order.id">
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm font-medium text-gray-900">{{ order.invoice_number }}</div>
+                      <div class="text-sm font-medium text-gray-900">{{ order.no_po }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(order.date) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.supplier }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.total_items }} Jenis</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.created_by }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <router-link :to="`/admin/purchase-orders/${order.id}`" class="text-green-600 hover:text-green-900">Detail/Cetak</router-link>
-                      <router-link :to="`/admin/purchase-orders/edit/${order.id}`" class="text-blue-600 hover:text-blue-900 ml-4">Edit</router-link>
-                      <button @click="confirmDelete(order)" class="text-red-600 hover:text-red-900 ml-4">Hapus</button>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(order.tgl_pesan) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.supplier?.nama || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ formatCurrency(order.total) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span :class="getStatusBadgeClass(order.status)" class="px-2 py-1 text-xs font-semibold rounded-full">
+                        {{ getStatusLabel(order.status) }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.creator?.name || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <!-- Tombol Approve (hanya untuk status pending) -->
+                      <button 
+                        v-if="order.status === 'pending'"
+                        @click="confirmApprove(order)" 
+                        class="text-green-600 hover:text-green-900 font-medium"
+                      >
+                        Approve
+                      </button>
+                      
+                      <!-- Tombol Reject (hanya untuk status pending) -->
+                      <button 
+                        v-if="order.status === 'pending'"
+                        @click="openRejectModal(order)" 
+                        class="text-red-600 hover:text-red-900 font-medium"
+                      >
+                        Reject
+                      </button>
+                      
+                      <!-- Tombol Detail -->
+                      <button 
+                        @click="viewDetail(order)" 
+                        class="text-blue-600 hover:text-blue-900 font-medium"
+                      >
+                        Detail
+                      </button>
                     </td>
                   </tr>
                 </tbody>
@@ -207,6 +250,175 @@
             </div>
           </div>
 
+          <!-- Modal Konfirmasi Approve -->
+          <div
+            v-if="showApproveModal"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300"
+            @click.self="closeApproveModal"
+          >
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
+              <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Approve Purchase Order</h3>
+              </div>
+              <div class="p-6">
+                <p class="text-sm text-gray-600">
+                  Apakah Anda yakin ingin menyetujui Purchase Order <strong>{{ orderToApprove?.no_po }}</strong>?
+                  Stok barang akan ditambahkan sesuai dengan item di PO ini.
+                </p>
+              </div>
+              <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                <button
+                  @click="closeApproveModal"
+                  type="button"
+                  class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-150"
+                >
+                  Batal
+                </button>
+                <button
+                  @click="approveOrder"
+                  type="button"
+                  class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150"
+                >
+                  Ya, Approve
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Reject PO -->
+          <div
+            v-if="showRejectModal"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300"
+            @click.self="closeRejectModal"
+          >
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
+              <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Reject Purchase Order</h3>
+              </div>
+              <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">
+                  Anda akan menolak Purchase Order <strong>{{ orderToReject?.no_po }}</strong>.
+                  Silakan berikan alasan penolakan:
+                </p>
+                <textarea
+                  v-model="rejectReason"
+                  rows="4"
+                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Alasan penolakan..."
+                ></textarea>
+                <span v-if="rejectReasonError" class="text-red-500 text-xs mt-1 block">{{ rejectReasonError }}</span>
+              </div>
+              <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                <button
+                  @click="closeRejectModal"
+                  type="button"
+                  class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-150"
+                >
+                  Batal
+                </button>
+                <button
+                  @click="rejectOrder"
+                  type="button"
+                  class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150"
+                >
+                  Ya, Reject
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Detail PO -->
+          <div
+            v-if="showDetailModal"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300"
+            @click.self="closeDetailModal"
+          >
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl transform transition-all max-h-[90vh] overflow-y-auto">
+              <div class="p-6 border-b border-gray-200 sticky top-0 bg-white">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-medium leading-6 text-gray-900">Detail Purchase Order</h3>
+                  <button @click="closeDetailModal" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div v-if="selectedOrder" class="p-6">
+                <!-- Info PO -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <p class="text-sm text-gray-500">No. PO</p>
+                    <p class="font-medium">{{ selectedOrder.no_po }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Status</p>
+                    <span :class="getStatusBadgeClass(selectedOrder.status)" class="px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ getStatusLabel(selectedOrder.status) }}
+                    </span>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Supplier</p>
+                    <p class="font-medium">{{ selectedOrder.supplier?.nama || '-' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Tanggal Pesan</p>
+                    <p class="font-medium">{{ formatDate(selectedOrder.tgl_pesan) }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Estimasi Tiba</p>
+                    <p class="font-medium">{{ formatDate(selectedOrder.tgl_estimasi) }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Dibuat Oleh</p>
+                    <p class="font-medium">{{ selectedOrder.creator?.name || '-' }}</p>
+                  </div>
+                  <div v-if="selectedOrder.approved_by" class="col-span-2">
+                    <p class="text-sm text-gray-500">Disetujui Oleh</p>
+                    <p class="font-medium">{{ selectedOrder.approver?.name || '-' }} pada {{ formatDate(selectedOrder.approved_at) }}</p>
+                  </div>
+                  <div v-if="selectedOrder.reject_reason" class="col-span-2">
+                    <p class="text-sm text-gray-500">Alasan Ditolak</p>
+                    <p class="font-medium text-red-600">{{ selectedOrder.reject_reason }}</p>
+                  </div>
+                  <div v-if="selectedOrder.catatan" class="col-span-2">
+                    <p class="text-sm text-gray-500">Catatan</p>
+                    <p class="font-medium">{{ selectedOrder.catatan }}</p>
+                  </div>
+                </div>
+
+                <!-- Items -->
+                <div class="border-t pt-4">
+                  <h4 class="font-medium mb-3">Detail Barang</h4>
+                  <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-4 py-2 text-left">Nama Barang</th>
+                        <th class="px-4 py-2 text-center">Qty</th>
+                        <th class="px-4 py-2 text-right">Harga Satuan</th>
+                        <th class="px-4 py-2 text-right">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                      <tr v-for="item in selectedOrder.items" :key="item.id">
+                        <td class="px-4 py-2">{{ item.barang?.nama || '-' }}</td>
+                        <td class="px-4 py-2 text-center">{{ item.qty }}</td>
+                        <td class="px-4 py-2 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
+                        <td class="px-4 py-2 text-right">{{ formatCurrency(item.subtotal) }}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="bg-gray-50 font-medium">
+                      <tr>
+                        <td colspan="3" class="px-4 py-2 text-right">Total</td>
+                        <td class="px-4 py-2 text-right">{{ formatCurrency(selectedOrder.total) }}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Message Box -->
           <div
             v-if="message.show"
@@ -225,6 +437,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import purchaseOrderService from '@/services/purchaseOrder.service'
 
 // Router & auth
 const router = useRouter()
@@ -263,14 +476,23 @@ const handleLogout = async () => {
   }
 }
 
-// State (original)
+// State
 const orders = ref<any[]>([])
 const loading = ref(false)
 const showDeleteModal = ref(false)
+const showApproveModal = ref(false)
+const showRejectModal = ref(false)
+const showDetailModal = ref(false)
 const orderToDelete = ref<any>(null)
+const orderToApprove = ref<any>(null)
+const orderToReject = ref<any>(null)
+const selectedOrder = ref<any>(null)
+const rejectReason = ref('')
+const rejectReasonError = ref('')
 
 const filters = ref({
-  distributor: '',
+  status: '',
+  search: '',
   dateStart: '',
   dateEnd: ''
 })
@@ -281,35 +503,22 @@ const message = ref({
   isError: false
 })
 
-// Methods (original)
+// Methods
 const fetchOrders = async () => {
   loading.value = true
   try {
-    // TODO: Replace with actual API call
-    // const response = await purchaseOrderService.getAll(filters.value)
-    // orders.value = response.data
-    
-    // Mock data
-    await new Promise(resolve => setTimeout(resolve, 500))
-    orders.value = [
-      {
-        id: 1,
-        invoice_number: 'FAK-2023-001',
-        date: '2023-10-25',
-        supplier: 'PT. Sumber ATK',
-        total_items: 3,
-        created_by: 'Staff Gudang'
-      },
-      {
-        id: 2,
-        invoice_number: 'FAK-2023-002',
-        date: '2023-10-24',
-        supplier: 'Toko Elektronik Jaya',
-        total_items: 1,
-        created_by: 'Admin'
-      }
-    ]
-  } catch (error) {
+    const params: any = {}
+    if (filters.value.status) params.status = filters.value.status
+    if (filters.value.search) params.search = filters.value.search
+    if (filters.value.dateStart) params.date_from = filters.value.dateStart
+    if (filters.value.dateEnd) params.date_to = filters.value.dateEnd
+
+    const response = await purchaseOrderService.adminGetAll(params)
+    if (response.success && Array.isArray(response.data)) {
+      orders.value = response.data
+    }
+  } catch (error: any) {
+    console.error('Error fetching orders:', error)
     showMessage('Gagal memuat data purchase order', true)
   } finally {
     loading.value = false
@@ -324,6 +533,94 @@ const handleSearch = () => {
   }, 500)
 }
 
+const confirmApprove = (order: any) => {
+  orderToApprove.value = order
+  showApproveModal.value = true
+}
+
+const closeApproveModal = () => {
+  showApproveModal.value = false
+  orderToApprove.value = null
+}
+
+const approveOrder = async () => {
+  if (!orderToApprove.value) return
+  
+  loading.value = true
+  try {
+    const response = await purchaseOrderService.approve(orderToApprove.value.id)
+    if (response.success) {
+      showMessage('Purchase Order berhasil disetujui', false)
+      closeApproveModal()
+      await fetchOrders()
+    }
+  } catch (error: any) {
+    console.error('Error approving order:', error)
+    showMessage(error.response?.data?.message || 'Gagal menyetujui purchase order', true)
+  } finally {
+    loading.value = false
+  }
+}
+
+const openRejectModal = (order: any) => {
+  orderToReject.value = order
+  rejectReason.value = ''
+  rejectReasonError.value = ''
+  showRejectModal.value = true
+}
+
+const closeRejectModal = () => {
+  showRejectModal.value = false
+  orderToReject.value = null
+  rejectReason.value = ''
+  rejectReasonError.value = ''
+}
+
+const rejectOrder = async () => {
+  if (!orderToReject.value) return
+  
+  if (!rejectReason.value.trim()) {
+    rejectReasonError.value = 'Alasan penolakan harus diisi'
+    return
+  }
+  
+  loading.value = true
+  try {
+    const response = await purchaseOrderService.reject(orderToReject.value.id, rejectReason.value)
+    if (response.success) {
+      showMessage('Purchase Order berhasil ditolak', false)
+      closeRejectModal()
+      await fetchOrders()
+    }
+  } catch (error: any) {
+    console.error('Error rejecting order:', error)
+    showMessage(error.response?.data?.message || 'Gagal menolak purchase order', true)
+  } finally {
+    loading.value = false
+  }
+}
+
+const viewDetail = async (order: any) => {
+  loading.value = true
+  try {
+    const response = await purchaseOrderService.adminGetById(order.id)
+    if (response.success && !Array.isArray(response.data)) {
+      selectedOrder.value = response.data
+      showDetailModal.value = true
+    }
+  } catch (error: any) {
+    console.error('Error fetching order detail:', error)
+    showMessage('Gagal memuat detail purchase order', true)
+  } finally {
+    loading.value = false
+  }
+}
+
+const closeDetailModal = () => {
+  showDetailModal.value = false
+  selectedOrder.value = null
+}
+
 const confirmDelete = (order: any) => {
   orderToDelete.value = order
   showDeleteModal.value = true
@@ -336,20 +633,47 @@ const closeDeleteModal = () => {
 
 const deleteOrder = async () => {
   try {
-    // TODO: Replace with actual API call
-    // await purchaseOrderService.delete(orderToDelete.value.id)
-    
-    orders.value = orders.value.filter(order => order.id !== orderToDelete.value.id)
-    showMessage('Transaksi berhasil dihapus.', false)
+    // TODO: Implement delete if needed
+    showMessage('Fitur hapus belum diimplementasikan', true)
     closeDeleteModal()
   } catch (error) {
     showMessage('Gagal menghapus transaksi', true)
   }
 }
 
+const getStatusBadgeClass = (status: string) => {
+  const classes: any = {
+    'pending': 'bg-yellow-100 text-yellow-800',
+    'approved': 'bg-green-100 text-green-800',
+    'rejected': 'bg-red-100 text-red-800',
+    'completed': 'bg-blue-100 text-blue-800'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+const getStatusLabel = (status: string) => {
+  const labels: any = {
+    'pending': 'Pending',
+    'approved': 'Approved',
+    'rejected': 'Rejected',
+    'completed': 'Completed'
+  }
+  return labels[status] || status
+}
+
 const formatDate = (dateString: string) => {
+  if (!dateString) return '-'
   const date = new Date(dateString)
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+const formatCurrency = (value: number) => {
+  if (!value) return 'Rp 0'
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(value)
 }
 
 const showMessage = (text: string, isError: boolean = false) => {
