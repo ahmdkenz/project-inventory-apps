@@ -55,5 +55,11 @@ Route::middleware('auth:sanctum')->group(function () {
                 'message' => 'Staff Dashboard Data'
             ]);
         });
+        
+        // Read-only routes for staff
+        Route::get('/barang', [BarangController::class, 'index']);
+        Route::get('/barang/{id}', [BarangController::class, 'show']);
+        Route::get('/kategori', [KategoriController::class, 'index']);
+        Route::get('/kategori/{id}', [KategoriController::class, 'show']);
     });
 });

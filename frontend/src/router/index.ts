@@ -12,6 +12,7 @@ import UserManagement from '@/views/admin/UserManagement.vue'
 import FormUserManagement from '@/views/admin/FormUserManagement.vue'
 import SupplierManagement from '@/views/admin/SupplierManagement.vue'
 import FormSupplier from '@/views/admin/FormSupplier.vue'
+import BarangListStaff from '@/views/staff/BarangList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -115,7 +116,13 @@ const router = createRouter({
       name: 'staff-dashboard',
       component: StaffDashboard,
       meta: { requiresAuth: true, requiresStaff: true }
-    }
+    },
+    {
+      path: '/staff/barang',
+      name: 'staff-barang',
+      component: BarangListStaff,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
   ]
 })
 
