@@ -5,8 +5,8 @@ class StaffBarangService {
   /**
    * Get all barang (read-only for staff)
    */
-  async getAll(): Promise<BarangResponse> {
-    const response = await api.get('/staff/barang')
+  async getAll(params?: { per_page?: number }): Promise<BarangResponse> {
+    const response = await api.get('/staff/barang', { params })
     return response.data
   }
 
