@@ -161,6 +161,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresStaff: true }
     },
     {
+      path: '/staff/purchase-order/:id',
+      name: 'staff-purchase-order-detail',
+      component: () => import('../views/staff/PurchaseOrderDetail.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
       path: '/staff/sales-order',
       name: 'staff-sales-order',
       component: SalesOrderList,
