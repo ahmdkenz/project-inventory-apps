@@ -80,49 +80,55 @@
           <!-- Header Halaman -->
           <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
             <h1 class="text-3xl font-bold text-gray-900">Sales Order / Barang Keluar</h1>
-            <router-link
-              to="/admin/sales-orders/create"
-              class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
-            >
-              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              <span>Catat Barang Keluar</span>
-            </router-link>
           </div>
 
           <!-- Kontrol Filter -->
           <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label for="filter-penerima" class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                <input
-                  v-model="filters.penerima"
-                  type="text"
-                  id="filter-penerima"
+                <label for="filter-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  v-model="filters.status"
+                  id="filter-status"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Nama Penerima..."
+                  @change="fetchSalesOrders"
+                >
+                  <option value="">Semua Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              <div>
+                <label for="filter-search" class="block text-sm font-medium text-gray-700 mb-1">Cari</label>
+                <input
+                  v-model="filters.search"
+                  type="text"
+                  id="filter-search"
+                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="No. SO / Customer..."
                   @input="handleSearch"
                 />
               </div>
               <div>
-                <label for="filter-date-start" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                <label for="filter-date-start" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
                 <input
-                  v-model="filters.dateStart"
+                  v-model="filters.dateFrom"
                   type="date"
                   id="filter-date-start"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  @change="fetchOrders"
+                  @change="fetchSalesOrders"
                 />
               </div>
               <div>
-                <label for="filter-date-end" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
+                <label for="filter-date-end" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
                 <input
-                  v-model="filters.dateEnd"
+                  v-model="filters.dateTo"
                   type="date"
                   id="filter-date-end"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  @change="fetchOrders"
+                  @change="fetchSalesOrders"
                 />
               </div>
             </div>
@@ -139,30 +145,38 @@
               <table class="w-full min-w-max">
                 <thead class="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Transaksi</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Item</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dicatat Oleh</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SO</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Order</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                  <tr v-if="orders.length === 0">
-                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                  <tr v-if="salesOrders.length === 0">
+                    <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                       Tidak ada data sales order.
                     </td>
                   </tr>
-                  <tr v-for="order in orders" :key="order.id">
+                  <tr v-for="so in salesOrders" :key="so.id">
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm font-medium text-gray-900">{{ order.transaction_number }}</div>
+                      <div class="text-sm font-medium text-gray-900">{{ so.no_so }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(order.date) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.recipient }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.total_items }} Jenis</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.created_by }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <router-link :to="`/admin/sales-orders/${order.id}`" class="text-green-600 hover:text-green-900">Detail/Cetak</router-link>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ so.customer_name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(so.tgl_order) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ formatCurrency(so.total || 0) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span :class="getStatusBadgeClass(so.status)" class="px-2 py-1 text-xs font-semibold rounded-full">
+                        {{ getStatusLabel(so.status) }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ so.creator?.name || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <button v-if="so.status === 'pending'" @click="openApproveModal(so)" class="text-green-600 hover:text-green-900">Approve</button>
+                      <button v-if="so.status === 'pending'" @click="openRejectModal(so)" class="text-red-600 hover:text-red-900">Reject</button>
+                      <button @click="openDetailModal(so)" class="text-blue-600 hover:text-blue-900">Detail</button>
                     </td>
                   </tr>
                 </tbody>
@@ -177,6 +191,147 @@
           >
             {{ message.text }}
           </div>
+
+          <!-- Modal Approve -->
+          <div v-if="showApproveModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50" @click.self="closeApproveModal">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+              <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Approve Sales Order</h3>
+              </div>
+              <div class="p-6">
+                <p class="text-sm text-gray-600">Apakah Anda yakin ingin approve Sales Order <strong>{{ selectedSO?.no_so }}</strong>?</p>
+                <p class="text-sm text-gray-600 mt-2">Stok barang akan dikurangi setelah di-approve.</p>
+              </div>
+              <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                <button @click="closeApproveModal" class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300">Batal</button>
+                <button @click="confirmApprove" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg">Ya, Approve</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Reject -->
+          <div v-if="showRejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50" @click.self="closeRejectModal">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+              <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Reject Sales Order</h3>
+              </div>
+              <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Apakah Anda yakin ingin menolak Sales Order <strong>{{ selectedSO?.no_so }}</strong>?</p>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Penolakan <span class="text-red-500">*</span></label>
+                <textarea 
+                  v-model="rejectReason"
+                  rows="4"
+                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Masukkan alasan penolakan..."
+                ></textarea>
+              </div>
+              <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                <button @click="closeRejectModal" class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300">Batal</button>
+                <button @click="confirmReject" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg">Ya, Reject</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Detail -->
+          <div v-if="showDetailModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-y-auto" @click.self="closeDetailModal">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl my-8">
+              <div class="p-6 border-b border-gray-200 sticky top-0 bg-white">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-medium text-gray-900">Detail Sales Order</h3>
+                  <button @click="closeDetailModal" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div v-if="selectedSO" class="p-6">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <p class="text-sm text-gray-500">No. SO</p>
+                    <p class="font-medium">{{ selectedSO.no_so }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Status</p>
+                    <span :class="getStatusBadgeClass(selectedSO.status)" class="px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ getStatusLabel(selectedSO.status) }}
+                    </span>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Customer</p>
+                    <p class="font-medium">{{ selectedSO.customer_name }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">No. Telepon</p>
+                    <p class="font-medium">{{ selectedSO.customer_phone || '-' }}</p>
+                  </div>
+                  <div class="col-span-2">
+                    <p class="text-sm text-gray-500">Alamat</p>
+                    <p class="font-medium">{{ selectedSO.customer_address || '-' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Tanggal Order</p>
+                    <p class="font-medium">{{ formatDate(selectedSO.tgl_order) }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Tanggal Kirim</p>
+                    <p class="font-medium">{{ formatDate(selectedSO.tgl_kirim) }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Dibuat Oleh</p>
+                    <p class="font-medium">{{ selectedSO.creator?.name || '-' }}</p>
+                  </div>
+                  <div v-if="selectedSO.approver">
+                    <p class="text-sm text-gray-500">Di-approve Oleh</p>
+                    <p class="font-medium">{{ selectedSO.approver?.name || '-' }}</p>
+                  </div>
+                  <div v-if="selectedSO.catatan" class="col-span-2">
+                    <p class="text-sm text-gray-500">Catatan</p>
+                    <p class="font-medium">{{ selectedSO.catatan }}</p>
+                  </div>
+                  <div v-if="selectedSO.reject_reason" class="col-span-2">
+                    <p class="text-sm text-gray-500">Alasan Ditolak</p>
+                    <p class="font-medium text-red-600">{{ selectedSO.reject_reason }}</p>
+                  </div>
+                </div>
+                <div class="border-t pt-4">
+                  <h4 class="font-medium mb-3">Detail Barang</h4>
+                  <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-4 py-2 text-left">Barang</th>
+                        <th class="px-4 py-2 text-center">Qty</th>
+                        <th class="px-4 py-2 text-right">Harga</th>
+                        <th class="px-4 py-2 text-right">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                      <tr v-for="item in selectedSO.items" :key="item.id">
+                        <td class="px-4 py-2">{{ item.barang?.nama || '-' }}</td>
+                        <td class="px-4 py-2 text-center">{{ item.qty }}</td>
+                        <td class="px-4 py-2 text-right">{{ formatCurrency(item.harga_satuan || 0) }}</td>
+                        <td class="px-4 py-2 text-right">{{ formatCurrency(item.subtotal || 0) }}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="bg-gray-50 font-medium">
+                      <tr>
+                        <td colspan="3" class="px-4 py-2 text-right">Subtotal</td>
+                        <td class="px-4 py-2 text-right">{{ formatCurrency(selectedSO.subtotal || 0) }}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="3" class="px-4 py-2 text-right">PPN (0%)</td>
+                        <td class="px-4 py-2 text-right">{{ formatCurrency(selectedSO.ppn || 0) }}</td>
+                      </tr>
+                      <tr class="text-lg">
+                        <td colspan="3" class="px-4 py-2 text-right">Total</td>
+                        <td class="px-4 py-2 text-right text-blue-600">{{ formatCurrency(selectedSO.total || 0) }}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -188,6 +343,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import salesOrderService from '@/services/salesOrder.service'
+import type { SalesOrder } from '@/services/salesOrder.service'
 
 // Router & auth
 const router = useRouter()
@@ -226,14 +383,20 @@ const handleLogout = async () => {
   }
 }
 
-// State (original)
-const orders = ref<any[]>([])
+// State
+const salesOrders = ref<SalesOrder[]>([])
 const loading = ref(false)
+const showApproveModal = ref(false)
+const showRejectModal = ref(false)
+const showDetailModal = ref(false)
+const selectedSO = ref<SalesOrder | null>(null)
+const rejectReason = ref('')
 
 const filters = ref({
-  penerima: '',
-  dateStart: '',
-  dateEnd: ''
+  status: '',
+  search: '',
+  dateFrom: '',
+  dateTo: ''
 })
 
 const message = ref({
@@ -242,35 +405,22 @@ const message = ref({
   isError: false
 })
 
-// Methods (original)
-const fetchOrders = async () => {
+// Methods
+const fetchSalesOrders = async () => {
   loading.value = true
   try {
-    // TODO: Replace with actual API call
-    // const response = await salesOrderService.getAll(filters.value)
-    // orders.value = response.data
-    
-    // Mock data
-    await new Promise(resolve => setTimeout(resolve, 500))
-    orders.value = [
-      {
-        id: 1,
-        transaction_number: 'OUT-2023-001',
-        date: '2023-10-25',
-        recipient: 'Divisi Marketing',
-        total_items: 2,
-        created_by: 'Staff Gudang'
-      },
-      {
-        id: 2,
-        transaction_number: 'OUT-2023-002',
-        date: '2023-10-26',
-        recipient: 'Divisi IT',
-        total_items: 1,
-        created_by: 'Staff Gudang'
-      }
-    ]
-  } catch (error) {
+    const params: any = {}
+    if (filters.value.status) params.status = filters.value.status
+    if (filters.value.search) params.search = filters.value.search
+    if (filters.value.dateFrom) params.date_from = filters.value.dateFrom
+    if (filters.value.dateTo) params.date_to = filters.value.dateTo
+
+    const response = await salesOrderService.adminGetAll(params)
+    if (response.success && Array.isArray(response.data)) {
+      salesOrders.value = response.data
+    }
+  } catch (error: any) {
+    console.error('Error fetching sales orders:', error)
     showMessage('Gagal memuat data sales order', true)
   } finally {
     loading.value = false
@@ -281,13 +431,118 @@ let searchTimeout: any = null
 const handleSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    fetchOrders()
+    fetchSalesOrders()
   }, 500)
 }
 
+const openApproveModal = (so: SalesOrder) => {
+  selectedSO.value = so
+  showApproveModal.value = true
+}
+
+const closeApproveModal = () => {
+  showApproveModal.value = false
+  selectedSO.value = null
+}
+
+const confirmApprove = async () => {
+  if (!selectedSO.value?.id) return
+  
+  try {
+    const response = await salesOrderService.approve(selectedSO.value.id)
+    if (response.success) {
+      showMessage('Sales order berhasil di-approve', false)
+      closeApproveModal()
+      await fetchSalesOrders()
+    }
+  } catch (error: any) {
+    showMessage(error.response?.data?.message || 'Gagal approve sales order', true)
+  }
+}
+
+const openRejectModal = (so: SalesOrder) => {
+  selectedSO.value = so
+  rejectReason.value = ''
+  showRejectModal.value = true
+}
+
+const closeRejectModal = () => {
+  showRejectModal.value = false
+  selectedSO.value = null
+  rejectReason.value = ''
+}
+
+const confirmReject = async () => {
+  if (!selectedSO.value?.id || !rejectReason.value.trim()) {
+    showMessage('Alasan penolakan harus diisi', true)
+    return
+  }
+  
+  try {
+    const response = await salesOrderService.reject(selectedSO.value.id, rejectReason.value)
+    if (response.success) {
+      showMessage('Sales order berhasil ditolak', false)
+      closeRejectModal()
+      await fetchSalesOrders()
+    }
+  } catch (error: any) {
+    showMessage(error.response?.data?.message || 'Gagal reject sales order', true)
+  }
+}
+
+const openDetailModal = async (so: SalesOrder) => {
+  loading.value = true
+  try {
+    const response = await salesOrderService.adminGetById(so.id!)
+    if (response.success && !Array.isArray(response.data)) {
+      selectedSO.value = response.data
+      showDetailModal.value = true
+    }
+  } catch (error: any) {
+    showMessage('Gagal memuat detail sales order', true)
+  } finally {
+    loading.value = false
+  }
+}
+
+const closeDetailModal = () => {
+  showDetailModal.value = false
+  selectedSO.value = null
+}
+
+const getStatusBadgeClass = (status: string) => {
+  const classes: any = {
+    'pending': 'bg-yellow-100 text-yellow-800',
+    'approved': 'bg-green-100 text-green-800',
+    'rejected': 'bg-red-100 text-red-800',
+    'completed': 'bg-blue-100 text-blue-800'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+const getStatusLabel = (status: string) => {
+  const labels: any = {
+    'pending': 'Pending',
+    'approved': 'Approved',
+    'rejected': 'Rejected',
+    'completed': 'Completed'
+  }
+  return labels[status] || status
+}
+
 const formatDate = (dateString: string) => {
+  if (!dateString) return '-'
   const date = new Date(dateString)
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+const formatCurrency = (value: number) => {
+  if (!value) return 'Rp 0'
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(value)
 }
 
 const showMessage = (text: string, isError: boolean = false) => {
@@ -303,6 +558,6 @@ onMounted(() => {
   if (userData) {
     user.value = JSON.parse(userData)
   }
-  fetchOrders()
+  fetchSalesOrders()
 })
 </script>
