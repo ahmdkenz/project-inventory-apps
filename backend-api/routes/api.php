@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Purchase Order routes (admin - approval)
         Route::get('/purchase-order', [PurchaseOrderController::class, 'adminIndex']);
+        Route::get('/purchase-order/{id}', [PurchaseOrderController::class, 'adminShow']);
         Route::post('/purchase-order/{id}/approve', [PurchaseOrderController::class, 'approve']);
         Route::post('/purchase-order/{id}/reject', [PurchaseOrderController::class, 'reject']);
     });

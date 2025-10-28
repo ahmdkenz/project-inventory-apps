@@ -302,6 +302,28 @@ class PurchaseOrderController extends Controller
     }
 
     /**
+     * Get single purchase order for admin
+     */
+    public function adminShow($id)
+    {
+        try {
+            $purchaseOrder = PurchaseOrder::with(['supplier', 'items.barang', 'creator', 'approver'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data purchase order berhasil diambil',
+                'data' => $purchaseOrder
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Approve purchase order (admin only)
      */
     public function approve(Request $request, $id)

@@ -31,8 +31,19 @@ export interface PurchaseOrder {
   ppn?: number
   total?: number
   created_by?: number
+  creator?: {
+    id: number
+    name: string
+    email: string
+  }
   approved_by?: number
+  approver?: {
+    id: number
+    name: string
+    email: string
+  }
   approved_at?: string
+  reject_reason?: string
   items: PurchaseOrderItem[]
   created_at?: string
   updated_at?: string
@@ -91,6 +102,22 @@ class PurchaseOrderService {
    */
   async getAllForAdmin(): Promise<PurchaseOrderResponse> {
     const response = await api.get('/admin/purchase-order')
+    return response.data
+  }
+
+  /**
+   * Get all purchase orders with filters (admin)
+   */
+  async adminGetAll(params?: any): Promise<PurchaseOrderResponse> {
+    const response = await api.get('/admin/purchase-order', { params })
+    return response.data
+  }
+
+  /**
+   * Get single purchase order by ID (admin)
+   */
+  async adminGetById(id: number): Promise<PurchaseOrderResponse> {
+    const response = await api.get(`/admin/purchase-order/${id}`)
     return response.data
   }
 
