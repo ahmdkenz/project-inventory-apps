@@ -1,13 +1,32 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <StaffNavigation :current-path="$route.path" />
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out print-hidden" id="sidebar">
+      <div class="p-6 flex items-center space-x-3">
+        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        </svg>
+        <span class="text-white text-2xl font-semibold">Inventori</span>
+      </div>
+      <StaffNavigation :current-path="$route.path" />
+      <div class="absolute bottom-0 left-0 w-full p-4 border-t border-gray-700">
+        <div class="flex items-center space-x-3">
+          <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=S" alt="Avatar">
+          <div>
+            <p class="text-sm font-medium text-white">{{ user?.name || 'Staff' }}</p>
+            <p class="text-xs text-gray-400">Staff Gudang</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay" @click="toggleSidebar"></div>
     
-    <div class="flex-1 flex flex-col lg:ml-64">
-      <!-- Header -->
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between print-hidden">
-        <button @click="toggleSidebar" class="text-gray-600 lg:hidden">
-          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    <div class="flex-1 flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10 print-hidden">
+        <button class="text-gray-600 lg:hidden" @click="toggleSidebar">
+          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
         <div class="relative hidden sm:block">
@@ -36,7 +55,6 @@
         </div>
       </header>
 
-      <!-- Main Content -->
       <main class="flex-1 p-6 overflow-y-auto">
         <div v-if="loading" class="flex justify-center items-center py-12">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -44,123 +62,127 @@
 
         <div v-else-if="purchaseOrder">
           <!-- Action Buttons -->
-          <div class="mb-6 flex flex-col md:flex-row justify-between md:items-center gap-4 print-hidden">
-            <button @click="goBack" class="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-              <span>Kembali</span>
-            </button>
-            <button @click="printDocument" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.23a1.125 1.125 0 01-1.12-1.227L6.34 18m11.318 0H6.34m11.319 0l.044.506A1.125 1.125 0 0117.003 20H6.997a1.125 1.125 0 01-1.122-1.494l.044-.506M6.34 18v-4.172c0-.224.03-.447.086-.665A41.4 41.4 0 0112 3c1.83 0 3.597.133 5.28.362.057.218.086.44.086.665v4.172M6.34 18L4.26 7.5h15.48L17.66 18" />
-              </svg>
-              <span>Cetak PO</span>
-            </button>
+          <div class="flex items-center justify-between mb-6 print-hidden">
+            <h1 class="text-3xl font-bold text-gray-900">Detail Purchase Order</h1>
+            <div class="flex space-x-3">
+              <button @click="goBack" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                <span>Kembali</span>
+              </button>
+              <button @click="printDocument" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.23a1.125 1.125 0 01-1.12-1.227L6.34 18m11.318 0H6.34m11.319 0l.044.506A1.125 1.125 0 0117.003 20H6.997a1.125 1.125 0 01-1.122-1.494l.044-.506M6.34 18v-4.172c0-.224.03-.447.086-.665A41.4 41.4 0 0112 3c1.83 0 3.597.133 5.28.362.057.218.086.44.086.665v4.172M6.34 18L4.26 7.5h15.48L17.66 18" />
+                </svg>
+                <span>Cetak PO</span>
+              </button>
+            </div>
           </div>
 
           <!-- Printable Area -->
-          <div id="printable-area">
-            <div class="bg-white rounded-lg shadow-md p-8 md:p-12" id="printable-area-content">
-              <!-- Header Document -->
-              <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900 mb-6">
+          <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-gray-200" id="printable-area">
+            <!-- Header Dokumen -->
+            <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900">
+              <div>
+                <h2 class="text-3xl font-bold text-gray-900">PURCHASE ORDER</h2>
+                <p class="text-lg font-semibold text-blue-600">{{ purchaseOrder.no_po }}</p>
+                <span :class="getStatusBadgeClass(purchaseOrder.status)" class="inline-block px-3 py-1 text-xs font-semibold rounded-full mt-2">
+                  {{ getStatusLabel(purchaseOrder.status) }}
+                </span>
+              </div>
+              <div class="text-right">
+                <img src="https://placehold.co/150x50/000000/FFFFFF?text=LOGO+PERUSAHAAN" alt="Logo Perusahaan" class="h-12 mb-2 ml-auto">
+                <p class="text-sm font-semibold text-gray-800">Nama Perusahaan Anda</p>
+                <p class="text-sm text-gray-600">Jl. Jend. Sudirman No. 1, Jakarta</p>
+                <p class="text-sm text-gray-600">Telepon: (021) 123456</p>
+              </div>
+            </div>
+
+            <!-- Info PO dan Supplier -->
+            <div class="grid grid-cols-2 gap-8 my-6">
+              <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase mb-2">DITUJUKAN KEPADA:</p>
+                <p class="text-lg font-bold text-gray-900">{{ purchaseOrder.supplier?.nama || '-' }}</p>
+                <p class="text-sm text-gray-600">{{ purchaseOrder.supplier?.alamat || '-' }}</p>
+                <p class="text-sm text-gray-600">{{ purchaseOrder.supplier?.telepon || '-' }}</p>
+                <p v-if="purchaseOrder.supplier?.contact_person" class="text-sm text-gray-600">UP: {{ purchaseOrder.supplier.contact_person }}</p>
+              </div>
+              <div class="text-right">
+                <div class="mb-2">
+                  <span class="text-sm font-semibold text-gray-500 uppercase">Tanggal PO: </span>
+                  <span class="text-sm font-medium text-gray-800">{{ formatDate(purchaseOrder.tgl_pesan) }}</span>
+                </div>
                 <div>
-                  <h2 class="text-3xl font-bold text-gray-900">PURCHASE ORDER</h2>
-                  <p class="text-lg font-semibold text-blue-600">{{ purchaseOrder.no_po }}</p>
-                </div>
-                <div class="text-right">
-                  <h2 class="text-xl font-semibold text-gray-800">PT. Inventori Sukses</h2>
-                  <p class="text-sm text-gray-600">Jl. Alamat Kantor No. 123</p>
-                  <p class="text-sm text-gray-600">Jakarta, Indonesia</p>
+                  <span class="text-sm font-semibold text-gray-500 uppercase">Estimasi Tiba: </span>
+                  <span class="text-sm font-medium text-gray-800">{{ formatDate(purchaseOrder.tgl_estimasi) }}</span>
                 </div>
               </div>
+            </div>
 
-              <!-- Info PO dan Supplier -->
-              <div class="grid grid-cols-2 gap-8 mb-6">
+            <!-- Tabel Item -->
+            <div class="overflow-x-auto border rounded-lg mb-6">
+              <table class="w-full min-w-max">
+                <thead class="bg-gray-100 text-gray-700">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No.</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
+                    <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah</th>
+                    <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Harga Satuan</th>
+                    <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr v-for="(item, index) in purchaseOrder.items" :key="item.id">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ index + 1 }}.</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal || 0) }}</td>
+                  </tr>
+                </tbody>
+                <!-- Footer Kalkulasi -->
+                <tfoot class="bg-gray-100 border-t-2 border-gray-300">
+                  <tr>
+                    <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-800">Subtotal</td>
+                    <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ formatCurrency(purchaseOrder.subtotal || 0) }}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-800">PPN ({{ ppnPercent }}%)</td>
+                    <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ formatCurrency(purchaseOrder.ppn || 0) }}</td>
+                  </tr>
+                  <tr class="text-base">
+                    <td colspan="4" class="px-6 py-4 text-right font-bold text-gray-900 uppercase">Total</td>
+                    <td class="px-6 py-4 text-right font-bold text-gray-900">{{ formatCurrency(purchaseOrder.total || 0) }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- Catatan dan Tanda Tangan -->
+            <div class="grid grid-cols-2 gap-8 pt-6 border-t border-gray-200">
+              <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase mb-2">Catatan:</p>
+                <p class="text-sm text-gray-600">{{ purchaseOrder.catatan || 'Mohon sertakan No. PO pada surat jalan Anda.' }}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-4 text-center">
                 <div>
-                  <p class="text-sm font-semibold text-gray-500 uppercase mb-2">DITUJUKAN KEPADA:</p>
-                  <p class="text-lg font-bold text-gray-900">{{ purchaseOrder.supplier?.nama || '-' }}</p>
-                  <p class="text-sm text-gray-600">{{ purchaseOrder.supplier?.alamat || '-' }}</p>
-                  <p class="text-sm text-gray-600">{{ purchaseOrder.supplier?.kota || '' }}</p>
-                  <p class="text-sm text-gray-600">UP: {{ purchaseOrder.supplier?.kontak || '-' }}</p>
+                  <p class="text-sm text-gray-700 mb-16">Dibuat oleh,</p>
+                  <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">{{ purchaseOrder.creator?.name || 'Staff' }}</p>
+                  <p class="text-xs text-gray-500">Staff Pembelian</p>
                 </div>
-                <div class="text-right">
-                  <div class="mb-2">
-                    <span class="text-sm font-semibold text-gray-500 uppercase">Tanggal PO: </span>
-                    <span class="text-sm font-medium text-gray-800">{{ formatDate(purchaseOrder.tgl_pesan) }}</span>
-                  </div>
-                  <div>
-                    <span class="text-sm font-semibold text-gray-500 uppercase">Estimasi Tiba: </span>
-                    <span class="text-sm font-medium text-gray-800">{{ formatDate(purchaseOrder.tgl_estimasi) }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Tabel Item -->
-              <div class="overflow-x-auto border rounded-lg mb-6">
-                <table class="w-full min-w-max">
-                  <thead class="bg-gray-100 text-gray-700">
-                    <tr>
-                      <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No.</th>
-                      <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
-                      <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah</th>
-                      <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Harga Satuan</th>
-                      <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200">
-                    <tr v-for="(item, index) in purchaseOrder.items" :key="item.id">
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ index + 1 }}.</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty }} {{ item.barang?.satuan || 'pcs' }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal) }}</td>
-                    </tr>
-                  </tbody>
-                  <!-- Footer Kalkulasi -->
-                  <tfoot class="bg-gray-100 border-t-2 border-gray-300">
-                    <tr>
-                      <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-800">Subtotal</td>
-                      <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ formatCurrency(purchaseOrder.subtotal) }}</td>
-                    </tr>
-                    <tr>
-                      <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-800">PPN ({{ ppnPercent }}%)</td>
-                      <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ formatCurrency(purchaseOrder.ppn) }}</td>
-                    </tr>
-                    <tr class="text-base">
-                      <td colspan="4" class="px-6 py-4 text-right font-bold text-gray-900 uppercase">Total</td>
-                      <td class="px-6 py-4 text-right font-bold text-gray-900">{{ formatCurrency(purchaseOrder.total) }}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-
-              <!-- Catatan dan Tanda Tangan -->
-              <div class="grid grid-cols-2 gap-8 pt-6 border-t border-gray-200">
                 <div>
-                  <p class="text-sm font-semibold text-gray-500 uppercase mb-2">Catatan:</p>
-                  <p class="text-sm text-gray-600">{{ purchaseOrder.catatan || 'Mohon sertakan No. PO pada surat jalan Anda.' }}</p>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <p class="text-sm text-gray-700 mb-16">Dibuat oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">{{ purchaseOrder.creator?.name || 'Staff' }}</p>
-                    <p class="text-xs text-gray-500">Staff Pembelian</p>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">{{ purchaseOrder.approver?.name || '(Manajer)' }}</p>
-                    <p class="text-xs text-gray-500">Manajer Operasional</p>
-                  </div>
+                  <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
+                  <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Manajer)</p>
+                  <p class="text-xs text-gray-500">Manajer Operasional</p>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
 
-        <div v-else class="text-center py-8">
-          <p class="text-gray-600">Data tidak ditemukan</p>
+        <div v-else class="text-center py-12">
+          <p class="text-gray-500">Purchase Order tidak ditemukan</p>
         </div>
       </main>
     </div>
@@ -217,25 +239,50 @@ const formatCurrency = (value: number) => {
   }).format(value || 0)
 }
 
-const formatDate = (date: string) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
+const formatDate = (dateString: string) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+const getStatusBadgeClass = (status: string) => {
+  const classes: any = {
+    'pending': 'bg-yellow-100 text-yellow-800',
+    'approved': 'bg-green-100 text-green-800',
+    'rejected': 'bg-red-100 text-red-800',
+    'completed': 'bg-blue-100 text-blue-800'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+const getStatusLabel = (status: string) => {
+  const labels: any = {
+    'pending': 'Menunggu Persetujuan',
+    'approved': 'Disetujui',
+    'rejected': 'Ditolak',
+    'completed': 'Selesai'
+  }
+  return labels[status] || status
 }
 
 const fetchPurchaseOrder = async () => {
+  const id = parseInt(route.params.id as string)
+  if (!id) {
+    router.push('/staff/purchase-orders')
+    return
+  }
+
   loading.value = true
   try {
-    const id = route.params.id as string
-    const response = await purchaseOrderService.getById(parseInt(id))
+    const response = await purchaseOrderService.getById(id)
     if (response.success && !Array.isArray(response.data)) {
       purchaseOrder.value = response.data
+    } else {
+      router.push('/staff/purchase-orders')
     }
   } catch (error: any) {
     console.error('Error fetching purchase order:', error)
+    router.push('/staff/purchase-orders')
   } finally {
     loading.value = false
   }
@@ -252,6 +299,10 @@ onMounted(() => {
 
 <style scoped>
 @media print {
+  body > * {
+    display: none;
+  }
+  
   .print-hidden {
     display: none !important;
   }
@@ -265,12 +316,7 @@ onMounted(() => {
     color: #000;
   }
   
-  #printable-area-content {
-    box-shadow: none !important;
-    border: none !important;
-  }
-  
-  tr, td, th {
+  .print-no-break {
     page-break-inside: avoid;
   }
   
@@ -280,6 +326,14 @@ onMounted(() => {
   
   tfoot {
     display: table-footer-group;
+  }
+  
+  tr, td, th {
+    page-break-inside: avoid;
+  }
+  
+  table {
+    page-break-inside: auto;
   }
 }
 </style>
