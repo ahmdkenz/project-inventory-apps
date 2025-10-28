@@ -18,6 +18,11 @@ const staffMenuItems: MenuItem[] = [
     icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15h.008'
   },
   {
+    path: '/staff/purchase-order',
+    name: 'Purchase Order (PO)',
+    icon: 'M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+  },
+  {
     path: '/staff/barang-masuk',
     name: 'Barang Masuk',
     icon: 'M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'

@@ -1,0 +1,363 @@
+<template>
+  <div class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+      <div class="p-6 flex items-center space-x-3">
+        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        </svg>
+        <span class="text-white text-2xl font-semibold">Inventori</span>
+      </div>
+      
+      <StaffNavigation :current-path="$route.path" />
+      
+      <div class="absolute bottom-0 left-0 w-full p-4 border-t border-gray-700">
+        <div class="flex items-center space-x-3">
+          <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/FEF2F2/DC2626?text=S" alt="Avatar Pengguna">
+          <div>
+            <p class="text-sm font-medium text-white">{{ user.name }}</p>
+            <p class="text-xs text-gray-400">Staff Gudang</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay" @click="toggleSidebar"></div>
+    
+    <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
+        <button id="hamburger-btn" @click="toggleSidebar" class="text-gray-600 lg:hidden">
+          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        <div class="relative hidden sm:block"></div>
+        <div class="flex items-center space-x-4">
+          <button class="text-gray-500 hover:text-gray-700 relative">
+            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+            </svg>
+          </button>
+          <div class="flex items-center space-x-2 cursor-pointer" @click="handleLogout">
+            <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=S" alt="Avatar Pengguna">
+            <span class="hidden md:block text-sm font-medium text-gray-700">{{ user.name }}</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Success/Error Message -->
+      <div v-if="message.show" :class="message.isError ? 'bg-red-500' : 'bg-green-500'" class="text-white px-6 py-3 text-center">
+        {{ message.text }}
+      </div>
+
+      <main class="flex-1 p-6 overflow-y-auto">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <h1 class="text-3xl font-bold text-gray-900">Purchase Order (PO)</h1>
+          <router-link 
+            to="/staff/purchase-order/create" 
+            class="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
+          >
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>Buat PO Baru</span>
+          </router-link>
+        </div>
+        
+        <!-- Filter dan Pencarian -->
+        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input 
+              v-model="searchQuery" 
+              @input="handleSearch"
+              type="text" 
+              placeholder="Cari No. PO / Supplier..." 
+              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+            >
+            <select 
+              v-model="filterStatus" 
+              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Disetujui</option>
+              <option value="rejected">Ditolak</option>
+              <option value="completed">Selesai</option>
+            </select>
+            <input 
+              v-model="filterDateFrom"
+              type="date" 
+              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 text-gray-500"
+            >
+            <input 
+              v-model="filterDateTo"
+              type="date" 
+              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 text-gray-500"
+            >
+          </div>
+        </div>
+
+        <!-- Tabel Data PO -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div v-if="loading" class="p-8 text-center text-gray-500">
+            Memuat data...
+          </div>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full min-w-max">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. PO</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl. Pesan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estimasi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr v-if="filteredPurchaseOrders.length === 0">
+                  <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                    Tidak ada data purchase order
+                  </td>
+                </tr>
+                <tr v-for="po in filteredPurchaseOrders" :key="po.id">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800">
+                    {{ po.no_po }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ po.supplier?.nama }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(po.tgl_pesan) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(po.tgl_estimasi) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="getStatusClass(po.status)">
+                      {{ getStatusText(po.status) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ formatCurrency(po.total || 0) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <router-link 
+                      v-if="po.status === 'pending'" 
+                      :to="`/staff/purchase-order/edit/${po.id}`" 
+                      class="text-blue-600 hover:text-blue-800"
+                    >
+                      Edit
+                    </router-link>
+                    <button 
+                      v-if="po.status === 'pending'" 
+                      @click="confirmDelete(po)" 
+                      class="text-red-600 hover:text-red-800"
+                    >
+                      Hapus
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal Delete Confirmation -->
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Konfirmasi Hapus</h3>
+        <p class="text-gray-600 mb-6">
+          Apakah Anda yakin ingin menghapus PO <strong>{{ selectedPO?.no_po }}</strong>?
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button 
+            @click="showDeleteModal = false" 
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+          >
+            Batal
+          </button>
+          <button 
+            @click="deletePO" 
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import StaffNavigation from '@/components/StaffNavigation.vue'
+import purchaseOrderService from '@/services/purchaseOrder.service'
+import type { PurchaseOrder } from '@/services/purchaseOrder.service'
+
+const router = useRouter()
+
+const user = ref({
+  name: 'Staff',
+  role: 'staff'
+})
+
+const poList = ref<PurchaseOrder[]>([])
+const loading = ref(false)
+const searchQuery = ref('')
+const filterStatus = ref('')
+const filterDateFrom = ref('')
+const filterDateTo = ref('')
+
+const showDeleteModal = ref(false)
+const selectedPO = ref<PurchaseOrder | null>(null)
+
+const message = reactive({
+  show: false,
+  text: '',
+  isError: false
+})
+
+const filteredPurchaseOrders = computed(() => {
+  let result = poList.value
+
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(po => 
+      po.no_po?.toLowerCase().includes(query) ||
+      po.supplier?.nama?.toLowerCase().includes(query)
+    )
+  }
+
+  // Filter by status
+  if (filterStatus.value) {
+    result = result.filter(po => po.status === filterStatus.value)
+  }
+
+  // Filter by date range
+  if (filterDateFrom.value) {
+    result = result.filter(po => po.tgl_pesan >= filterDateFrom.value)
+  }
+  if (filterDateTo.value) {
+    result = result.filter(po => po.tgl_pesan <= filterDateTo.value)
+  }
+
+  return result
+})
+
+onMounted(async () => {
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    const userData = JSON.parse(storedUser)
+    user.value = userData
+  }
+  
+  await fetchPurchaseOrders()
+})
+
+const fetchPurchaseOrders = async () => {
+  loading.value = true
+  try {
+    const response = await purchaseOrderService.getAll()
+    if (response.success && Array.isArray(response.data)) {
+      poList.value = response.data
+    }
+  } catch (error: any) {
+    console.error('Error loading purchase orders:', error)
+    showMessage(error.response?.data?.message || 'Gagal memuat data purchase order', true)
+  } finally {
+    loading.value = false
+  }
+}
+
+let searchTimeout: any = null
+const handleSearch = () => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    // Filtering is done by computed property
+  }, 300)
+}
+
+const confirmDelete = (po: PurchaseOrder) => {
+  selectedPO.value = po
+  showDeleteModal.value = true
+}
+
+const deletePO = async () => {
+  if (!selectedPO.value?.id) return
+  
+  try {
+    const response = await purchaseOrderService.delete(selectedPO.value.id)
+    if (response.success) {
+      showMessage('Purchase order berhasil dihapus', false)
+      await fetchPurchaseOrders()
+      showDeleteModal.value = false
+    }
+  } catch (error: any) {
+    console.error('Error deleting purchase order:', error)
+    showMessage(error.response?.data?.message || 'Gagal menghapus purchase order', true)
+  }
+}
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(value)
+}
+
+const getStatusClass = (status: string) => {
+  const classes = {
+    'pending': 'px-3 py-1 inline-flex text-xs font-medium rounded-full bg-yellow-100 text-yellow-800',
+    'approved': 'px-3 py-1 inline-flex text-xs font-medium rounded-full bg-green-100 text-green-800',
+    'rejected': 'px-3 py-1 inline-flex text-xs font-medium rounded-full bg-red-100 text-red-800',
+    'completed': 'px-3 py-1 inline-flex text-xs font-medium rounded-full bg-blue-100 text-blue-800'
+  }
+  return classes[status as keyof typeof classes] || 'px-3 py-1 inline-flex text-xs font-medium rounded-full bg-gray-100 text-gray-800'
+}
+
+const getStatusText = (status: string) => {
+  const texts = {
+    'pending': 'Menunggu Persetujuan',
+    'approved': 'Disetujui',
+    'rejected': 'Ditolak',
+    'completed': 'Selesai'
+  }
+  return texts[status as keyof typeof texts] || status
+}
+
+const toggleSidebar = () => {
+  const sidebar = document.getElementById('sidebar')
+  const overlay = document.getElementById('overlay')
+  
+  if (sidebar && overlay) {
+    sidebar.classList.toggle('-translate-x-full')
+    overlay.classList.toggle('hidden')
+  }
+}
+
+const showMessage = (text: string, isError: boolean = false) => {
+  message.text = text
+  message.isError = isError
+  message.show = true
+  
+  setTimeout(() => {
+    message.show = false
+  }, 3000)
+}
+
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  router.push('/login')
+}
+</script>
+
+<style scoped>
+/* Additional custom styles if needed */
+</style>
