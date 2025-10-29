@@ -69,6 +69,10 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Staff routes
     Route::middleware('role:staff')->prefix('staff')->group(function () {
+        // Dashboard stats for staff
+        Route::get('/dashboard/stats', [DashboardController::class, 'getStaffStats']);
+        Route::get('/activities/my', [DashboardController::class, 'getMyActivities']);
+        
         Route::get('/dashboard', function () {
             return response()->json([
                 'message' => 'Staff Dashboard Data'
