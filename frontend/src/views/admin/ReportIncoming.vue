@@ -118,12 +118,12 @@
               </thead>
               <tbody class="divide-y divide-gray-200">
                 <tr v-for="transaction in transactions" :key="transaction.id" class="print-no-break">
-                  <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.nomor_po }}</td>
-                  <td class="px-4 py-4 text-sm text-gray-800">{{ formatDate(transaction.tanggal_po) }}</td>
+                  <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.no_po }}</td>
+                  <td class="px-4 py-4 text-sm text-gray-800">{{ formatDate(transaction.tgl_pesan) }}</td>
                   <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ transaction.supplier?.nama_supplier || '-' }}</td>
                   <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ transaction.items_count }} Jenis</td>
-                  <td class="px-4 py-4 text-sm text-gray-800 text-right">Rp {{ formatCurrency(transaction.total_harga) }}</td>
-                  <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.user?.name || '-' }}</td>
+                  <td class="px-4 py-4 text-sm text-gray-800 text-right">Rp {{ formatCurrency(transaction.total) }}</td>
+                  <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.creator?.name || '-' }}</td>
                 </tr>
                 <tr v-if="transactions.length === 0">
                   <td colspan="6" class="px-4 py-4 text-center text-sm text-gray-500">
@@ -154,14 +154,14 @@ const currentUser = ref({
 
 interface PurchaseOrder {
   id: number
-  nomor_po: string
-  tanggal_po: string
-  total_harga: number
+  no_po: string
+  tgl_pesan: string
+  total: number
   items_count: number
   supplier?: {
     nama_supplier: string
   }
-  user?: {
+  creator?: {
     name: string
   }
 }

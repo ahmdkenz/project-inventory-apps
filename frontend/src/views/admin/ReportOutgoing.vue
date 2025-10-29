@@ -122,12 +122,12 @@
               </thead>
               <tbody class="divide-y divide-gray-200">
                 <tr v-for="transaction in transactions" :key="transaction.id" class="print-no-break">
-                  <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.nomor_so }}</td>
-                  <td class="px-4 py-4 text-sm text-gray-800">{{ formatDate(transaction.tanggal_so) }}</td>
-                  <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ transaction.nama_penerima }}</td>
-                  <td class="px-4 py-4 text-sm text-gray-600">{{ transaction.keterangan || '-' }}</td>
+                  <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.no_so }}</td>
+                  <td class="px-4 py-4 text-sm text-gray-800">{{ formatDate(transaction.tgl_order) }}</td>
+                  <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ transaction.customer_name }}</td>
+                  <td class="px-4 py-4 text-sm text-gray-600">{{ transaction.catatan || '-' }}</td>
                   <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ transaction.items_count }} Jenis</td>
-                  <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.user?.name || '-' }}</td>
+                  <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.creator?.name || '-' }}</td>
                 </tr>
                 <tr v-if="transactions.length === 0">
                   <td colspan="6" class="px-4 py-4 text-center text-sm text-gray-500">
@@ -158,12 +158,12 @@ const currentUser = ref({
 
 interface SalesOrder {
   id: number
-  nomor_so: string
-  tanggal_so: string
-  nama_penerima: string
-  keterangan?: string
+  no_so: string
+  tgl_order: string
+  customer_name: string
+  catatan?: string
   items_count: number
-  user?: {
+  creator?: {
     name: string
   }
 }

@@ -66,12 +66,14 @@ class ReportController extends Controller
             }
         }
 
-        $items = $query->orderBy('nama_barang')->get();
+        $items = $query->orderBy('nama')->get();
 
         // Calculate statistics
+        $stockValue = Barang::selectRaw('SUM(stok * harga_beli) as total')->first()->total ?? 0;
+        
         $stats = [
             'total_items' => Barang::count(),
-            'stock_value' => Barang::sum(DB::raw('stok * harga_beli')),
+            'stock_value' => $stockValue,
             'low_stock' => Barang::where('stok', '>', 0)->where('stok', '<=', 10)->count(),
             'out_of_stock' => Barang::where('stok', 0)->count(),
         ];
@@ -87,18 +89,18 @@ class ReportController extends Controller
      */
     public function incoming(Request $request)
     {
-        $query = PurchaseOrder::with(['supplier', 'user', 'items']);
+        $query = PurchaseOrder::with(['supplier', 'creator', 'items']);
 
         // Filter by date range
         if ($request->has('start_date') && $request->start_date != '') {
-            $query->whereDate('tanggal_po', '>=', $request->start_date);
+            $query->whereDate('tgl_pesan', '>=', $request->start_date);
         }
 
         if ($request->has('end_date') && $request->end_date != '') {
-            $query->whereDate('tanggal_po', '<=', $request->end_date);
+            $query->whereDate('tgl_pesan', '<=', $request->end_date);
         }
 
-        $transactions = $query->orderBy('tanggal_po', 'desc')->get();
+        $transactions = $query->orderBy('tgl_pesan', 'desc')->get();
 
         // Add items count to each transaction
         $transactions->each(function ($transaction) {
@@ -115,23 +117,23 @@ class ReportController extends Controller
      */
     public function outgoing(Request $request)
     {
-        $query = SalesOrder::with(['user', 'items']);
+        $query = SalesOrder::with(['creator', 'items']);
 
         // Filter by date range
         if ($request->has('start_date') && $request->start_date != '') {
-            $query->whereDate('tanggal_so', '>=', $request->start_date);
+            $query->whereDate('tgl_order', '>=', $request->start_date);
         }
 
         if ($request->has('end_date') && $request->end_date != '') {
-            $query->whereDate('tanggal_so', '<=', $request->end_date);
+            $query->whereDate('tgl_order', '<=', $request->end_date);
         }
 
         // Filter by recipient
         if ($request->has('recipient') && $request->recipient != '') {
-            $query->where('nama_penerima', 'like', '%' . $request->recipient . '%');
+            $query->where('customer_name', 'like', '%' . $request->recipient . '%');
         }
 
-        $transactions = $query->orderBy('tanggal_so', 'desc')->get();
+        $transactions = $query->orderBy('tgl_order', 'desc')->get();
 
         // Add items count to each transaction
         $transactions->each(function ($transaction) {

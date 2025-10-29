@@ -178,8 +178,8 @@
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="item in items" :key="item.id">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.kode_barang }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.nama_barang }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.kode }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.nama }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.kategori?.nama_kategori || '-' }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {{ formatCurrency(item.harga_beli) }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {{ formatCurrency(item.harga_jual) }}</td>
@@ -230,8 +230,8 @@ interface Kategori {
 
 interface Barang {
   id: number
-  kode_barang: string
-  nama_barang: string
+  kode: string
+  nama: string
   harga_beli: number
   harga_jual: number
   stok: number
