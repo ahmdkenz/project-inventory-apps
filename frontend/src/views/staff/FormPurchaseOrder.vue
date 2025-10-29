@@ -87,10 +87,10 @@
                   v-model="form.supplier_id" 
                   id="supplier" 
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  :class="{ 'border-red-500': errors.supplier_id }"
+                  :class="{ 'border-red-500': errors.supplier_id, 'text-gray-500': !form.supplier_id, 'text-gray-900': form.supplier_id }"
                 >
-                  <option value="">Pilih Supplier</option>
-                  <option v-for="supplier in supplierList" :key="supplier.id" :value="supplier.id">
+                  <option value="" class="text-gray-500">Pilih Supplier</option>
+                  <option v-for="supplier in supplierList" :key="supplier.id" :value="supplier.id" class="text-gray-900">
                     {{ supplier.nama }}
                   </option>
                 </select>
@@ -143,9 +143,10 @@
                   @change="onBarangSelect"
                   id="item_select" 
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  :class="{ 'text-gray-500': !newItem.barang_id, 'text-gray-900': newItem.barang_id }"
                 >
-                  <option value="">Pilih barang...</option>
-                  <option v-for="barang in barangList" :key="barang.id" :value="barang.id">
+                  <option value="" class="text-gray-500">Pilih barang...</option>
+                  <option v-for="barang in barangList" :key="barang.id" :value="barang.id" class="text-gray-900">
                     {{ barang.kode }} - {{ barang.nama }}
                   </option>
                 </select>
