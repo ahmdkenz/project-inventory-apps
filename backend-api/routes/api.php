@@ -12,6 +12,7 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Api\Admin\ReportController;
+use App\Http\Controllers\Api\Staff\StaffReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -101,5 +102,13 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Sales Order routes (staff - create/manage own SO)
         Route::apiResource('sales-order', SalesOrderController::class);
+        
+        // Staff Report routes
+        Route::prefix('reports')->group(function () {
+            Route::get('/dashboard', [StaffReportController::class, 'dashboard']);
+            Route::get('/stock', [StaffReportController::class, 'stock']);
+            Route::get('/incoming', [StaffReportController::class, 'incoming']);
+            Route::get('/outgoing', [StaffReportController::class, 'outgoing']);
+        });
     });
 });

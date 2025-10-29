@@ -26,6 +26,10 @@ import ReportUsers from '@/views/admin/ReportUsers.vue'
 import ReportStock from '@/views/admin/ReportStock.vue'
 import ReportIncoming from '@/views/admin/ReportIncoming.vue'
 import ReportOutgoing from '@/views/admin/ReportOutgoing.vue'
+import StaffReportDashboard from '@/views/staff/StaffReportDashboard.vue'
+import StaffReportStock from '@/views/staff/StaffReportStock.vue'
+import StaffReportIncoming from '@/views/staff/StaffReportIncoming.vue'
+import StaffReportOutgoing from '@/views/staff/StaffReportOutgoing.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -242,6 +246,30 @@ const router = createRouter({
       path: '/staff/aktivitas',
       name: 'staff-aktivitas',
       component: () => import('@/views/staff/MyActivities.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/laporan',
+      name: 'staff-laporan',
+      component: StaffReportDashboard,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/laporan/stok',
+      name: 'staff-laporan-stok',
+      component: StaffReportStock,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/laporan/barang-masuk',
+      name: 'staff-laporan-barang-masuk',
+      component: StaffReportIncoming,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/laporan/barang-keluar',
+      name: 'staff-laporan-barang-keluar',
+      component: StaffReportOutgoing,
       meta: { requiresAuth: true, requiresStaff: true }
     },
   ]
