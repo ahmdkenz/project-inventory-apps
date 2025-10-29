@@ -256,7 +256,7 @@ onMounted(async () => {
 const fetchSuppliers = async () => {
   loading.value = true
   try {
-    const response = await supplierService.getAll()
+    const response = await supplierService.getAll('admin')
     if (response.success && Array.isArray(response.data)) {
       supplierList.value = response.data
     }

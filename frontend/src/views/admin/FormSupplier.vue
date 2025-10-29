@@ -227,7 +227,7 @@ const loadSupplier = async () => {
   if (!supplierId.value) return
   
   try {
-    const response = await supplierService.getById(supplierId.value)
+    const response = await supplierService.getById(supplierId.value, 'admin')
     if (response.success && !Array.isArray(response.data)) {
       const supplier = response.data
       formData.nama = supplier.nama

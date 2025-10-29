@@ -21,6 +21,7 @@ const currentPath = ref(router.currentRoute.value.path)
 const activities = ref<Activity[]>([])
 const loading = ref(false)
 const error = ref('')
+const showProfileMenu = ref(false)
 
 // Filter states
 const selectedAction = ref('all')
@@ -174,6 +175,24 @@ const handleLogout = () => {
   router.push('/login')
 }
 
+const toggleSidebar = () => {
+  const sidebar = document.getElementById('sidebar')
+  const overlay = document.getElementById('overlay')
+  
+  if (sidebar && overlay) {
+    sidebar.classList.toggle('-translate-x-full')
+    overlay.classList.toggle('hidden')
+  }
+}
+
+const toggleProfileMenu = () => {
+  showProfileMenu.value = !showProfileMenu.value
+}
+
+const closeProfileMenu = () => {
+  showProfileMenu.value = false
+}
+
 const resetFilters = () => {
   selectedAction.value = 'all'
   startDate.value = ''
@@ -194,65 +213,98 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-gray-100">
+  <div class="flex h-screen bg-gray-100">
     <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 flex w-64 flex-col bg-gray-900 shadow-xl z-50">
-      <!-- Logo/Brand -->
-      <div class="flex h-16 items-center px-6 bg-gray-800">
-        <svg
-          class="h-8 w-8 text-blue-500"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15h.008"
-          />
+    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+      <!-- Logo/Header Sidebar -->
+      <div class="p-6 flex items-center space-x-3">
+        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
         </svg>
-        <span class="ml-3 text-xl font-bold text-white">Inventaris</span>
+        <span class="text-white text-2xl font-semibold">Inventori</span>
       </div>
-
-      <!-- Navigation -->
-      <StaffNavigation :currentPath="currentPath" />
-
-      <!-- User Profile -->
-      <div class="mt-auto p-4 border-t border-gray-700">
-        <div class="flex items-center space-x-3 mb-3">
-          <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
-            <span class="text-white font-semibold">{{ currentUser.name?.[0]?.toUpperCase() || 'S' }}</span>
-          </div>
-          <div class="flex-1">
+      
+      <!-- Menu Navigasi Staff -->
+      <StaffNavigation :current-path="$route.path" />
+      
+      <!-- User Info di Bawah Sidebar -->
+      <div class="absolute bottom-0 left-0 w-full p-4 border-t border-gray-700">
+        <div class="flex items-center space-x-3">
+          <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/EBF4FF/4299E1?text=S" alt="Avatar Pengguna">
+          <div>
             <p class="text-sm font-medium text-white">{{ currentUser.name || 'Staff' }}</p>
-            <p class="text-xs text-gray-400">{{ currentUser.email || '' }}</p>
+            <p class="text-xs text-gray-400">Staff Gudang</p>
           </div>
         </div>
-        <button
-          @click="handleLogout"
-          class="w-full px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition duration-150"
-        >
-          Logout
-        </button>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <div class="flex-1 ml-64">
-      <!-- Header -->
-      <header class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="px-8 py-4">
-          <h1 class="text-2xl font-bold text-gray-800">Riwayat Saya</h1>
-          <p class="text-sm text-gray-600 mt-1">Daftar aktivitas yang telah saya lakukan</p>
+    <!-- Latar belakang overlay untuk mobile -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay" @click="toggleSidebar"></div>
+    
+    <!-- Konten Utama -->
+    <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+      <!-- Header/Navbar Atas -->
+      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
+        <!-- Tombol Hamburger (Mobile) -->
+        <button id="hamburger-btn" class="text-gray-600 lg:hidden" @click="toggleSidebar">
+          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        
+        <!-- Search Bar -->
+        <div class="relative hidden sm:block">
+          <input type="text" class="border border-gray-300 rounded-full py-2 px-4 pl-10" placeholder="Cari...">
+          <svg class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </div>
+        
+        <!-- User Profile dan Notifikasi -->
+        <div class="flex items-center space-x-4">
+          <!-- Notifikasi -->
+          <button class="text-gray-500 hover:text-gray-700 relative">
+            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+            </svg>
+          </button>
+          
+          <!-- Profile Dropdown -->
+          <div class="relative">
+            <button @click="toggleProfileMenu" class="flex items-center space-x-2">
+              <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF4FF/4299E1?text=S" alt="Avatar Pengguna">
+              <span class="hidden md:block text-sm font-medium text-gray-700">{{ currentUser.name || 'Staff' }}</span>
+            </button>
+            <div v-show="showProfileMenu" @click.outside="closeProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
+              <a href="#" @click.prevent="handleLogout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+            </div>
+          </div>
         </div>
       </header>
 
-      <!-- Content -->
-      <main class="p-8">
+      <!-- Konten Dashboard -->
+      <main class="flex-1 p-6 overflow-y-auto">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Riwayat Saya</h1>
+            <p class="text-sm text-gray-600 mt-1">Daftar aktivitas yang telah saya lakukan</p>
+          </div>
+          <button
+            @click="fetchActivities"
+            :disabled="loading"
+            class="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition duration-150"
+          >
+            <svg class="h-5 w-5" :class="{ 'animate-spin': loading }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            <span>{{ loading ? 'Memuat...' : 'Refresh' }}</span>
+          </button>
+        </div>
         <!-- Filter Section -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Filter Aktivitas</h2>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Action Type Filter -->
@@ -260,7 +312,7 @@ onMounted(() => {
               <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Aktivitas</label>
               <select
                 v-model="selectedAction"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
               >
                 <option v-for="action in actionTypes" :key="action.value" :value="action.value">
                   {{ action.label }}
@@ -275,7 +327,7 @@ onMounted(() => {
                 v-model="searchTerm"
                 type="text"
                 placeholder="Cari aktivitas..."
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -285,7 +337,7 @@ onMounted(() => {
               <input
                 v-model="startDate"
                 type="date"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 text-gray-500"
               />
             </div>
 
@@ -295,7 +347,7 @@ onMounted(() => {
               <input
                 v-model="endDate"
                 type="date"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 text-gray-500"
               />
             </div>
           </div>
@@ -314,7 +366,7 @@ onMounted(() => {
         </div>
 
         <!-- Activities List -->
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
           <!-- Loading State -->
           <div v-if="loading" class="text-center py-12">
             <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
@@ -344,7 +396,7 @@ onMounted(() => {
           </div>
 
           <!-- Activities Timeline -->
-          <div v-else class="space-y-4">
+          <div v-else class="p-6 space-y-4">
             <div
               v-for="activity in paginatedActivities()"
               :key="activity.id"
