@@ -100,46 +100,87 @@ class DashboardController extends Controller
     {
         try {
             $userId = $request->user()->id;
+            $user = $request->user();
             $activities = [];
             
-            // Get recent Purchase Orders created by this user
+            // Get all Purchase Orders created by this user
             $recentPOs = PurchaseOrder::where('created_by', $userId)
                 ->orderBy('created_at', 'desc')
-                ->limit(5)
+                ->limit(50)
                 ->get();
             
             foreach ($recentPOs as $po) {
+                // Check if PO was updated
+                if ($po->updated_at && $po->updated_at->gt($po->created_at->addMinutes(1))) {
+                    $activities[] = [
+                        'id' => 'po-edit-' . $po->id,
+                        'type' => 'edit',
+                        'action' => 'mengedit Purchase Order',
+                        'item' => $po->no_po,
+                        'timestamp' => $po->updated_at->toIso8601String(),
+                        'user' => [
+                            'name' => $user->name,
+                            'email' => $user->email
+                        ]
+                    ];
+                }
+                
+                // Add creation activity
                 $activities[] = [
-                    'id' => 'po-' . $po->id,
+                    'id' => 'po-create-' . $po->id,
                     'type' => 'add',
                     'action' => 'membuat Purchase Order',
                     'item' => $po->no_po,
-                    'timestamp' => $po->created_at->toIso8601String()
+                    'timestamp' => $po->created_at->toIso8601String(),
+                    'user' => [
+                        'name' => $user->name,
+                        'email' => $user->email
+                    ]
                 ];
             }
             
-            // Get recent Sales Orders created by this user
+            // Get all Sales Orders created by this user
             $recentSOs = SalesOrder::where('created_by', $userId)
                 ->orderBy('created_at', 'desc')
-                ->limit(5)
+                ->limit(50)
                 ->get();
             
             foreach ($recentSOs as $so) {
+                // Check if SO was updated
+                if ($so->updated_at && $so->updated_at->gt($so->created_at->addMinutes(1))) {
+                    $activities[] = [
+                        'id' => 'so-edit-' . $so->id,
+                        'type' => 'edit',
+                        'action' => 'mengedit Sales Order',
+                        'item' => $so->no_so,
+                        'timestamp' => $so->updated_at->toIso8601String(),
+                        'user' => [
+                            'name' => $user->name,
+                            'email' => $user->email
+                        ]
+                    ];
+                }
+                
+                // Add creation activity
                 $activities[] = [
-                    'id' => 'so-' . $so->id,
+                    'id' => 'so-create-' . $so->id,
                     'type' => 'remove',
                     'action' => 'membuat Sales Order',
                     'item' => $so->no_so,
-                    'timestamp' => $so->created_at->toIso8601String()
+                    'timestamp' => $so->created_at->toIso8601String(),
+                    'user' => [
+                        'name' => $user->name,
+                        'email' => $user->email
+                    ]
                 ];
             }
             
-            // Sort by timestamp desc and limit to 10
+            // Sort by timestamp desc
             usort($activities, function($a, $b) {
                 return strtotime($b['timestamp']) - strtotime($a['timestamp']);
             });
             
-            return response()->json(array_slice($activities, 0, 10));
+            return response()->json($activities);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Gagal memuat aktivitas',

@@ -203,6 +203,12 @@ const router = createRouter({
       component: () => import('@/views/staff/PurchaseOrderList.vue'),
       meta: { requiresAuth: true, requiresStaff: true }
     },
+    {
+      path: '/staff/aktivitas',
+      name: 'staff-aktivitas',
+      component: () => import('@/views/staff/MyActivities.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
   ]
 })
 
