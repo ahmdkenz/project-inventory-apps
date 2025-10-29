@@ -120,7 +120,7 @@
                 <tr v-for="transaction in transactions" :key="transaction.id" class="print-no-break">
                   <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.no_po }}</td>
                   <td class="px-4 py-4 text-sm text-gray-800">{{ formatDate(transaction.tgl_pesan) }}</td>
-                  <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ transaction.supplier?.nama_supplier || '-' }}</td>
+                  <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ transaction.supplier?.nama || '-' }}</td>
                   <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ transaction.items_count }} Jenis</td>
                   <td class="px-4 py-4 text-sm text-gray-800 text-right">Rp {{ formatCurrency(transaction.total) }}</td>
                   <td class="px-4 py-4 text-sm text-gray-800">{{ transaction.creator?.name || '-' }}</td>
@@ -159,7 +159,7 @@ interface PurchaseOrder {
   total: number
   items_count: number
   supplier?: {
-    nama_supplier: string
+    nama: string
   }
   creator?: {
     name: string

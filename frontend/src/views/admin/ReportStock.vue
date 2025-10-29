@@ -79,7 +79,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
               <select v-model="filters.kategori_id" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Semua Kategori</option>
-                <option v-for="kategori in categories" :key="kategori.id" :value="kategori.id">{{ kategori.nama_kategori }}</option>
+                <option v-for="kategori in categories" :key="kategori.id" :value="kategori.id">{{ kategori.nama }}</option>
               </select>
             </div>
             <div>
@@ -180,7 +180,7 @@
                 <tr v-for="item in items" :key="item.id">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.kode }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.nama }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.kategori?.nama_kategori || '-' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.kategori?.nama || '-' }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {{ formatCurrency(item.harga_beli) }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {{ formatCurrency(item.harga_jual) }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.stok }}</td>
@@ -225,7 +225,7 @@ const currentUser = ref({
 
 interface Kategori {
   id: number
-  nama_kategori: string
+  nama: string
 }
 
 interface Barang {
