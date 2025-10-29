@@ -21,6 +21,11 @@ import FormUserManagement from '@/views/admin/FormUserManagement.vue'
 import SupplierManagement from '@/views/admin/SupplierManagement.vue'
 import FormSupplier from '@/views/admin/FormSupplier.vue'
 import AuditLog from '@/views/admin/AuditLog.vue'
+import ReportDashboard from '@/views/admin/ReportDashboard.vue'
+import ReportUsers from '@/views/admin/ReportUsers.vue'
+import ReportStock from '@/views/admin/ReportStock.vue'
+import ReportIncoming from '@/views/admin/ReportIncoming.vue'
+import ReportOutgoing from '@/views/admin/ReportOutgoing.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -135,6 +140,36 @@ const router = createRouter({
       path: '/admin/audit-log',
       name: 'admin-audit-log',
       component: AuditLog,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/laporan',
+      name: 'admin-laporan',
+      component: ReportDashboard,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/laporan/pengguna',
+      name: 'admin-laporan-pengguna',
+      component: ReportUsers,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/laporan/stok',
+      name: 'admin-laporan-stok',
+      component: ReportStock,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/laporan/barang-masuk',
+      name: 'admin-laporan-barang-masuk',
+      component: ReportIncoming,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/laporan/barang-keluar',
+      name: 'admin-laporan-barang-keluar',
+      component: ReportOutgoing,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

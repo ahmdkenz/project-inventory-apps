@@ -11,6 +11,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\Api\Admin\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/sales-order/{id}', [SalesOrderController::class, 'adminShow']);
         Route::post('/sales-order/{id}/approve', [SalesOrderController::class, 'approve']);
         Route::post('/sales-order/{id}/reject', [SalesOrderController::class, 'reject']);
+        
+        // Report routes
+        Route::prefix('reports')->group(function () {
+            Route::get('/users', [ReportController::class, 'users']);
+            Route::get('/stock', [ReportController::class, 'stock']);
+            Route::get('/incoming', [ReportController::class, 'incoming']);
+            Route::get('/outgoing', [ReportController::class, 'outgoing']);
+        });
     });
     
     // Staff routes
