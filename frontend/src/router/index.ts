@@ -16,6 +16,7 @@ import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
 import FormPurchaseOrderAdmin from '@/views/admin/FormPurchaseOrderAdmin.vue'
 import PurchaseOrderDetailAdmin from '@/views/admin/PurchaseOrderDetailAdmin.vue'
 import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
+import FormSalesOrderAdmin from '@/views/admin/FormSalesOrderAdmin.vue'
 import SalesOrderDetailAdmin from '@/views/admin/SalesOrderDetailAdmin.vue'
 import UserManagement from '@/views/admin/UserManagement.vue'
 import FormUserManagement from '@/views/admin/FormUserManagement.vue'
@@ -103,6 +104,12 @@ const router = createRouter({
       path: '/admin/sales-orders',
       name: 'admin-sales-orders',
       component: SalesOrdersAdmin,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/sales-orders/create',
+      name: 'admin-sales-order-create',
+      component: FormSalesOrderAdmin,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

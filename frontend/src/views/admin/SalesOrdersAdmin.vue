@@ -58,7 +58,7 @@
           </button>
           
           <!-- Profile Dropdown -->
-          <div class="relative" v-click-outside="closeProfileMenu">
+          <div class="relative" ref="profileRef">
             <button @click="toggleProfileMenu" class="flex items-center space-x-2">
               <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
               <span class="hidden md:block text-sm font-medium text-gray-700">{{ user?.name || 'Admin' }}</span>
@@ -75,170 +75,212 @@
 
       <!-- Konten Halaman -->
       <main class="flex-1 p-6 overflow-y-auto">
-        <!-- Preserve original page content -->
-        <div class="p-6">
-          <!-- Header Halaman -->
-          <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-            <h1 class="text-3xl font-bold text-gray-900">Sales Order / Barang Keluar</h1>
-          </div>
-
-          <!-- Kontrol Filter -->
-          <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label for="filter-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  v-model="filters.status"
-                  id="filter-status"
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  @change="fetchSalesOrders"
-                >
-                  <option value="">Semua Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
-              <div>
-                <label for="filter-search" class="block text-sm font-medium text-gray-700 mb-1">Cari</label>
-                <input
-                  v-model="filters.search"
-                  type="text"
-                  id="filter-search"
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="No. SO / Customer..."
-                  @input="handleSearch"
-                />
-              </div>
-              <div>
-                <label for="filter-date-start" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
-                <input
-                  v-model="filters.dateFrom"
-                  type="date"
-                  id="filter-date-start"
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  @change="fetchSalesOrders"
-                />
-              </div>
-              <div>
-                <label for="filter-date-end" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
-                <input
-                  v-model="filters.dateTo"
-                  type="date"
-                  id="filter-date-end"
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  @change="fetchSalesOrders"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Loading State -->
-          <div v-if="loading" class="flex justify-center items-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-
-          <!-- Tabel Data -->
-          <div v-else class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-max">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SO</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Order</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                  <tr v-if="salesOrders.length === 0">
-                    <td colspan="7" class="px-6 py-8 text-center text-gray-500">
-                      Tidak ada data sales order.
-                    </td>
-                  </tr>
-                  <tr v-for="so in salesOrders" :key="so.id">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm font-medium text-gray-900">{{ so.no_so }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ so.customer_name }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(so.tgl_order) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ formatCurrency(so.total || 0) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span :class="getStatusBadgeClass(so.status)" class="px-2 py-1 text-xs font-semibold rounded-full">
-                        {{ getStatusLabel(so.status) }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ so.creator?.name || '-' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                      <button v-if="so.status === 'pending'" @click="openApproveModal(so)" class="text-green-600 hover:text-green-900">Approve</button>
-                      <button v-if="so.status === 'pending'" @click="openRejectModal(so)" class="text-red-600 hover:text-red-900">Reject</button>
-                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-blue-600 hover:text-blue-900">Detail</router-link>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Message Box -->
-          <div
-            v-if="message.show"
-            :class="['fixed top-5 right-5 p-4 rounded-md shadow-lg text-white transition-all duration-300 z-50', message.isError ? 'bg-red-500' : 'bg-green-500']"
-          >
-            {{ message.text }}
-          </div>
-
-          <!-- Modal Approve -->
-          <div v-if="showApproveModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50" @click.self="closeApproveModal">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-              <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Approve Sales Order</h3>
-              </div>
-              <div class="p-6">
-                <p class="text-sm text-gray-600">Apakah Anda yakin ingin approve Sales Order <strong>{{ selectedSO?.no_so }}</strong>?</p>
-                <p class="text-sm text-gray-600 mt-2">Stok barang akan dikurangi setelah di-approve.</p>
-              </div>
-              <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
-                <button @click="closeApproveModal" class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300">Batal</button>
-                <button @click="confirmApprove" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg">Ya, Approve</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Modal Reject -->
-          <div v-if="showRejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50" @click.self="closeRejectModal">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-              <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Reject Sales Order</h3>
-              </div>
-              <div class="p-6">
-                <p class="text-sm text-gray-600 mb-4">Apakah Anda yakin ingin menolak Sales Order <strong>{{ selectedSO?.no_so }}</strong>?</p>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Penolakan <span class="text-red-500">*</span></label>
-                <textarea 
-                  v-model="rejectReason"
-                  rows="4"
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Masukkan alasan penolakan..."
-                ></textarea>
-              </div>
-              <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
-                <button @click="closeRejectModal" class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300">Batal</button>
-                <button @click="confirmReject" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg">Ya, Reject</button>
-              </div>
-            </div>
+        <!-- Header Halaman -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <h1 class="text-3xl font-bold text-gray-900">Manajemen Sales Order</h1>
+          <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+            <router-link
+              to="/admin/sales-orders/create"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
+            >
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>Buat SO Baru</span>
+            </router-link>
           </div>
         </div>
+
+        <!-- Filter dan Pencarian -->
+        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <input
+              v-model="filters.search"
+              type="text"
+              placeholder="Cari No. SO / Penerima..."
+              class="md:col-span-2 w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+              @input="handleSearch"
+            />
+            <select
+              v-model="filters.status"
+              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+              @change="fetchSalesOrders"
+            >
+              <option value="">Semua Status</option>
+              <option value="pending">Menunggu Persetujuan</option>
+              <option value="approved">Disetujui (Pending)</option>
+              <option value="completed">Selesai</option>
+              <option value="rejected">Ditolak</option>
+            </select>
+            <input
+              v-model="filters.dateFrom"
+              type="date"
+              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+              @change="fetchSalesOrders"
+            />
+            <input
+              v-model="filters.dateTo"
+              type="date"
+              class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+              @change="fetchSalesOrders"
+            />
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div v-if="loading" class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+
+        <!-- Tabel Data SO -->
+        <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-max">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SO</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima/Tujuan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl. Permintaan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr v-if="salesOrders.length === 0">
+                  <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                    Tidak ada data sales order.
+                  </td>
+                </tr>
+                <tr v-for="so in salesOrders" :key="so.id">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800">
+                    <router-link :to="`/admin/sales-orders/detail/${so.id}`">{{ so.no_so }}</router-link>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ so.customer_name }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ so.creator?.name || '-' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(so.tgl_order) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="getStatusBadgeClass(so.status)" class="px-3 py-1 inline-flex text-xs font-medium rounded-full">
+                      {{ getStatusLabel(so.status) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <button v-if="so.status === 'pending'" @click="openApproveModal(so)" class="text-green-600 hover:text-green-800">Setujui</button>
+                    <button v-if="so.status === 'pending'" @click="openRejectModal(so)" class="text-red-600 hover:text-red-800">Tolak</button>
+                    <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-6 flex items-center justify-between">
+          <button class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition duration-150" disabled>
+            Sebelumnya
+          </button>
+          <span class="text-sm text-gray-600">
+            Halaman <span class="font-medium">1</span> dari <span class="font-medium">1</span>
+          </span>
+          <button class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition duration-150">
+            Berikutnya
+          </button>
+        </div>
       </main>
+    </div>
+
+    <!-- Modal Konfirmasi Approve -->
+    <div
+      v-if="showApproveModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300"
+      @click.self="closeApproveModal"
+    >
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="text-lg font-medium leading-6 text-gray-900">Setujui Sales Order</h3>
+        </div>
+        <div class="p-6">
+          <p class="text-sm text-gray-600">
+            Apakah Anda yakin ingin menyetujui Sales Order <strong>{{ selectedSO?.no_so }}</strong>?
+          </p>
+          <p class="text-sm text-gray-600 mt-2">
+            Stok barang akan dikurangi setelah disetujui.
+          </p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+          <button
+            @click="closeApproveModal"
+            type="button"
+            class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-150"
+          >
+            Batal
+          </button>
+          <button
+            @click="confirmApprove"
+            type="button"
+            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150"
+          >
+            Ya, Setujui
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Tolak SO -->
+    <div
+      v-if="showRejectModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300"
+      @click.self="closeRejectModal"
+    >
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="text-lg font-medium leading-6 text-gray-900">Tolak Sales Order</h3>
+        </div>
+        <div class="p-6">
+          <p class="text-sm text-gray-600 mb-4">
+            Anda akan menolak Sales Order <strong>{{ selectedSO?.no_so }}</strong>.
+            Silakan berikan alasan penolakan:
+          </p>
+          <textarea
+            v-model="rejectReason"
+            rows="4"
+            class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+            placeholder="Alasan penolakan..."
+          ></textarea>
+          <span v-if="rejectReasonError" class="text-red-500 text-xs mt-1 block">{{ rejectReasonError }}</span>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+          <button
+            @click="closeRejectModal"
+            type="button"
+            class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-150"
+          >
+            Batal
+          </button>
+          <button
+            @click="confirmReject"
+            type="button"
+            class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150"
+          >
+            Ya, Tolak
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Box -->
+    <div
+      v-if="message.show"
+      :class="['fixed top-5 right-5 p-4 rounded-md shadow-lg text-white transition-all duration-300 z-50', message.isError ? 'bg-red-500' : 'bg-green-500']"
+    >
+      {{ message.text }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AdminNavigation from '@/components/AdminNavigation.vue'
@@ -252,6 +294,7 @@ const authStore = useAuthStore()
 // Header/Profile state
 const showProfileMenu = ref(false)
 const user = ref<any>(null)
+const profileRef = ref<HTMLElement | null>(null)
 
 const toggleProfileMenu = () => {
   showProfileMenu.value = !showProfileMenu.value
@@ -267,6 +310,14 @@ const toggleSidebar = () => {
   if (sidebar && overlay) {
     sidebar.classList.toggle('-translate-x-full')
     overlay.classList.toggle('hidden')
+  }
+}
+
+// Handle click outside profile menu
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as Node
+  if (showProfileMenu.value && profileRef.value && !profileRef.value.contains(target)) {
+    closeProfileMenu()
   }
 }
 
@@ -289,6 +340,7 @@ const showApproveModal = ref(false)
 const showRejectModal = ref(false)
 const selectedSO = ref<SalesOrder | null>(null)
 const rejectReason = ref('')
+const rejectReasonError = ref('')
 
 const filters = ref({
   status: '',
@@ -361,6 +413,7 @@ const confirmApprove = async () => {
 const openRejectModal = (so: SalesOrder) => {
   selectedSO.value = so
   rejectReason.value = ''
+  rejectReasonError.value = ''
   showRejectModal.value = true
 }
 
@@ -368,14 +421,18 @@ const closeRejectModal = () => {
   showRejectModal.value = false
   selectedSO.value = null
   rejectReason.value = ''
+  rejectReasonError.value = ''
 }
 
 const confirmReject = async () => {
-  if (!selectedSO.value?.id || !rejectReason.value.trim()) {
-    showMessage('Alasan penolakan harus diisi', true)
+  if (!selectedSO.value?.id) return
+  
+  if (!rejectReason.value.trim()) {
+    rejectReasonError.value = 'Alasan penolakan harus diisi'
     return
   }
   
+  loading.value = true
   try {
     const response = await salesOrderService.reject(selectedSO.value.id, rejectReason.value)
     if (response.success) {
@@ -384,26 +441,29 @@ const confirmReject = async () => {
       await fetchSalesOrders()
     }
   } catch (error: any) {
-    showMessage(error.response?.data?.message || 'Gagal reject sales order', true)
+    console.error('Error rejecting order:', error)
+    showMessage(error.response?.data?.message || 'Gagal menolak sales order', true)
+  } finally {
+    loading.value = false
   }
 }
 
 const getStatusBadgeClass = (status: string) => {
   const classes: any = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'approved': 'bg-green-100 text-green-800',
+    'pending': 'bg-purple-100 text-purple-800',
+    'approved': 'bg-yellow-100 text-yellow-800',
     'rejected': 'bg-red-100 text-red-800',
-    'completed': 'bg-blue-100 text-blue-800'
+    'completed': 'bg-green-100 text-green-800'
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
 }
 
 const getStatusLabel = (status: string) => {
   const labels: any = {
-    'pending': 'Pending',
-    'approved': 'Approved',
-    'rejected': 'Rejected',
-    'completed': 'Completed'
+    'pending': 'Menunggu Persetujuan',
+    'approved': 'Disetujui (Pending)',
+    'rejected': 'Ditolak',
+    'completed': 'Selesai'
   }
   return labels[status] || status
 }
@@ -436,6 +496,15 @@ onMounted(() => {
   if (userData) {
     user.value = JSON.parse(userData)
   }
+
+  // Add click outside listener
+  document.addEventListener('click', handleClickOutside)
+
   fetchSalesOrders()
+})
+
+onBeforeUnmount(() => {
+  // Remove click outside listener
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
