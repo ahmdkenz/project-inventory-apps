@@ -13,6 +13,7 @@ import AddBarang from '@/views/admin/AddBarang.vue'
 import ManagementCategory from '@/views/admin/ManagementCategory.vue'
 import FormCategory from '@/views/admin/FormCategory.vue'
 import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
+import FormPurchaseOrderAdmin from '@/views/admin/FormPurchaseOrderAdmin.vue'
 import PurchaseOrderDetailAdmin from '@/views/admin/PurchaseOrderDetailAdmin.vue'
 import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
 import SalesOrderDetailAdmin from '@/views/admin/SalesOrderDetailAdmin.vue'
@@ -84,6 +85,12 @@ const router = createRouter({
       path: '/admin/purchase-orders',
       name: 'admin-purchase-orders',
       component: PurchaseOrdersAdmin,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/purchase-orders/create',
+      name: 'admin-purchase-order-create',
+      component: FormPurchaseOrderAdmin,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
