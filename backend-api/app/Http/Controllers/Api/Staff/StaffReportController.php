@@ -33,9 +33,12 @@ class StaffReportController extends Controller
                 ->whereDate('sales_orders.tgl_order', '>=', now()->subDays(30))
                 ->sum('sales_order_items.subtotal') ?? 0;
 
-            // Stok menipis
-            $lowStockCount = Barang::whereColumn('stok', '<', 'stok_minimum')
-                ->where('stok', '>', 0)
+            // Stok menipis - barang dengan stok < 10 atau stok < stok_minimum
+            $lowStockCount = Barang::where('stok', '>', 0)
+                ->where(function($query) {
+                    $query->where('stok', '<', 10)
+                          ->orWhereColumn('stok', '<', 'stok_minimum');
+                })
                 ->count();
 
             // Top 5 Barang Keluar
@@ -89,8 +92,11 @@ class StaffReportController extends Controller
                         $query->whereColumn('stok', '>=', 'min_stok');
                         break;
                     case 'menipis':
-                        $query->whereColumn('stok', '<', 'stok_minimum')
-                              ->where('stok', '>', 0);
+                        $query->where('stok', '>', 0)
+                              ->where(function($q) {
+                                  $q->where('stok', '<', 10)
+                                    ->orWhereColumn('stok', '<', 'stok_minimum');
+                              });
                         break;
                     case 'habis':
                         $query->where('stok', '<=', 0);
@@ -106,8 +112,12 @@ class StaffReportController extends Controller
                 'totalValue' => $items->sum(function ($item) {
                     return $item->stok * $item->harga_beli;
                 }),
-                'lowStock' => Barang::whereColumn('stok', '<', 'stok_minimum')
-                    ->where('stok', '>', 0)->count(),
+                'lowStock' => Barang::where('stok', '>', 0)
+                    ->where(function($q) {
+                        $q->where('stok', '<', 10)
+                          ->orWhereColumn('stok', '<', 'stok_minimum');
+                    })
+                    ->count(),
                 'outOfStock' => Barang::where('stok', '<=', 0)->count()
             ];
 
