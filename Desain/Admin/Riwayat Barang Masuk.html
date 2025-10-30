@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Barang Masuk - Aplikasi Inventori</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar Admin -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+            <div class="p-6 flex items-center space-x-3">
+                <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                <span class="text-white text-2xl font-semibold">Inventori</span>
+            </div>
+            
+            <nav class="mt-6 flex-1 px-4 space-y-1">
+                <!-- ... menu lainnya ... -->
+                
+                <!-- Grup Menu: Transaksi -->
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                    <h6 class="px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Transaksi</h6>
+                    <div class="mt-2 space-y-1">
+                        <a href="admin_po_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span>Purchase Order (PO)</span>
+                        </a>
+                        <a href="admin_so_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span>Sales Order (SO)</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Grup Menu: Riwayat -->
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                    <h6 class="px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Riwayat</h6>
+                    <div class="mt-2 space-y-1">
+                         <!-- Link Aktif -->
+                        <a href="riwayat_masuk.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12M8.25 17.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                            <span>Riwayat Barang Masuk</span>
+                        </a>
+                        <!-- <a href="riwayat_keluar.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">...</a> -->
+                    </div>
+                </div>
+
+                <!-- ... menu Laporan & Admin ... -->
+            </nav>
+        </aside>
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+        
+        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+            
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
+                <button id="hamburger-btn" class="text-gray-600 lg:hidden">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <div class="relative hidden sm:block"></div>
+                <div class="flex items-center space-x-4" x-data="{ open: false }">
+                    <!-- ... header icons & profile ... -->
+                </div>
+            </header>
+
+            <main class="flex-1 p-6 overflow-y-auto">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-900">Riwayat Barang Masuk</h1>
+                    <!-- Tombol Add tidak ada di sini, karena penambahan dilakukan via PO atau Form Non-PO -->
+                </div>
+                
+                <!-- Filter dan Pencarian -->
+                <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="text" placeholder="Cari No. Dokumen / No. Ref..." class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+                        <select class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Semua Tipe</option>
+                            <option value="po">Dari PO</option>
+                            <option value="non-po">Non-PO</option>
+                        </select>
+                        <input type="date" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 text-gray-500">
+                        <input type="date" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 text-gray-500">
+                    </div>
+                </div>
+
+                <!-- Tabel Riwayat -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-max">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Dokumen</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Referensi</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sumber</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Nilai</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <!-- Baris 1: Dari PO -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800"><a href="po_receive_detail.html">GR-2024-00123</a></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">26 Okt 2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-3 py-1 inline-flex text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                            Dari PO
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">PO-2024-001</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">PT. Supplier Jaya</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">Rp 1.221.000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Staff Gudang</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="po_receive_detail.html" class="text-indigo-600 hover:text-indigo-900">Lihat Detail</a>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Baris 2: Non-PO -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800"><a href="non_po_receive_detail.html">GR-NON-00124</a></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">25 Okt 2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-3 py-1 inline-flex text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                                            Non-PO
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Retur Divisi IT</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">Rp 0</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Admin</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="non_po_receive_detail.html" class="text-indigo-600 hover:text-indigo-900">Lihat Detail</a>
+                                    </td>
+                                </tr>
+
+                                <!-- ... baris lainnya ... -->
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-6 flex items-center justify-between">
+                    <button class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition duration-150" disabled>
+                        Sebelumnya
+                    </button>
+                    <span class="text-sm text-gray-600">
+                        Halaman <span class="font-medium">1</span> dari <span class="font-medium">1</span>
+                    </span>
+                    <button class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition duration-150">
+                        Berikutnya
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Script Sidebar Mobile
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+            hamburgerBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+        });
+    </script>
+</body>
+</html>
