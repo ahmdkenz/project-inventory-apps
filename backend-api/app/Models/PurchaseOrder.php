@@ -21,6 +21,8 @@ class PurchaseOrder extends Model
         'created_by',
         'approved_by',
         'approved_at',
+        'completed_at',
+        'no_surat_jalan',
         'reject_reason'
     ];
 
@@ -28,6 +30,7 @@ class PurchaseOrder extends Model
         'tgl_pesan' => 'date',
         'tgl_estimasi' => 'date',
         'approved_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     /**

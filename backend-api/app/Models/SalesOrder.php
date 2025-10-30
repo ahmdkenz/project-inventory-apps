@@ -23,6 +23,8 @@ class SalesOrder extends Model
         'created_by',
         'approved_by',
         'approved_at',
+        'completed_at',
+        'catatan_pengeluaran',
         'reject_reason',
     ];
 
@@ -30,6 +32,7 @@ class SalesOrder extends Model
         'tgl_order' => 'date',
         'tgl_kirim' => 'date',
         'approved_at' => 'datetime',
+        'completed_at' => 'datetime',
         'subtotal' => 'decimal:2',
         'ppn' => 'decimal:2',
         'total' => 'decimal:2',

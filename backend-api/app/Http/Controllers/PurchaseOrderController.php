@@ -495,7 +495,7 @@ class PurchaseOrderController extends Controller
                     'no_dokumen' => $po->no_po,
                     'tanggal' => $po->completed_at ? $po->completed_at->format('Y-m-d') : $po->approved_at->format('Y-m-d'),
                     'tipe' => 'po',
-                    'no_referensi' => $po->no_po,
+                    'no_referensi' => $po->no_surat_jalan ?? $po->no_po,
                     'sumber' => $po->supplier->nama ?? '-',
                     'total_nilai' => $po->total ?? 0,
                     'dicatat_oleh' => $po->creator->name ?? '-'

@@ -11,8 +11,10 @@ class SalesOrderItem extends Model
         'sales_order_id',
         'barang_id',
         'qty',
+        'qty_issued',
         'harga_satuan',
         'subtotal',
+        'catatan'
     ];
 
     protected $casts = [
