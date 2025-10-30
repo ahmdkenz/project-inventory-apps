@@ -110,8 +110,9 @@ class DashboardController extends Controller
                 ->get();
             
             foreach ($recentPOs as $po) {
-                // Check if PO was updated
-                if ($po->updated_at && $po->updated_at->gt($po->created_at->addMinutes(1))) {
+                // Check if PO was updated by staff (not just approved by admin)
+                // Only show "edit" if status is still 'pending' and updated_at is different
+                if ($po->updated_at && $po->updated_at->gt($po->created_at->addMinutes(1)) && $po->status === 'pending') {
                     $activities[] = [
                         'id' => 'po-edit-' . $po->id,
                         'type' => 'edit',
@@ -146,8 +147,9 @@ class DashboardController extends Controller
                 ->get();
             
             foreach ($recentSOs as $so) {
-                // Check if SO was updated
-                if ($so->updated_at && $so->updated_at->gt($so->created_at->addMinutes(1))) {
+                // Check if SO was updated by staff (not just approved by admin)
+                // Only show "edit" if status is still 'pending' and updated_at is different
+                if ($so->updated_at && $so->updated_at->gt($so->created_at->addMinutes(1)) && $so->status === 'pending') {
                     $activities[] = [
                         'id' => 'so-edit-' . $so->id,
                         'type' => 'edit',
