@@ -475,6 +475,201 @@ class SalesOrderController extends Controller
         }
     }
 
+    // Admin: Process sales order (issue goods)
+    public function process(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'items' => 'required|array|min:1',
+            'items.*.item_id' => 'required|integer',
+            'items.*.barang_id' => 'required|exists:barang,id',
+            'items.*.qty_issued' => 'required|integer|min:1',
+            'catatan' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $salesOrder = SalesOrder::with('items.barang')->findOrFail($id);
+
+            if ($salesOrder->status !== 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sales order is not in approved status'
+                ], 400);
+            }
+
+            // Update stock and items
+            foreach ($request->items as $item) {
+                $barang = Barang::findOrFail($item['barang_id']);
+                
+                // Check stock availability
+                if ($barang->stok < $item['qty_issued']) {
+                    throw new \Exception("Stok {$barang->nama} tidak mencukupi. Stok tersedia: {$barang->stok}");
+                }
+
+                // Reduce stock
+                $barang->decrement('stok', $item['qty_issued']);
+
+                // Update SO item
+                $soItem = SalesOrderItem::where('sales_order_id', $salesOrder->id)
+                    ->where('id', $item['item_id'])
+                    ->first();
+                    
+                if ($soItem) {
+                    $soItem->update([
+                        'qty_issued' => $item['qty_issued']
+                    ]);
+                }
+            }
+
+            // Update sales order status
+            $salesOrder->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'catatan_pengeluaran' => $request->catatan,
+            ]);
+
+            DB::commit();
+
+            $salesOrder->load(['items.barang', 'creator', 'approver']);
+
+            // Log activity
+            AuditLogController::log(
+                'process',
+                "Memproses pengeluaran barang untuk Sales Order {$salesOrder->no_so}",
+                'SalesOrder',
+                $salesOrder->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sales order processed successfully',
+                'data' => $salesOrder
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Admin: Get outgoing items (completed SO)
+    public function outgoingItems(Request $request)
+    {
+        try {
+            $query = SalesOrder::with(['creator'])
+                ->where('status', 'completed');
+
+            // Filter by type
+            if ($request->has('type') && $request->type != '') {
+                if ($request->type === 'so') {
+                    // Already filtered by SO
+                } elseif ($request->type === 'non-so') {
+                    // For future: handle non-SO outgoing items
+                    return response()->json([
+                        'success' => true,
+                        'data' => [],
+                        'meta' => [
+                            'current_page' => 1,
+                            'last_page' => 1,
+                            'per_page' => 10,
+                            'total' => 0
+                        ]
+                    ]);
+                }
+            }
+
+            // Filter by date range
+            if ($request->has('start_date') && $request->start_date) {
+                $query->whereDate('completed_at', '>=', $request->start_date);
+            }
+            if ($request->has('end_date') && $request->end_date) {
+                $query->whereDate('completed_at', '<=', $request->end_date);
+            }
+
+            // Search
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('no_so', 'like', "%{$search}%")
+                      ->orWhere('customer_name', 'like', "%{$search}%");
+                });
+            }
+
+            // Paginate
+            $perPage = $request->get('per_page', 10);
+            $outgoingItems = $query->orderBy('completed_at', 'desc')->paginate($perPage);
+
+            // Transform data to match frontend interface
+            $transformedData = $outgoingItems->map(function ($so) {
+                return [
+                    'id' => $so->id,
+                    'no_dokumen' => $this->generateOutDocNumber($so),
+                    'tanggal' => $so->completed_at ? $so->completed_at->format('Y-m-d') : $so->approved_at->format('Y-m-d'),
+                    'tipe' => 'so',
+                    'no_referensi' => $so->no_so,
+                    'penerima' => $so->customer_name,
+                    'dicatat_oleh' => $so->creator->name ?? '-'
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $transformedData,
+                'meta' => [
+                    'current_page' => $outgoingItems->currentPage(),
+                    'last_page' => $outgoingItems->lastPage(),
+                    'per_page' => $outgoingItems->perPage(),
+                    'total' => $outgoingItems->total()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Admin: Get outgoing item detail
+    public function outgoingItemDetail($id)
+    {
+        try {
+            $salesOrder = SalesOrder::with(['items.barang', 'creator', 'approver'])
+                ->where('status', 'completed')
+                ->findOrFail($id);
+
+            // Add outgoing_item structure
+            $salesOrder->outgoing_item = [
+                'no_dokumen' => $this->generateOutDocNumber($salesOrder),
+                'tanggal' => $salesOrder->completed_at ? $salesOrder->completed_at->format('Y-m-d') : $salesOrder->approved_at->format('Y-m-d'),
+                'dicatat_oleh' => $salesOrder->creator->name ?? '-',
+                'catatan' => $salesOrder->catatan_pengeluaran,
+                'items' => $salesOrder->items
+            ];
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data barang keluar berhasil diambil',
+                'data' => $salesOrder
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan'
+            ], 404);
+        }
+    }
+
     // Generate SO number
     private function generateSONumber()
     {
@@ -493,5 +688,13 @@ class SalesOrderController extends Controller
         }
 
         return $prefix . $yearMonth . '-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    // Generate OUT document number
+    private function generateOutDocNumber($salesOrder)
+    {
+        $date = $salesOrder->completed_at ? $salesOrder->completed_at : now();
+        $yearMonth = $date->format('Ym');
+        return 'OUT-' . $yearMonth . '-' . str_pad($salesOrder->id, 4, '0', STR_PAD_LEFT);
     }
 }

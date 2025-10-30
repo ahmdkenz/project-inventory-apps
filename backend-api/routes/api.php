@@ -61,12 +61,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/purchase-order/{id}', [PurchaseOrderController::class, 'adminShow']);
         Route::post('/purchase-order/{id}/approve', [PurchaseOrderController::class, 'approve']);
         Route::post('/purchase-order/{id}/reject', [PurchaseOrderController::class, 'reject']);
+        Route::post('/purchase-order/{id}/receive', [PurchaseOrderController::class, 'receive']);
         
         // Sales Order routes (admin - approval)
         Route::get('/sales-order', [SalesOrderController::class, 'adminIndex']);
         Route::get('/sales-order/{id}', [SalesOrderController::class, 'adminShow']);
         Route::post('/sales-order/{id}/approve', [SalesOrderController::class, 'approve']);
         Route::post('/sales-order/{id}/reject', [SalesOrderController::class, 'reject']);
+        Route::post('/sales-order/{id}/process', [SalesOrderController::class, 'process']);
+        
+        // Received Items (Barang Masuk) routes
+        Route::get('/received-items', [PurchaseOrderController::class, 'receivedItems']);
+        Route::get('/received-items/{id}', [PurchaseOrderController::class, 'receivedItemDetail']);
+        
+        // Outgoing Items (Barang Keluar) routes
+        Route::get('/outgoing-items', [SalesOrderController::class, 'outgoingItems']);
+        Route::get('/outgoing-items/{id}', [SalesOrderController::class, 'outgoingItemDetail']);
         
         // Report routes
         Route::prefix('reports')->group(function () {

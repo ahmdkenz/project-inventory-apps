@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
+use App\Models\Barang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -431,6 +432,197 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menolak purchase order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get received items (completed PO) for admin
+     */
+    public function receivedItems(Request $request)
+    {
+        try {
+            $query = PurchaseOrder::with(['supplier', 'creator'])
+                ->where('status', 'completed');
+
+            // Filter by type
+            if ($request->has('type') && $request->type != '') {
+                if ($request->type === 'po') {
+                    // Already filtered by PO
+                } elseif ($request->type === 'non-po') {
+                    // For future: handle non-PO received items
+                    // Currently we only return empty for non-po
+                    return response()->json([
+                        'success' => true,
+                        'data' => [],
+                        'meta' => [
+                            'current_page' => 1,
+                            'last_page' => 1,
+                            'per_page' => 10,
+                            'total' => 0
+                        ]
+                    ]);
+                }
+            }
+
+            // Filter by date range
+            if ($request->has('start_date') && $request->start_date) {
+                $query->whereDate('completed_at', '>=', $request->start_date);
+            }
+            if ($request->has('end_date') && $request->end_date) {
+                $query->whereDate('completed_at', '<=', $request->end_date);
+            }
+
+            // Search
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('no_po', 'like', "%{$search}%")
+                      ->orWhereHas('supplier', function($sq) use ($search) {
+                          $sq->where('nama', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            // Paginate
+            $perPage = $request->get('per_page', 10);
+            $receivedItems = $query->orderBy('completed_at', 'desc')->paginate($perPage);
+
+            // Transform data to match frontend interface
+            $transformedData = $receivedItems->map(function ($po) {
+                return [
+                    'id' => $po->id,
+                    'no_dokumen' => $po->no_po,
+                    'tanggal' => $po->completed_at ? $po->completed_at->format('Y-m-d') : $po->approved_at->format('Y-m-d'),
+                    'tipe' => 'po',
+                    'no_referensi' => $po->no_po,
+                    'sumber' => $po->supplier->nama ?? '-',
+                    'total_nilai' => $po->total ?? 0,
+                    'dicatat_oleh' => $po->creator->name ?? '-'
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $transformedData,
+                'meta' => [
+                    'current_page' => $receivedItems->currentPage(),
+                    'last_page' => $receivedItems->lastPage(),
+                    'per_page' => $receivedItems->perPage(),
+                    'total' => $receivedItems->total()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get received item detail
+     */
+    public function receivedItemDetail($id)
+    {
+        try {
+            $purchaseOrder = PurchaseOrder::with(['supplier', 'items.barang', 'creator', 'approver'])
+                ->where('status', 'completed')
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data barang masuk berhasil diambil',
+                'data' => $purchaseOrder
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan'
+            ], 404);
+        }
+    }
+
+    /**
+     * Receive purchase order (admin only) - terima barang
+     */
+    public function receive(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'no_surat_jalan' => 'required|string',
+            'items' => 'required|array|min:1',
+            'items.*.item_id' => 'required|integer',
+            'items.*.barang_id' => 'required|exists:barang,id',
+            'items.*.received_qty' => 'required|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $purchaseOrder = PurchaseOrder::with('items.barang')->findOrFail($id);
+
+            if ($purchaseOrder->status !== 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Purchase order belum disetujui atau sudah diproses sebelumnya'
+                ], 400);
+            }
+
+            // Update stock and items
+            foreach ($request->items as $item) {
+                $barang = Barang::findOrFail($item['barang_id']);
+                
+                // Add stock
+                $barang->increment('stok', $item['received_qty']);
+
+                // Update PO item
+                $poItem = PurchaseOrderItem::where('purchase_order_id', $purchaseOrder->id)
+                    ->where('id', $item['item_id'])
+                    ->first();
+                    
+                if ($poItem) {
+                    $poItem->update([
+                        'qty_received' => $item['received_qty']
+                    ]);
+                }
+            }
+
+            // Update purchase order status
+            $purchaseOrder->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'no_surat_jalan' => $request->no_surat_jalan,
+            ]);
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'receive',
+                'menerima barang untuk Purchase Order: ' . $purchaseOrder->no_po . ' (Surat Jalan: ' . $request->no_surat_jalan . ')',
+                'PurchaseOrder',
+                $purchaseOrder->id
+            );
+
+            $purchaseOrder->load(['supplier', 'items.barang', 'creator', 'approver']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Penerimaan barang berhasil disimpan',
+                'data' => $purchaseOrder
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan penerimaan barang: ' . $e->getMessage()
             ], 500);
         }
     }
