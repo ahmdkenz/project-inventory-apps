@@ -165,9 +165,23 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <button v-if="so.status === 'pending'" @click="openApproveModal(so)" class="text-green-600 hover:text-green-800">Setujui</button>
-                    <button v-if="so.status === 'pending'" @click="openRejectModal(so)" class="text-red-600 hover:text-red-800">Tolak</button>
-                    <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
+                    <!-- Status pending: Setujui, Tolak, Lihat -->
+                    <template v-if="so.status === 'pending'">
+                      <button @click="openApproveModal(so)" class="text-green-600 hover:text-green-800">Setujui</button>
+                      <button @click="openRejectModal(so)" class="text-red-600 hover:text-red-800">Tolak</button>
+                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
+                    </template>
+                    
+                    <!-- Status approved: Proses/Keluarkan, Lihat SO -->
+                    <template v-else-if="so.status === 'approved'">
+                      <router-link :to="`/admin/sales-orders/${so.id}/process`" class="text-green-600 hover:text-green-800">Proses/Keluarkan</router-link>
+                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat SO</router-link>
+                    </template>
+                    
+                    <!-- Status completed atau rejected: Hanya Lihat -->
+                    <template v-else>
+                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
+                    </template>
                   </td>
                 </tr>
               </tbody>

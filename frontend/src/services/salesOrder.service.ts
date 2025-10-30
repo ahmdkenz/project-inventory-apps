@@ -124,6 +124,17 @@ class SalesOrderService {
     const response = await api.post(`/admin/sales-order/${id}/reject`, { reason })
     return response.data
   }
+
+  /**
+   * Process/Issue sales order (admin only)
+   */
+  async process(id: number, data: { 
+    items: Array<{item_id: number, barang_id: number, qty_issued: number}>,
+    catatan?: string 
+  }): Promise<SalesOrderResponse> {
+    const response = await api.post(`/admin/sales-order/${id}/process`, data)
+    return response.data
+  }
 }
 
 export default new SalesOrderService()

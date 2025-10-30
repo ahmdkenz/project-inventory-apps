@@ -130,6 +130,81 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Bukti Barang Keluar (jika status completed) -->
+              <div v-if="salesOrder.status === 'completed' && salesOrder.outgoing_item" class="bg-white p-8 rounded-lg shadow-lg border border-gray-200 mt-6" id="bukti-barang-keluar">
+                <!-- Header Dokumen -->
+                <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900">
+                  <div>
+                    <h2 class="text-3xl font-bold text-gray-900">BUKTI BARANG KELUAR</h2>
+                    <p class="text-lg font-semibold text-blue-600">{{ salesOrder.outgoing_item.no_dokumen }}</p>
+                  </div>
+                  <div class="text-right">
+                    <img src="https://placehold.co/150x50/000000/FFFFFF?text=LOGO+PERUSAHAAN" alt="Logo Perusahaan" class="h-12 mb-2 ml-auto">
+                    <p class="text-sm font-semibold text-gray-800">Nama Perusahaan Anda</p>
+                    <p class="text-sm text-gray-600">Jl. Jend. Sudirman No. 1, Jakarta</p>
+                    <p class="text-sm text-gray-600">Telepon: (021) 123456</p>
+                  </div>
+                </div>
+
+                <!-- Info Transaksi -->
+                <div class="grid grid-cols-2 gap-8 my-6">
+                  <div>
+                    <p class="text-sm font-semibold text-gray-500 uppercase mb-2">DITERIMA OLEH:</p>
+                    <p class="text-lg font-bold text-gray-900">{{ salesOrder.customer_name }}</p>
+                    <p v-if="salesOrder.customer_address" class="text-sm text-gray-600">{{ salesOrder.customer_address }}</p>
+                    <p v-if="salesOrder.customer_phone" class="text-sm text-gray-600">Telp: {{ salesOrder.customer_phone }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-500 uppercase mb-2">DETAIL:</p>
+                    <p class="text-sm text-gray-700"><span class="font-medium">Tanggal Transaksi:</span> {{ formatDate(salesOrder.outgoing_item.tanggal) }}</p>
+                    <p class="text-sm text-gray-700"><span class="font-medium">Referensi SO:</span> {{ salesOrder.no_so }}</p>
+                    <p class="text-sm text-gray-700"><span class="font-medium">Dicatat Oleh:</span> {{ salesOrder.outgoing_item.dicatat_oleh || '-' }}</p>
+                    <p v-if="salesOrder.outgoing_item.catatan" class="text-sm text-gray-700"><span class="font-medium">Keterangan:</span> {{ salesOrder.outgoing_item.catatan }}</p>
+                  </div>
+                </div>
+
+                <!-- Tabel Detail Barang -->
+                <div class="overflow-x-auto border rounded-lg mb-6">
+                  <table class="w-full min-w-max">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Kode</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
+                        <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah Dikeluarkan</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Keterangan Item</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                      <tr v-for="(item, index) in salesOrder.outgoing_item.items" :key="item.id">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ item.barang?.kode || '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty_issued }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ item.keterangan || '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Tanda Tangan -->
+                <div class="grid grid-cols-3 gap-8 pt-6 border-t border-gray-200 print-no-break">
+                  <div class="text-center">
+                    <p class="text-sm text-gray-700 mb-16">Diserahkan Oleh,</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.outgoing_item.dicatat_oleh || 'Staff Gudang' }})</p>
+                    <p class="text-xs text-gray-500">Staff Inventori</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-sm text-gray-700 mb-16">Diterima Oleh,</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(...........................)</p>
+                    <p class="text-xs text-gray-500">Penerima ({{ salesOrder.customer_name }})</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-sm text-gray-700 mb-16">Diketahui Oleh,</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.approver?.name || 'Admin' }})</p>
+                    <p class="text-xs text-gray-500">Manajer / Admin</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Kolom Kanan: Info & Riwayat (Non-Cetak) -->
@@ -174,6 +249,22 @@
                     <h3 class="text-base font-semibold text-gray-900">Disetujui</h3>
                     <p class="text-sm font-normal text-gray-500">
                       SO disetujui oleh {{ salesOrder.approver?.name || 'Admin' }}.
+                    </p>
+                  </li>
+                  <li v-if="salesOrder.status === 'completed' && salesOrder.completed_at" class="ml-4 mt-4">
+                    <div class="absolute w-3 h-3 bg-purple-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                    <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.completed_at) }}</time>
+                    <h3 class="text-base font-semibold text-gray-900">Diproses & Diselesaikan</h3>
+                    <p class="text-sm font-normal text-gray-500">
+                      Barang telah dikeluarkan dan SO selesai. Bukti barang keluar: {{ salesOrder.outgoing_item?.no_dokumen || '-' }}.
+                    </p>
+                  </li>
+                  <li v-if="salesOrder.status === 'rejected' && salesOrder.rejected_at" class="ml-4 mt-4">
+                    <div class="absolute w-3 h-3 bg-red-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                    <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.rejected_at) }}</time>
+                    <h3 class="text-base font-semibold text-gray-900">Ditolak</h3>
+                    <p class="text-sm font-normal text-gray-500">
+                      SO ditolak oleh Admin. Alasan: {{ salesOrder.reject_reason || '-' }}
                     </p>
                   </li>
                 </ol>

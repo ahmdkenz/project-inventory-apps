@@ -125,6 +125,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/sales-orders/:id/process',
+      name: 'admin-sales-order-process',
+      component: () => import('@/views/admin/ProcessSalesOrderAdmin.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/admin/users',
       name: 'admin-users',
       component: UserManagement,
@@ -194,6 +200,18 @@ const router = createRouter({
       path: '/admin/laporan/barang-keluar',
       name: 'admin-laporan-barang-keluar',
       component: ReportOutgoing,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/received-items',
+      name: 'admin-received-items',
+      component: () => import('@/views/admin/ReceivedItemsHistory.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/outgoing-items',
+      name: 'admin-outgoing-items',
+      component: () => import('@/views/admin/RiwayatBarangKeluar.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
