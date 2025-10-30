@@ -131,8 +131,8 @@
               </div>
 
                 <!-- Tanda Tangan -->
-                <div class="grid grid-cols-2 gap-8 pt-6 border-t border-gray-200 print-no-break">
-                  <div>
+                <div class="grid grid-cols-3 gap-8 pt-6 border-t border-gray-200 print-no-break">
+                  <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Diajukan oleh,</p>
                     <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ purchaseOrder.creator?.name || 'Staff' }})</p>
                     <p class="text-xs text-gray-500">Staff Purchasing</p>
@@ -141,6 +141,11 @@
                     <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
                     <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ purchaseOrder.approver?.name || 'Admin' }})</p>
                     <p class="text-xs text-gray-500">Manajer</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-sm text-gray-700 mb-16">Vendor/Supplier,</p>
+                    <p class="text-sm font-medium text-gray-400 border-t border-dashed border-gray-300 pt-1"></p>
+                    <p class="text-xs text-gray-700">{{ purchaseOrder.supplier?.nama || 'Supplier' }}</p>
                   </div>
                 </div>
               </div>
