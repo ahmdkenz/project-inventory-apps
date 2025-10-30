@@ -1,52 +1,73 @@
 <!-- Buat file terpisah untuk menu navigasi admin -->
 <script setup lang="ts">
-interface MenuItem {
+import { ref } from 'vue'
+
+interface SubMenuItem {
+  path: string
+  name: string
+}
+
+interface MenuGroup {
+  name: string
+  icon: string
+  items: SubMenuItem[]
+}
+
+interface SingleMenuItem {
   path: string
   name: string
   icon: string
 }
 
-const adminMenuItems: MenuItem[] = [
+const props = defineProps<{
+  currentPath: string
+}>()
+
+// State untuk dropdown
+const openDropdown = ref<string | null>(null)
+
+const toggleDropdown = (menuName: string) => {
+  if (openDropdown.value === menuName) {
+    openDropdown.value = null
+  } else {
+    openDropdown.value = menuName
+  }
+}
+
+// Menu single (tidak punya submenu)
+const singleMenuItems: SingleMenuItem[] = [
   {
     path: '/admin/dashboard',
     name: 'Dashboard',
     icon: 'M3.75 3v11.25A2.25 2.25 0 006 16.5h12M3.75 3h16.5M3.75 3v16.5M19.5 3v11.25A2.25 2.25 0 0117.25 16.5H6M6 16.5h12M18 20.25h-12A2.25 2.25 0 013.75 18v-2.25m16.5 4.5v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25v2.25m16.5 0h-16.5'
+  }
+]
+
+// Menu group dengan dropdown
+const menuGroups: MenuGroup[] = [
+  {
+    name: 'Master Data',
+    icon: 'M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125',
+    items: [
+      { path: '/admin/barang', name: 'Data Barang' },
+      { path: '/admin/kategori', name: 'Kategori' },
+      { path: '/admin/supplier', name: 'Supplier' }
+    ]
   },
   {
-    path: '/admin/barang',
-    name: 'Data Barang',
-    icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15h.008'
-  },
-  {
-    path: '/admin/kategori',
-    name: 'Kategori',
-    icon: 'M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.734.48l4.386-2.193c.954-.478 1.591-1.42 1.591-2.428V8.332a2.25 2.25 0 00-2.25-2.25h-5.332c-.597 0-1.17.237-1.591.659l-7.42 7.419zM14.25 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z'
-  },
-  {
-    path: '/admin/supplier',
-    name: 'Supplier',
-    icon: 'M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5v-1.875a3.375 3.375 0 013.375-3.375h1.5a1.125 1.125 0 011.125 1.125v-1.5c0-.621.504-1.125 1.125-1.125h.75M16.5 18.75v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 00-1.125 1.125v-1.5c0-.621-.504-1.125-1.125-1.125H9.75'
-  },
-  {
-    path: '/admin/purchase-orders',
-    name: 'Purchase Orders',
-    icon: 'M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-  },
-  {
-    path: '/admin/sales-orders',
-    name: 'Sales Orders',
-    icon: 'M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-  },
-  {
-    path: '/admin/received-items',
-    name: 'Riwayat Barang Masuk',
-    icon: 'M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z'
-  },
-  {
-    path: '/admin/outgoing-items',
-    name: 'Riwayat Barang Keluar',
-    icon: 'M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z'
-  },
+    name: 'Transaksi',
+    icon: 'M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z',
+    items: [
+      { path: '/admin/purchase-orders', name: 'Purchase Order' },
+      { path: '/admin/sales-orders', name: 'Sales Order' },
+      { path: '/admin/received-items', name: 'Riwayat Barang Masuk' },
+      { path: '/admin/outgoing-items', name: 'Riwayat Barang Keluar' }
+    ]
+  }
+]
+
+// Menu single lainnya
+const otherMenuItems: SingleMenuItem[] = [
   {
     path: '/admin/laporan',
     name: 'Laporan',
@@ -69,15 +90,22 @@ const adminMenuItems: MenuItem[] = [
   }
 ]
 
-defineProps<{
-  currentPath: string
-}>()
+// Check if current path is in submenu
+const isSubmenuActive = (items: SubMenuItem[]) => {
+  return items.some(item => props.currentPath === item.path || props.currentPath.startsWith(item.path + '/'))
+}
+
+// Check if dropdown should be open by default
+const shouldBeOpen = (group: MenuGroup) => {
+  return isSubmenuActive(group.items)
+}
 </script>
 
 <template>
   <nav class="mt-6 flex-1 px-4 space-y-1">
+    <!-- Single Menu Items (Dashboard) -->
     <router-link
-      v-for="item in adminMenuItems"
+      v-for="item in singleMenuItems"
       :key="item.path"
       :to="item.path"
       class="flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-150"
@@ -86,14 +114,77 @@ defineProps<{
         'text-gray-300 hover:bg-gray-800': currentPath !== item.path
       }"
     >
-      <svg
-        class="h-6 w-6"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
+      <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" />
+      </svg>
+      <span>{{ item.name }}</span>
+    </router-link>
+
+    <!-- Menu Groups dengan Dropdown -->
+    <div v-for="group in menuGroups" :key="group.name" class="space-y-1">
+      <!-- Parent Menu -->
+      <button
+        @click="toggleDropdown(group.name)"
+        class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition duration-150"
+        :class="{
+          'bg-blue-600 text-white font-medium': isSubmenuActive(group.items) || openDropdown === group.name,
+          'text-gray-300 hover:bg-gray-800': !isSubmenuActive(group.items) && openDropdown !== group.name
+        }"
       >
+        <div class="flex items-center space-x-3">
+          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" :d="group.icon" />
+          </svg>
+          <span>{{ group.name }}</span>
+        </div>
+        <svg
+          class="h-5 w-5 transition-transform duration-200"
+          :class="{ 'rotate-180': openDropdown === group.name || shouldBeOpen(group) }"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+
+      <!-- Submenu Items -->
+      <div
+        v-show="openDropdown === group.name || shouldBeOpen(group)"
+        class="ml-6 space-y-1"
+      >
+        <router-link
+          v-for="subItem in group.items"
+          :key="subItem.path"
+          :to="subItem.path"
+          class="flex items-center space-x-3 px-4 py-2 rounded-lg transition duration-150 text-sm"
+          :class="{
+            'bg-blue-500 text-white font-medium': currentPath === subItem.path || currentPath.startsWith(subItem.path + '/'),
+            'text-gray-400 hover:bg-gray-800 hover:text-gray-200': currentPath !== subItem.path && !currentPath.startsWith(subItem.path + '/')
+          }"
+        >
+          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+          <span>{{ subItem.name }}</span>
+        </router-link>
+      </div>
+    </div>
+
+    <!-- Other Single Menu Items -->
+    <router-link
+      v-for="item in otherMenuItems"
+      :key="item.path"
+      :to="item.path"
+      class="flex items-center space-x-3 px-4 py-3 rounded-lg transition duration-150"
+      :class="{
+        'bg-blue-600 text-white font-medium': currentPath === item.path,
+        'text-gray-300 hover:bg-gray-800': currentPath !== item.path
+      }"
+    >
+      <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" />
       </svg>
       <span>{{ item.name }}</span>
