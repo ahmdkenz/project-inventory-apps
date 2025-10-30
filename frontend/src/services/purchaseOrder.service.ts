@@ -136,6 +136,14 @@ class PurchaseOrderService {
     const response = await api.post(`/admin/purchase-order/${id}/reject`, { reason })
     return response.data
   }
+
+  /**
+   * Receive purchase order (admin only) - terima barang
+   */
+  async receive(id: number, data: { no_surat_jalan: string, items: any[] }): Promise<PurchaseOrderResponse> {
+    const response = await api.post(`/admin/purchase-order/${id}/receive`, data)
+    return response.data
+  }
 }
 
 export default new PurchaseOrderService()

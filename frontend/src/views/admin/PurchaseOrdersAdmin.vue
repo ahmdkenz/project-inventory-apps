@@ -181,7 +181,17 @@
                       </button>
                     </template>
                     
-                    <!-- Tombol Detail -->
+                    <!-- Tombol untuk status approved -->
+                    <template v-else-if="order.status === 'approved'">
+                      <router-link 
+                        :to="`/admin/purchase-orders/${order.id}/receive`" 
+                        class="text-blue-600 hover:text-blue-800"
+                      >
+                        Terima Barang
+                      </router-link>
+                    </template>
+                    
+                    <!-- Tombol Detail (tersedia untuk semua status) -->
                     <router-link 
                       :to="`/admin/purchase-orders/detail/${order.id}`" 
                       class="text-indigo-600 hover:text-indigo-900"
