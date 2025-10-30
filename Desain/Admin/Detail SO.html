@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Sales Order - Aplikasi Inventori</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* CSS Khusus Cetak */
+        @media print {
+            body > * { display: none; }
+            .print-hidden { display: none !important; }
+            #main-content { margin-left: 0 !important; }
+            #printable-area-container {
+                display: block !important;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #printable-area-content {
+                box-shadow: none !important;
+                border: none !important;
+                font-size: 10pt;
+                color: #000;
+            }
+            .print-no-break { page-break-inside: avoid; }
+            thead { display: table-header-group; }
+            tr, td, th { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen">
+        <!-- Sidebar Admin -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out print-hidden" id="sidebar">
+            <div class="p-6 flex items-center space-x-3">
+                <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                <span class="text-white text-2xl font-semibold">Inventori</span>
+            </div>
+            
+            <nav class="mt-6 flex-1 px-4 space-y-1">
+                 <a href="dashboard_admin.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Dashboard</span></a>
+                <a href="item_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Data Barang</span></a>
+                <a href="category_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Kategori Barang</span></a>
+                <a href="supplier_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Supplier</span></a>
+                <a href="admin_po_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150">
+                    <span>Manajemen PO</span>
+                </a>
+                <!-- Link Aktif -->
+                <a href="admin_so_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Manajemen SO</span>
+                </a>
+                <a href="report_hub.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Laporan</span></a>
+                <a href="user_list.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Pengguna</span></a>
+                <a href="activity_log.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Riwayat Aktivitas</span></a>
+                <a href="app_settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition duration-150"><span>Pengaturan</span></a>
+            </nav>
+        </aside>
+
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden print-hidden" id="overlay"></div>
+        
+        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+            
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10 print-hidden">
+                <button id="hamburger-btn" class="text-gray-600 lg:hidden">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <div class="relative hidden sm:block"></div>
+                <div class="flex items-center space-x-4" x-data="{ open: false }">
+                    <!-- ... header icons & profile ... -->
+                </div>
+            </header>
+
+            <main class="flex-1 p-6 overflow-y-auto">
+                <!-- Tombol Aksi Atas -->
+                <div class="flex items-center justify-between mb-6 print-hidden">
+                    <h1 class="text-3xl font-bold text-gray-900">Detail Sales Order</h1>
+                    <div class="flex space-x-3">
+                        <a href="admin_so_list.html" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                            <span>Kembali</span>
+                        </a>
+                        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.23a1.125 1.125 0 01-1.12-1.227L6.34 18m11.319 0H6.34m11.319 0l.044.506A1.125 1.125 0 0117.003 20H6.997a1.125 1.125 0 01-1.122-1.494l.044-.506M6.34 18v-4.172c0-.224.03-.447.086-.665A41.4 41.4 0 0112 3c1.83 0 3.597.133 5.28.362.057.218.086.44.086.665v4.172M6.34 18L4.26 7.5h15.48L17.66 18" /></svg>
+                            <span>Cetak SO</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Layout 2 Kolom -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Kolom Kiri: Dokumen SO (Area Cetak) -->
+                    <div class="lg:col-span-8" id="printable-area-container">
+                        <div class="bg-white p-8 rounded-lg shadow-lg border border-gray-200" id="printable-area-content">
+                            <!-- Header Dokumen -->
+                            <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900">
+                                <div>
+                                    <h2 class="text-3xl font-bold text-gray-900">SALES ORDER</h2>
+                                    <p class="text-lg font-semibold text-blue-600">SO-2024-001</p>
+                                </div>
+                                <div class="text-right">
+                                    <img src="https://placehold.co/150x50/000000/FFFFFF?text=LOGO+PERUSAHAAN" alt="Logo Perusahaan" class="h-12 mb-2 ml-auto">
+                                    <p class="text-sm font-semibold text-gray-800">Nama Perusahaan Anda</p>
+                                    <p class="text-sm text-gray-600">Jl. Jend. Sudirman No. 1, Jakarta</p>
+                                    <p class="text-sm text-gray-600">Telepon: (021) 123456</p>
+                                </div>
+                            </div>
+
+                            <!-- Info Penerima dan Tanggal -->
+                            <div class="grid grid-cols-2 gap-8 my-6">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-500 uppercase mb-2">PENERIMA / TUJUAN:</p>
+                                    <p class="text-lg font-bold text-gray-900">Divisi Marketing</p>
+                                    <p class="text-sm text-gray-600">Gedung A, Lantai 5</p>
+                                    <p class="text-sm text-gray-600">UP: Ibu Sarah</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="mb-2">
+                                        <span class="text-sm font-semibold text-gray-500 uppercase">Tanggal SO: </span>
+                                        <span class="text-sm font-medium text-gray-800">26 Oktober 2024</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-semibold text-gray-500 uppercase">Status: </span>
+                                        <span class="text-sm font-medium text-purple-700">Menunggu Persetujuan</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabel Item -->
+                            <div class="overflow-x-auto border rounded-lg mb-6">
+                                <table class="w-full min-w-max">
+                                    <thead class="bg-gray-100 text-gray-700">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No.</th>
+                                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
+                                            <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah Diminta</th>
+                                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Catatan Item</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">1.</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Kertas A4 70gr (Rim)</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">20</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2.</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Spidol Whiteboard (Box)</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">5</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Campur warna</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="bg-gray-50 font-medium print-no-break">
+                                        <tr>
+                                            <td colspan="4" class="px-6 py-3">
+                                                <p class="text-xs text-gray-500 uppercase font-semibold">Catatan SO:</p>
+                                                <p class="text-sm text-gray-600">Untuk keperluan event marketing 30 Oktober.</p>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Tanda Tangan -->
+                            <div class="grid grid-cols-3 gap-8 pt-6 border-t border-gray-200 print-no-break">
+                                <div>
+                                    <p class="text-sm text-gray-700 mb-16">Diajukan oleh,</p>
+                                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Citra - Staff)</p>
+                                    <p class="text-xs text-gray-500">Staff Marketing</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
+                                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Nama Admin)</p>
+                                    <p class="text-xs text-gray-500">Manajer Logistik</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-700 mb-16">Diserahkan oleh,</p>
+                                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Staff Gudang)</p>
+                                    <p class="text-xs text-gray-500">Staff Gudang</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kolom Kanan: Info & Riwayat (Non-Cetak) -->
+                    <div class="lg:col-span-4 space-y-6 print-hidden">
+                        
+                        <!-- Status SO -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Status SO</h3>
+                            <span class="px-4 py-1.5 inline-flex text-base font-medium rounded-full bg-purple-100 text-purple-800">
+                                Menunggu Persetujuan
+                            </span>
+                            <p class="text-sm text-gray-500 mt-2">Diajukan oleh Citra (Staff) pada 26 Okt 2024.</p>
+                            
+                            <!-- Tombol Aksi Admin -->
+                            <div class="mt-6 flex space-x-3">
+                                <button class="w-full flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                                    Setujui
+                                </button>
+                                <button class="w-full flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                                    Tolak
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Riwayat Status -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Riwayat Status</h3>
+                            <ol class="relative border-l border-gray-200">
+                                <li class="ml-4">
+                                    <div class="absolute w-3 h-3 bg-blue-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                                    <time class="mb-1 text-sm font-normal leading-none text-gray-500">26 Oktober 2024</time>
+                                    <h3 class="text-base font-semibold text-gray-900">Dibuat & Diajukan</h3>
+                                    <p class="text-sm font-normal text-gray-500">SO dibuat oleh Citra (Staff) dan menunggu persetujuan Admin.</p>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <!-- Informasi Penerima -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Info Penerima</h3>
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500">Divisi</dt>
+                                <dd class="text-base text-gray-900 font-medium mb-2">Divisi Marketing</dd>
+                                <dt class="text-sm font-medium text-gray-500">Kontak</dt>
+                                <dd class="text-base text-gray-900 font-medium mb-2">Ibu Sarah</dd>
+                                <dt class="text-sm font-medium text-gray-500">Lokasi</dt>
+                                <dd class="text-base text-gray-900 font-medium">Gedung A, Lantai 5</dd>
+                            </dl>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Script Sidebar Mobile
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+            hamburgerBtn.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+        });
+    </script>
+</body>
+</html>
