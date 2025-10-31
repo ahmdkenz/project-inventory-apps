@@ -1,21 +1,18 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex h-screen bg-gray-100">
     <!-- Sidebar Admin -->
     <AdminNavigation :currentPath="route.path" />
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64">
+    <div class="flex-1 flex flex-col lg:ml-64">
       <!-- Header -->
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10 print-hidden">
+      <header class="bg-white shadow-sm p-4 flex items-center justify-between print-hidden">
         <button @click="toggleSidebar" class="text-gray-600 lg:hidden">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <div class="relative hidden sm:block"></div>
-        <div class="flex items-center space-x-4">
-          <!-- Header icons -->
-        </div>
+        <div class="flex-1"></div>
       </header>
 
       <!-- Main Content -->
@@ -39,18 +36,12 @@
         </div>
 
         <!-- Loading State -->
-        <div v-if="isLoading" class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-          <div class="text-center py-12">
-            <svg class="animate-spin h-12 w-12 mx-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="mt-4 text-gray-600">Memuat data bukti pengeluaran...</p>
-          </div>
+        <div v-if="isLoading" class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-red-200">
+        <div v-else-if="error" class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-sm border border-red-200">
           <div class="text-center py-12">
             <svg class="h-12 w-12 mx-auto text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
@@ -60,7 +51,7 @@
         </div>
 
         <!-- Area Cetak -->
-        <div v-else class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-gray-200" id="printable-area-container">
+        <div v-else class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-200" id="printable-area-container">
           <div id="printable-area">
             <!-- Header Dokumen -->
             <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900">

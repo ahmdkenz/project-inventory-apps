@@ -1,79 +1,19 @@
 <template>
-  <div class="flex h-screen">
-    <!-- Sidebar -->
-    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
-      <!-- Logo/Header Sidebar -->
-      <div class="p-6 flex items-center space-x-3">
-        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
-        </svg>
-        <span class="text-white text-2xl font-semibold">Inventori</span>
-      </div>
-      
-      <!-- Menu Navigasi Admin -->
-      <AdminNavigation :current-path="$route.path"></AdminNavigation>
-      
-      <!-- User Info di Bawah Sidebar -->
-      <div class="absolute bottom-0 left-0 w-full p-4 border-t border-gray-700">
-        <div class="flex items-center space-x-3">
-          <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
-          <div>
-            <p class="text-sm font-medium text-white">{{ user?.name || 'Admin' }}</p>
-            <p class="text-xs text-gray-400">Administrator</p>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Latar belakang overlay untuk mobile -->
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+  <div class="flex h-screen bg-gray-100">
+    <AdminNavigation :current-path="$route.path" />
     
-    <!-- Konten Utama -->
-    <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
-      <!-- Header/Navbar Atas -->
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
-        <!-- Tombol Hamburger (Mobile) -->
-        <button id="hamburger-btn" class="text-gray-600 lg:hidden" @click="toggleSidebar">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    <div class="flex-1 flex flex-col lg:ml-64">
+      <!-- Header -->
+      <header class="bg-white shadow-sm p-4 flex items-center justify-between print-hidden">
+        <button @click="toggleSidebar" class="text-gray-600 lg:hidden">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        
-        <!-- Search Bar -->
-        <div class="relative hidden sm:block">
-          <input type="text" class="border border-gray-300 rounded-full py-2 px-4 pl-10" placeholder="Cari...">
-          <svg class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
-        </div>
-        
-        <!-- User Profile dan Notifikasi -->
-        <div class="flex items-center space-x-4">
-          <!-- Notifikasi -->
-          <button class="text-gray-500 hover:text-gray-700 relative">
-            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-            </svg>
-          </button>
-          
-          <!-- Profile Dropdown -->
-          <div class="relative" ref="profileRef">
-            <button @click="toggleProfileMenu" class="flex items-center space-x-2">
-              <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
-              <span class="hidden md:block text-sm font-medium text-gray-700">{{ user?.name || 'Admin' }}</span>
-            </button>
-            <div v-show="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengaturan</a>
-              <hr class="my-1">
-              <a href="#" @click.prevent="handleLogout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
-            </div>
-          </div>
-        </div>
+        <div class="flex-1"></div>
       </header>
 
-      <!-- Konten Halaman -->
+      <!-- Main Content -->
       <main class="flex-1 p-6 overflow-y-auto">
         <!-- Loading State -->
         <div v-if="loading" class="flex justify-center items-center py-12">
@@ -81,31 +21,28 @@
         </div>
 
         <div v-else>
-          <!-- Tombol Aksi (Kembali & Cetak) -->
-          <div class="mb-6 flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <router-link
-              to="/admin/sales-orders"
-              class="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150"
-            >
-              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              <span>Kembali ke Riwayat</span>
-            </router-link>
-            <button
-              @click="printDocument"
-              class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
-            >
-              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.23a1.125 1.125 0 01-1.12-1.227L6.34 18m11.319 0H6.34m11.319 0l.044.506A1.125 1.125 0 0117.003 20H6.997a1.125 1.125 0 01-1.122-1.494l.044-.506M6.34 18v-4.172c0-.224.03-.447.086-.665A41.4 41.4 0 0112 3c1.83 0 3.597.133 5.28.362.057.218.086.44.086.665v4.172M6.34 18L4.26 7.5h15.48L17.66 18" />
-              </svg>
-              <span>Cetak Bukti</span>
-            </button>
+          <!-- Tombol Aksi Atas -->
+          <div class="flex items-center justify-between mb-6 print-hidden">
+            <h1 class="text-3xl font-bold text-gray-900">Proses Pengeluaran Barang</h1>
+            <div class="flex space-x-3">
+              <button @click="goBack" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                <span>Kembali</span>
+              </button>
+              <button @click="printDocument" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.23a1.125 1.125 0 01-1.12-1.227L6.34 18m11.319 0H6.34m11.319 0l.044.506A1.125 1.125 0 0117.003 20H6.997a1.125 1.125 0 01-1.122-1.494l.044-.506M6.34 18v-4.172c0-.224.03-.447.086-.665A41.4 41.4 0 0112 3c1.83 0 3.597.133 5.28.362.057.218.086.44.086.665v4.172M6.34 18L4.26 7.5h15.48L17.66 18" />
+                </svg>
+                <span>Cetak Bukti</span>
+              </button>
+            </div>
           </div>
 
           <!-- Area Cetak -->
-          <div id="printable-area">
-            <div class="bg-white rounded-lg shadow-md p-8 md:p-12" id="printable-area-content">
+          <div id="printable-area" class="max-w-6xl">
+            <div class="bg-white rounded-lg shadow-sm p-8 md:p-12" id="printable-area-content">
               <!-- Header Dokumen -->
               <div class="flex justify-between items-center border-b-2 border-gray-900 pb-4 mb-8">
                 <div>
@@ -254,9 +191,13 @@ const catatan = ref('')
 // User data
 const user = ref<{ name: string; role: string } | null>(null)
 
-// Profile menu state
-const showProfileMenu = ref(false)
-const profileRef = ref<HTMLElement | null>(null)
+// Load user data
+const loadUserData = () => {
+  const userData = localStorage.getItem('user')
+  if (userData) {
+    user.value = JSON.parse(userData)
+  }
+}
 
 // Sidebar toggle
 const toggleSidebar = () => {
@@ -265,33 +206,6 @@ const toggleSidebar = () => {
   if (sidebar && overlay) {
     sidebar.classList.toggle('-translate-x-full')
     overlay.classList.toggle('hidden')
-  }
-}
-
-// Profile menu toggle
-const toggleProfileMenu = () => {
-  showProfileMenu.value = !showProfileMenu.value
-}
-
-// Handle logout
-const handleLogout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  router.push('/login')
-}
-
-// Close profile menu when clicking outside
-const handleClickOutside = (event: MouseEvent) => {
-  if (profileRef.value && !profileRef.value.contains(event.target as Node)) {
-    showProfileMenu.value = false
-  }
-}
-
-// Load user data
-const loadUserData = () => {
-  const userData = localStorage.getItem('user')
-  if (userData) {
-    user.value = JSON.parse(userData)
   }
 }
 
@@ -311,6 +225,10 @@ const generateDocNumber = () => {
   const day = String(date.getDate()).padStart(2, '0')
   const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0')
   return `OUT-${year}${month}${day}-${random}`
+}
+
+const goBack = () => {
+  router.push('/admin/sales-orders')
 }
 
 const printDocument = () => {
@@ -403,17 +321,6 @@ const submitProcess = async () => {
 onMounted(() => {
   loadUserData()
   fetchSalesOrder()
-  document.addEventListener('click', handleClickOutside)
-  
-  // Setup overlay click handler
-  const overlay = document.getElementById('overlay')
-  if (overlay) {
-    overlay.addEventListener('click', toggleSidebar)
-  }
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
