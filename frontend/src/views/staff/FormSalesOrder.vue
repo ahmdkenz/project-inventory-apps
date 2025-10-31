@@ -59,110 +59,98 @@
       </div>
 
       <main class="flex-1 p-6 overflow-y-auto">
-        <div class="mb-6">
-          <div class="flex items-center space-x-2 mb-2">
-            <router-link to="/staff/sales-order" class="text-blue-600 hover:text-blue-800">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </router-link>
-            <h1 class="text-3xl font-bold text-gray-900">{{ isEditMode ? 'Edit' : 'Buat' }} Sales Order</h1>
-          </div>
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-3xl font-bold text-gray-900">{{ isEditMode ? 'Edit' : 'Buat' }} Sales Order</h1>
+          <router-link 
+            to="/staff/sales-order" 
+            class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
+          >
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            <span>Kembali</span>
+          </router-link>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="space-y-6">
-          <!-- Informasi Customer -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Informasi Customer</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Customer <span class="text-red-500">*</span></label>
-                <input 
-                  v-model="formData.customer_name" 
-                  type="text" 
-                  required
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Masukkan nama customer"
-                >
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon <span class="text-red-500">*</span></label>
-                <input 
-                  v-model="formData.customer_phone" 
-                  type="text" 
-                  required
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Masukkan nomor telepon"
-                >
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Alamat <span class="text-red-500">*</span></label>
-                <textarea 
-                  v-model="formData.customer_address" 
-                  required
-                  rows="3"
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Masukkan alamat lengkap customer"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Informasi Order -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Informasi Order</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Order <span class="text-red-500">*</span></label>
-                <input 
-                  v-model="formData.tgl_order" 
-                  type="date" 
-                  required
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                >
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Kirim Estimasi <span class="text-red-500">*</span></label>
-                <input 
-                  v-model="formData.tgl_kirim" 
-                  type="date" 
-                  required
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                >
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
-                <textarea 
-                  v-model="formData.catatan" 
-                  rows="2"
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Catatan tambahan (opsional)"
-                ></textarea>
+        <div class="max-w-6xl mx-auto">
+          <form @submit.prevent="handleSubmit" class="space-y-6">
+            <!-- Informasi Customer -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-xl font-semibold mb-4 text-gray-900">Informasi Customer</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Nama Customer <span class="text-red-500">*</span></label>
+                  <input 
+                    v-model="formData.customer_name" 
+                    type="text" 
+                    required
+                    class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Masukkan nama customer"
+                  >
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon <span class="text-red-500">*</span></label>
+                  <input 
+                    v-model="formData.customer_phone" 
+                    type="text" 
+                    required
+                    class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Masukkan nomor telepon"
+                  >
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Alamat <span class="text-red-500">*</span></label>
+                  <textarea 
+                    v-model="formData.customer_address" 
+                    required
+                    rows="3"
+                    class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Masukkan alamat lengkap customer"
+                  ></textarea>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Detail Barang -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-semibold text-gray-800">Detail Barang</h2>
-              <button 
-                type="button" 
-                @click="addItem" 
-                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2"
-              >
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                <span>Tambah Barang</span>
-              </button>
+            <!-- Informasi Order -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-xl font-semibold mb-4 text-gray-900">Informasi Order</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Order <span class="text-red-500">*</span></label>
+                  <input 
+                    v-model="formData.tgl_order" 
+                    type="date" 
+                    required
+                    class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  >
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Kirim Estimasi <span class="text-red-500">*</span></label>
+                  <input 
+                    v-model="formData.tgl_kirim" 
+                    type="date" 
+                    required
+                    class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  >
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                  <textarea 
+                    v-model="formData.catatan" 
+                    rows="2"
+                    class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Catatan tambahan (opsional)"
+                  ></textarea>
+                </div>
+              </div>
             </div>
 
-            <div v-if="formData.items.length === 0" class="text-center py-8 text-gray-500">
-              Belum ada barang ditambahkan
-            </div>
-
-            <div v-else class="overflow-x-auto">
+            <!-- Detail Barang -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h2 class="text-xl font-semibold mb-4 text-gray-900">Detail Barang</h2>
+              
+              <!-- Tabel Barang -->
+              <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead class="bg-gray-50 border-b">
                   <tr>
@@ -242,10 +230,21 @@
                   </tr>
                 </tfoot>
               </table>
-            </div>
-          </div>
+              </div>
 
-          <!-- Action Buttons -->
+              <button 
+                type="button"
+                @click="addItem"
+                class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Tambah Barang
+              </button>
+            </div>
+
+            <!-- Action Buttons -->
           <div class="flex justify-end space-x-4">
             <router-link 
               to="/staff/sales-order" 
@@ -262,6 +261,7 @@
             </button>
           </div>
         </form>
+        </div>
       </main>
     </div>
   </div>
