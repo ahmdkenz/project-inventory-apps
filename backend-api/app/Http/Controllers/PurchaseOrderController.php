@@ -626,4 +626,67 @@ class PurchaseOrderController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get purchase order data for printing (admin only)
+     */
+    public function getPrintData($id)
+    {
+        try {
+            $purchaseOrder = PurchaseOrder::with([
+                'supplier',
+                'items.barang',
+                'creator',
+                'approver'
+            ])->findOrFail($id);
+
+            // Format data untuk cetak
+            $printData = [
+                'id' => $purchaseOrder->id,
+                'no_po' => $purchaseOrder->no_po,
+                'no_surat_jalan' => $purchaseOrder->no_surat_jalan,
+                'tgl_pesan' => $purchaseOrder->tgl_pesan,
+                'tgl_estimasi' => $purchaseOrder->tgl_estimasi,
+                'completed_at' => $purchaseOrder->completed_at,
+                'status' => $purchaseOrder->status,
+                'catatan' => $purchaseOrder->catatan,
+                'subtotal' => $purchaseOrder->subtotal,
+                'ppn' => $purchaseOrder->ppn,
+                'total' => $purchaseOrder->total,
+                'supplier' => $purchaseOrder->supplier ? [
+                    'nama' => $purchaseOrder->supplier->nama,
+                    'alamat' => $purchaseOrder->supplier->alamat,
+                    'telp' => $purchaseOrder->supplier->telp,
+                    'email' => $purchaseOrder->supplier->email,
+                ] : null,
+                'creator' => $purchaseOrder->creator ? [
+                    'name' => $purchaseOrder->creator->name,
+                ] : null,
+                'approver' => $purchaseOrder->approver ? [
+                    'name' => $purchaseOrder->approver->name,
+                ] : null,
+                'items' => $purchaseOrder->items->map(function ($item) {
+                    return [
+                        'barang_id' => $item->barang_id,
+                        'nama_barang' => $item->barang->nama ?? '-',
+                        'kode_barang' => $item->barang->kode ?? '-',
+                        'qty' => $item->qty,
+                        'qty_received' => $item->qty_received,
+                        'harga_satuan' => $item->harga_satuan,
+                        'subtotal' => $item->subtotal,
+                    ];
+                })
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $printData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan: ' . $e->getMessage()
+            ], 404);
+        }
+    }
 }

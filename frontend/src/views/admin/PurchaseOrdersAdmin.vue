@@ -191,12 +191,22 @@
                       </router-link>
                     </template>
                     
+                    <!-- Tombol untuk status completed -->
+                    <template v-else-if="order.status === 'completed'">
+                      <router-link 
+                        :to="`/admin/purchase-orders/${order.id}/print`" 
+                        class="text-purple-600 hover:text-purple-800"
+                      >
+                        Cetak
+                      </router-link>
+                    </template>
+                    
                     <!-- Tombol Detail (tersedia untuk semua status) -->
                     <router-link 
                       :to="`/admin/purchase-orders/detail/${order.id}`" 
                       class="text-indigo-600 hover:text-indigo-900"
                     >
-                      Lihat
+                      Detail
                     </router-link>
                   </td>
                 </tr>
