@@ -173,6 +173,24 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/customers',
+      name: 'admin-customers',
+      component: () => import('@/views/admin/CustomerManagement.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/customers/create',
+      name: 'admin-customers-create',
+      component: () => import('@/views/admin/CustomerForm.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/customers/:id/edit',
+      name: 'admin-customers-edit',
+      component: () => import('@/views/admin/CustomerForm.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/admin/audit-log',
       name: 'admin-audit-log',
       component: AuditLog,
