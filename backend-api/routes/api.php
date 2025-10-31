@@ -8,6 +8,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\AuditLogController;
@@ -56,6 +57,9 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Supplier routes
         Route::apiResource('supplier', SupplierController::class);
+        
+        // Customer routes
+        Route::apiResource('customers', CustomerController::class);
         
         // Purchase Order routes (admin - approval)
         Route::get('/purchase-order', [PurchaseOrderController::class, 'adminIndex']);
