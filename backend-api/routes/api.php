@@ -118,6 +118,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/kategori/{id}', [KategoriController::class, 'show']);
         Route::get('/supplier', [SupplierController::class, 'index']);
         Route::get('/supplier/{id}', [SupplierController::class, 'show']);
+        Route::get('/customers', [CustomerController::class, 'index']);
+        Route::get('/customers/{id}', [CustomerController::class, 'show']);
         
         // Purchase Order routes (staff - create/manage own PO)
         Route::apiResource('purchase-order', PurchaseOrderController::class);

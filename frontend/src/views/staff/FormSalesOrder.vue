@@ -79,14 +79,24 @@
               <h2 class="text-xl font-semibold mb-4 text-gray-900">Informasi Customer</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Nama Customer <span class="text-red-500">*</span></label>
-                  <input 
-                    v-model="formData.customer_name" 
-                    type="text" 
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Customer <span class="text-red-500">*</span></label>
+                  <select 
+                    v-model="formData.customer_id"
+                    @change="onCustomerChange"
                     required
                     class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Masukkan nama customer"
+                    :class="{ 'text-gray-500': !formData.customer_id, 'text-gray-900': formData.customer_id }"
                   >
+                    <option :value="null" class="text-gray-500">-- Pilih Customer --</option>
+                    <option 
+                      v-for="customer in customers" 
+                      :key="customer.id" 
+                      :value="customer.id"
+                      class="text-gray-900"
+                    >
+                      {{ customer.company_name }}
+                    </option>
+                  </select>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon <span class="text-red-500">*</span></label>
@@ -94,8 +104,9 @@
                     v-model="formData.customer_phone" 
                     type="text" 
                     required
-                    class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Masukkan nomor telepon"
+                    readonly
+                    class="w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Otomatis terisi"
                   >
                 </div>
                 <div class="md:col-span-2">
@@ -103,9 +114,10 @@
                   <textarea 
                     v-model="formData.customer_address" 
                     required
+                    readonly
                     rows="3"
-                    class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Masukkan alamat lengkap customer"
+                    class="w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Otomatis terisi"
                   ></textarea>
                 </div>
               </div>
@@ -274,6 +286,7 @@ import StaffNavigation from '@/components/StaffNavigation.vue'
 import salesOrderService from '@/services/salesOrder.service'
 import type { SalesOrderItem } from '@/services/salesOrder.service'
 import staffBarangService from '@/services/staff/barang.service'
+import staffCustomerService from '@/services/staff/customer.service'
 
 const router = useRouter()
 const route = useRoute()
@@ -281,10 +294,12 @@ const user = ref<any>(null)
 const submitting = ref(false)
 const showProfileMenu = ref(false)
 const availableBarang = ref<any[]>([])
+const customers = ref<any[]>([])
 
 const isEditMode = computed(() => !!route.params.id)
 
 interface FormData {
+  customer_id: number | null
   customer_name: string
   customer_phone: string
   customer_address: string
@@ -298,6 +313,7 @@ interface FormData {
 }
 
 const formData = ref<FormData>({
+  customer_id: null,
   customer_name: '',
   customer_phone: '',
   customer_address: '',
@@ -315,6 +331,18 @@ const message = ref({
   text: '',
   isError: false
 })
+
+const fetchCustomers = async () => {
+  try {
+    const response = await staffCustomerService.getAll('', 1, 1000)
+    if (response.data && Array.isArray(response.data)) {
+      customers.value = response.data
+    }
+  } catch (error) {
+    console.error('Error fetching customers:', error)
+    showMessage('Gagal memuat data customer', true)
+  }
+}
 
 const fetchBarang = async () => {
   try {
@@ -342,6 +370,15 @@ const fetchSalesOrder = async () => {
       formData.value.customer_name = so.customer_name
       formData.value.customer_phone = so.customer_phone || ''
       formData.value.customer_address = so.customer_address || ''
+      
+      // Try to find matching customer by name
+      const matchingCustomer = customers.value.find(
+        c => c.company_name === so.customer_name
+      )
+      if (matchingCustomer) {
+        formData.value.customer_id = matchingCustomer.id
+      }
+      
       formData.value.tgl_order = so.tgl_order
       formData.value.tgl_kirim = so.tgl_kirim
       formData.value.catatan = so.catatan || ''
@@ -372,6 +409,22 @@ const addItem = () => {
 const removeItem = (index: number) => {
   formData.value.items.splice(index, 1)
   calculateTotal()
+}
+
+const onCustomerChange = () => {
+  if (!formData.value.customer_id) {
+    formData.value.customer_name = ''
+    formData.value.customer_phone = ''
+    formData.value.customer_address = ''
+    return
+  }
+
+  const customer = customers.value.find(c => c.id === formData.value.customer_id)
+  if (customer) {
+    formData.value.customer_name = customer.company_name || ''
+    formData.value.customer_phone = customer.phone || ''
+    formData.value.customer_address = customer.address || ''
+  }
 }
 
 const onBarangChange = (index: number) => {
@@ -494,6 +547,7 @@ onMounted(async () => {
     user.value = JSON.parse(userData)
   }
   
+  await fetchCustomers()
   await fetchBarang()
   
   if (isEditMode.value) {
