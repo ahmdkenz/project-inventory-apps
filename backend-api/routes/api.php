@@ -13,6 +13,7 @@ use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Api\Admin\ReportController;
 use App\Http\Controllers\Api\Staff\StaffReportController;
+use App\Http\Controllers\NonPoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +79,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // Outgoing Items (Barang Keluar) routes
         Route::get('/outgoing-items', [SalesOrderController::class, 'outgoingItems']);
         Route::get('/outgoing-items/{id}', [SalesOrderController::class, 'outgoingItemDetail']);
+        
+        // Non-PO routes (admin)
+        Route::post('/non-po/receipt', [NonPoController::class, 'storeReceipt']);
+        Route::get('/non-po/receipt/{id}/print', [NonPoController::class, 'getReceiptPrintData']);
+        Route::post('/non-po/issue', [NonPoController::class, 'storeIssue']);
+        Route::get('/non-po/issue/{id}/print', [NonPoController::class, 'getIssuePrintData']);
         
         // Report routes
         Route::prefix('reports')->group(function () {

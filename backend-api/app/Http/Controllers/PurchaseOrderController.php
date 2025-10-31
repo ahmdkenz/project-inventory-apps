@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Barang;
+use App\Models\NonPoReceipt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -442,74 +443,108 @@ class PurchaseOrderController extends Controller
     public function receivedItems(Request $request)
     {
         try {
-            $query = PurchaseOrder::with(['supplier', 'creator'])
-                ->where('status', 'completed');
-
-            // Filter by type
-            if ($request->has('type') && $request->type != '') {
-                if ($request->type === 'po') {
-                    // Already filtered by PO
-                } elseif ($request->type === 'non-po') {
-                    // For future: handle non-PO received items
-                    // Currently we only return empty for non-po
-                    return response()->json([
-                        'success' => true,
-                        'data' => [],
-                        'meta' => [
-                            'current_page' => 1,
-                            'last_page' => 1,
-                            'per_page' => 10,
-                            'total' => 0
-                        ]
-                    ]);
-                }
-            }
-
-            // Filter by date range
-            if ($request->has('start_date') && $request->start_date) {
-                $query->whereDate('completed_at', '>=', $request->start_date);
-            }
-            if ($request->has('end_date') && $request->end_date) {
-                $query->whereDate('completed_at', '<=', $request->end_date);
-            }
-
-            // Search
-            if ($request->has('search') && $request->search) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('no_po', 'like', "%{$search}%")
-                      ->orWhereHas('supplier', function($sq) use ($search) {
-                          $sq->where('nama', 'like', "%{$search}%");
-                      });
-                });
-            }
-
-            // Paginate
             $perPage = $request->get('per_page', 10);
-            $receivedItems = $query->orderBy('completed_at', 'desc')->paginate($perPage);
+            $page = $request->get('page', 1);
+            $search = $request->get('search', '');
+            $type = $request->get('type', '');
+            $startDate = $request->get('start_date', '');
+            $endDate = $request->get('end_date', '');
 
-            // Transform data to match frontend interface
-            $transformedData = $receivedItems->map(function ($po) {
-                return [
-                    'id' => $po->id,
-                    'no_dokumen' => $po->no_po,
-                    'tanggal' => $po->completed_at ? $po->completed_at->format('Y-m-d') : $po->approved_at->format('Y-m-d'),
-                    'tipe' => 'po',
-                    'no_referensi' => $po->no_surat_jalan ?? $po->no_po,
-                    'sumber' => $po->supplier->nama ?? '-',
-                    'total_nilai' => $po->total ?? 0,
-                    'dicatat_oleh' => $po->creator->name ?? '-'
-                ];
-            });
+            // Collect all received items (PO + Non-PO)
+            $allItems = collect();
+
+            // Get PO received items (if not filtering for non-po only)
+            if ($type === '' || $type === 'po') {
+                $poQuery = PurchaseOrder::with(['supplier', 'creator'])
+                    ->where('status', 'completed');
+
+                // Apply filters
+                if ($startDate) {
+                    $poQuery->whereDate('completed_at', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $poQuery->whereDate('completed_at', '<=', $endDate);
+                }
+                if ($search) {
+                    $poQuery->where(function($q) use ($search) {
+                        $q->where('no_po', 'like', "%{$search}%")
+                          ->orWhereHas('supplier', function($sq) use ($search) {
+                              $sq->where('nama', 'like', "%{$search}%");
+                          });
+                    });
+                }
+
+                $poItems = $poQuery->get()->map(function ($po) {
+                    return [
+                        'id' => 'po_' . $po->id,
+                        'original_id' => $po->id,
+                        'no_dokumen' => $po->no_po,
+                        'tanggal' => $po->completed_at ? $po->completed_at->format('Y-m-d') : $po->approved_at->format('Y-m-d'),
+                        'tanggal_sort' => $po->completed_at ? $po->completed_at : $po->approved_at,
+                        'tipe' => 'po',
+                        'no_referensi' => $po->no_surat_jalan ?? $po->no_po,
+                        'sumber' => $po->supplier->nama ?? '-',
+                        'total_nilai' => $po->total ?? 0,
+                        'dicatat_oleh' => $po->creator->name ?? '-'
+                    ];
+                });
+
+                $allItems = $allItems->merge($poItems);
+            }
+
+            // Get Non-PO received items (if not filtering for po only)
+            if ($type === '' || $type === 'non-po') {
+                $nonPoQuery = \App\Models\NonPoReceipt::with(['creator']);
+
+                // Apply filters
+                if ($startDate) {
+                    $nonPoQuery->whereDate('receive_date', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $nonPoQuery->whereDate('receive_date', '<=', $endDate);
+                }
+                if ($search) {
+                    $nonPoQuery->where(function($q) use ($search) {
+                        $q->where('no_dokumen', 'like', "%{$search}%")
+                          ->orWhere('source', 'like', "%{$search}%");
+                    });
+                }
+
+                $nonPoItems = $nonPoQuery->get()->map(function ($receipt) {
+                    return [
+                        'id' => 'non_po_' . $receipt->id,
+                        'original_id' => $receipt->id,
+                        'no_dokumen' => $receipt->no_dokumen,
+                        'tanggal' => $receipt->receive_date,
+                        'tanggal_sort' => \Carbon\Carbon::parse($receipt->receive_date),
+                        'tipe' => 'non-po',
+                        'no_referensi' => $receipt->no_dokumen,
+                        'sumber' => $receipt->source ?? '-',
+                        'total_nilai' => $receipt->total_value ?? 0,
+                        'dicatat_oleh' => $receipt->creator->name ?? '-'
+                    ];
+                });
+
+                $allItems = $allItems->merge($nonPoItems);
+            }
+
+            // Sort by date (newest first)
+            $allItems = $allItems->sortByDesc('tanggal_sort')->values();
+
+            // Manual pagination
+            $total = $allItems->count();
+            $lastPage = ceil($total / $perPage);
+            $offset = ($page - 1) * $perPage;
+            $paginatedItems = $allItems->slice($offset, $perPage)->values();
 
             return response()->json([
                 'success' => true,
-                'data' => $transformedData,
+                'data' => $paginatedItems,
                 'meta' => [
-                    'current_page' => $receivedItems->currentPage(),
-                    'last_page' => $receivedItems->lastPage(),
-                    'per_page' => $receivedItems->perPage(),
-                    'total' => $receivedItems->total()
+                    'current_page' => (int) $page,
+                    'last_page' => (int) $lastPage,
+                    'per_page' => (int) $perPage,
+                    'total' => $total
                 ]
             ]);
         } catch (\Exception $e) {
