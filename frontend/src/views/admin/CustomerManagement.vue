@@ -1,10 +1,32 @@
 <template>
   <div class="flex h-screen bg-gray-100">
-    <AdminNavigation :currentPath="$route.path" />
+    <!-- Sidebar -->
+    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+      <!-- Logo/Header Sidebar -->
+      <div class="p-6 flex items-center space-x-3">
+        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        </svg>
+        <span class="text-white text-2xl font-semibold">Inventori</span>
+      </div>
+      
+      <!-- Menu Navigasi Admin -->
+      <AdminNavigation :current-path="$route.path" />
+    </aside>
 
+    <!-- Latar belakang overlay untuk mobile -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay" @click="toggleSidebar"></div>
+    
+    <!-- Konten Utama -->
     <div class="flex-1 flex flex-col lg:ml-64">
       <!-- Header -->
       <header class="bg-white shadow-sm p-4 flex items-center justify-between">
+        <!-- Tombol Hamburger (Mobile) -->
+        <button class="text-gray-600 lg:hidden" @click="toggleSidebar">
+          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
         <h2 class="text-xl font-semibold text-gray-800">Manajemen Customer</h2>
         <div class="flex items-center space-x-4">
           <div class="flex items-center space-x-3">
@@ -187,6 +209,15 @@ const meta = ref({
 })
 
 let searchTimeout: number | null = null
+
+const toggleSidebar = () => {
+  const sidebar = document.getElementById('sidebar')
+  const overlay = document.getElementById('overlay')
+  if (sidebar && overlay) {
+    sidebar.classList.toggle('-translate-x-full')
+    overlay.classList.toggle('hidden')
+  }
+}
 
 const showMessage = (text: string, isError: boolean = false) => {
   message.value = { show: true, text, isError }

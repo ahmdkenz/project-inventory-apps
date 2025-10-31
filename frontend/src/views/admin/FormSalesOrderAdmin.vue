@@ -73,182 +73,236 @@
         </div>
       </header>
 
+      <div v-if="message.show" :class="message.isError ? 'bg-red-500' : 'bg-green-500'" class="text-white px-6 py-3 text-center">
+        {{ message.text }}
+      </div>
+
       <!-- Konten Halaman -->
       <main class="flex-1 p-6 overflow-y-auto">
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="text-3xl font-bold text-gray-900">Buat Sales Order Baru</h1>
-          <router-link
-            to="/admin/sales-orders"
-            class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
-          >
-            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-            <span>Kembali ke Daftar</span>
-          </router-link>
+        <div class="mb-6">
+          <div class="flex items-center space-x-2 mb-2">
+            <router-link to="/admin/sales-orders" class="text-blue-600 hover:text-blue-800">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </router-link>
+            <h1 class="text-3xl font-bold text-gray-900">Buat Sales Order</h1>
+          </div>
         </div>
         
-        <div class="max-w-7xl mx-auto space-y-6">
-          <!-- Informasi SO -->
-          <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Informasi Dokumen</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <form @submit.prevent="handleSubmit" class="space-y-6">
+          <!-- Informasi Customer -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Informasi Customer</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label for="receiver" class="block text-sm font-medium text-gray-700 mb-1">Penerima / Tujuan</label>
-                <input
-                  v-model="form.customer_name"
-                  type="text"
-                  id="receiver"
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Customer <span class="text-red-500">*</span>
+                </label>
+                <select
+                  v-model="form.customer_id"
+                  @change="onCustomerSelected"
                   required
-                  placeholder="Cth: Divisi IT"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                />
+                  :class="{ 'border-red-500': errors.customer_id }"
+                >
+                  <option value="">Pilih Customer</option>
+                  <option v-for="customer in customers" :key="customer.id" :value="customer.id">
+                    {{ customer.company_name }}
+                  </option>
+                </select>
+                <p v-if="errors.customer_id" class="text-red-500 text-xs mt-1">{{ errors.customer_id }}</p>
               </div>
               <div>
-                <label for="so_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal SO</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon <span class="text-red-500">*</span></label>
+                <input 
+                  v-model="form.customer_phone" 
+                  type="text" 
+                  required
+                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Masukkan nomor telepon"
+                >
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Alamat <span class="text-red-500">*</span></label>
+                <textarea 
+                  v-model="form.customer_address" 
+                  required
+                  rows="3"
+                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Masukkan alamat lengkap customer"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Informasi Order -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Informasi Order</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Order <span class="text-red-500">*</span></label>
                 <input
                   v-model="form.tgl_order"
                   type="date"
-                  id="so_date"
                   required
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label for="so_number" class="block text-sm font-medium text-gray-700 mb-1">Nomor SO (Otomatis)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Kirim Estimasi <span class="text-red-500">*</span></label>
                 <input
-                  type="text"
-                  id="so_number"
-                  value="SO-2024-XXXX"
-                  readonly
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 cursor-not-allowed"
+                  v-model="form.tgl_kirim"
+                  type="date"
+                  required
+                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
-              <div class="md:col-span-3">
-                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Catatan (Opsional)</label>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
                 <textarea
                   v-model="form.catatan"
-                  id="notes"
                   rows="2"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Keperluan..."
+                  placeholder="Catatan tambahan (opsional)"
                 ></textarea>
               </div>
             </div>
           </div>
 
           <!-- Detail Barang -->
-          <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Detail Barang</h2>
-            <!-- Form Tambah Item -->
-            <form @submit.prevent="addItem" class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end">
-              <div class="md:col-span-8">
-                <label for="item_select" class="block text-sm font-medium text-gray-700 mb-1">Pilih Barang</label>
-                <select v-model="newItem.barang_id" id="item_select" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500">
-                  <option value="">Pilih barang...</option>
-                  <option
-                    v-for="barang in barangList"
-                    :key="barang.id"
-                    :value="barang.id"
-                  >
-                    {{ barang.kode }} - {{ barang.nama }} (Stok: {{ barang.stok }})
-                  </option>
-                </select>
-              </div>
-              <div class="md:col-span-2">
-                <label for="item_qty" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-                <input
-                  v-model.number="newItem.qty"
-                  type="number"
-                  id="item_qty"
-                  min="1"
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <div class="md:col-span-2">
-                <button
-                  type="submit"
-                  class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
-                >
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  <span>Tambah</span>
-                </button>
-              </div>
-            </form>
-            
-            <!-- Tabel Item Ditambahkan -->
-            <div class="overflow-x-auto border rounded-lg">
-              <table class="w-full min-w-max">
-                <thead class="bg-gray-50">
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-semibold text-gray-800">Detail Barang</h2>
+              <button 
+                type="button" 
+                @click="addItem" 
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2"
+              >
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                <span>Tambah Barang</span>
+              </button>
+            </div>
+
+            <div v-if="form.items.length === 0" class="text-center py-8 text-gray-500">
+              Belum ada barang ditambahkan
+            </div>
+
+            <div v-else class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok Tersedia</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Diminta</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">Barang</th>
+                    <th class="px-4 py-3 text-center font-medium text-gray-700">Qty</th>
+                    <th class="px-4 py-3 text-right font-medium text-gray-700">Harga Satuan</th>
+                    <th class="px-4 py-3 text-right font-medium text-gray-700">Subtotal</th>
+                    <th class="px-4 py-3 text-center font-medium text-gray-700">Aksi</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
-                  <tr v-if="form.items.length === 0">
-                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
-                      Belum ada barang ditambahkan
-                    </td>
-                  </tr>
+                <tbody class="divide-y">
                   <tr v-for="(item, index) in form.items" :key="index">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.name }}</td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-sm text-center"
-                      :class="item.stok < item.qty ? 'text-red-600 font-medium' : 'text-gray-500'"
-                    >
-                      {{ item.stok }}
+                    <td class="px-4 py-3">
+                      <select 
+                        v-model="item.barang_id" 
+                        @change="onBarangChange(index)"
+                        required
+                        class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                      >
+                        <option value="">Pilih Barang</option>
+                        <option v-for="barang in barangList" :key="barang.id" :value="barang.id">
+                          {{ barang.nama }} - Stok: {{ barang.stok }}
+                        </option>
+                      </select>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">{{ item.qty }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                      <button @click="removeItem(index)" type="button" class="text-red-600 hover:text-red-800">
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.578 0c-.275.046-.55.097-.824.15l-1.172 0m11.356 0c-.049-.02-.097-.04-.145-.059M4.772 5.79L4.772 5.79m0 0L3.105 5.79A2.25 2.25 0 00.864 7.93l1.524 11.022a2.25 2.25 0 002.244 2.077h8.734a2.25 2.25 0 002.244-2.077L19.895 7.93a2.25 2.25 0 00-2.244-2.14h-3.352m-6.352 0c.049-.02.097-.04.145-.059m6.352 0a48.108 48.108 0 01-3.478-.397m12.578 0c.275.046.55.097.824.15l1.172 0m-11.356 0c.049-.02.097-.04.145-.059" />
+                    <td class="px-4 py-3">
+                      <input 
+                        v-model.number="item.qty" 
+                        @input="calculateItemSubtotal(index)"
+                        type="number" 
+                        min="1"
+                        required
+                        class="w-24 rounded-md border-gray-300 shadow-sm p-2 text-center focus:border-blue-500 focus:ring-blue-500"
+                      >
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <input 
+                        v-model.number="item.harga_satuan" 
+                        @input="calculateItemSubtotal(index)"
+                        type="number" 
+                        min="0"
+                        required
+                        class="w-32 rounded-md border-gray-300 shadow-sm p-2 text-right focus:border-blue-500 focus:ring-blue-500"
+                      >
+                    </td>
+                    <td class="px-4 py-3 text-right font-medium">
+                      {{ formatCurrency(item.subtotal || 0) }}
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      <button 
+                        type="button" 
+                        @click="removeItem(index)"
+                        class="text-red-600 hover:text-red-800"
+                      >
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
                     </td>
                   </tr>
                 </tbody>
+                <tfoot class="bg-gray-50 font-semibold">
+                  <tr>
+                    <td colspan="3" class="px-4 py-3 text-right">Subtotal</td>
+                    <td class="px-4 py-3 text-right">{{ formatCurrency(form.subtotal || 0) }}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="3" class="px-4 py-3 text-right">PPN (0%)</td>
+                    <td class="px-4 py-3 text-right">{{ formatCurrency(form.ppn || 0) }}</td>
+                    <td></td>
+                  </tr>
+                  <tr class="text-lg">
+                    <td colspan="3" class="px-4 py-3 text-right">Total</td>
+                    <td class="px-4 py-3 text-right text-blue-600">{{ formatCurrency(form.total || 0) }}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
 
-          <!-- Tombol Aksi Bawah -->
-          <div class="flex justify-end">
-            <button
-              @click="submitSO"
-              type="button"
-              :disabled="loading"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+          <!-- Action Buttons -->
+          <div class="flex justify-end space-x-4">
+            <router-link 
+              to="/admin/sales-orders" 
+              class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-6 rounded-lg border border-gray-300"
             >
-              {{ loading ? 'Menyimpan...' : 'Simpan dan Ajukan' }}
+              Batal
+            </router-link>
+            <button 
+              type="submit" 
+              :disabled="loading || form.items.length === 0"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {{ loading ? 'Menyimpan...' : 'Simpan' }}
             </button>
           </div>
-        </div>
+        </form>
       </main>
-    </div>
-
-    <!-- Message Box -->
-    <div
-      v-if="message.show"
-      :class="['fixed top-5 right-5 p-4 rounded-md shadow-lg text-white transition-all duration-300 z-50', message.isError ? 'bg-red-500' : 'bg-green-500']"
-    >
-      {{ message.text }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AdminNavigation from '@/components/AdminNavigation.vue'
 import salesOrderService from '@/services/salesOrder.service'
 import barangService from '@/services/barang.service'
+import customerService, { type Customer } from '@/services/customer.service'
 
 // Router & auth
 const router = useRouter()
@@ -299,25 +353,29 @@ const handleLogout = async () => {
 // State
 const loading = ref(false)
 const barangList = ref<any[]>([])
+const customers = ref<Customer[]>([])
+const selectedCustomer = ref<Customer | null>(null)
 
 const form = ref({
+  customer_id: '',
   customer_name: '',
+  customer_phone: '',
+  customer_address: '',
   tgl_order: new Date().toISOString().split('T')[0],
-  tgl_kirim: new Date().toISOString().split('T')[0],
+  tgl_kirim: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   catatan: '',
   items: [] as Array<{
     barang_id: number
-    name: string
     qty: number
-    stok: number
     harga_satuan: number
-  }>
+    subtotal: number
+  }>,
+  subtotal: 0,
+  ppn: 0,
+  total: 0
 })
 
-const newItem = ref({
-  barang_id: '',
-  qty: 1
-})
+const errors = ref<Record<string, string>>({})
 
 const message = ref({
   show: false,
@@ -326,6 +384,52 @@ const message = ref({
 })
 
 // Methods
+const fetchCustomers = async () => {
+  try {
+    const response = await customerService.getAll('', 1, 1000)
+    customers.value = response.data
+  } catch (error: any) {
+    console.error('Error fetching customers:', error)
+    showMessage('Gagal memuat data customer', true)
+  }
+}
+
+const onCustomerSelected = () => {
+  const customer = customers.value.find(c => c.id === parseInt(form.value.customer_id as any))
+  if (customer) {
+    selectedCustomer.value = customer
+    form.value.customer_name = customer.company_name
+    form.value.customer_phone = customer.phone || ''
+    form.value.customer_address = customer.address || ''
+  }
+}
+
+const onBarangChange = (index: number) => {
+  const item = form.value.items[index]
+  if (!item) return
+  
+  const barang = barangList.value.find(b => b.id === item.barang_id)
+  
+  if (barang) {
+    // Set harga_satuan to harga_jual (selling price)
+    item.harga_satuan = barang.harga_jual || 0
+    calculateItemSubtotal(index)
+  }
+}
+
+const calculateItemSubtotal = (index: number) => {
+  const item = form.value.items[index]
+  if (!item) return
+  item.subtotal = item.qty * item.harga_satuan
+  calculateTotal()
+}
+
+const calculateTotal = () => {
+  form.value.subtotal = form.value.items.reduce((sum, item) => sum + (item.subtotal || 0), 0)
+  form.value.ppn = 0 // No PPN
+  form.value.total = form.value.subtotal + form.value.ppn
+}
+
 const fetchBarang = async () => {
   try {
     const response = await barangService.getAll()
@@ -339,93 +443,81 @@ const fetchBarang = async () => {
 }
 
 const addItem = () => {
-  if (!newItem.value.barang_id || newItem.value.qty <= 0) {
-    showMessage('Silakan pilih barang dan isi jumlah (minimal 1)', true)
-    return
-  }
-  
-  const selectedBarang = barangList.value.find(b => b.id === parseInt(newItem.value.barang_id as any))
-  if (!selectedBarang) {
-    showMessage('Barang tidak valid', true)
-    return
-  }
-  
-  if (selectedBarang.stok === 0) {
-    showMessage('Stok barang ini 0, tidak bisa diminta', true)
-    return
-  }
-  
-  // Cek jika barang sudah ada, update qty
-  const existingItem = form.value.items.find(item => item.barang_id === selectedBarang.id)
-  if (existingItem) {
-    existingItem.qty += newItem.value.qty
-  } else {
-    form.value.items.push({
-      barang_id: selectedBarang.id,
-      name: selectedBarang.nama,
-      qty: newItem.value.qty,
-      stok: selectedBarang.stok,
-      harga_satuan: selectedBarang.harga_jual || 0
-    })
-  }
-  
-  resetNewItem()
+  form.value.items.push({
+    barang_id: 0,
+    qty: 1,
+    harga_satuan: 0,
+    subtotal: 0
+  })
 }
 
 const removeItem = (index: number) => {
   form.value.items.splice(index, 1)
+  calculateTotal()
 }
 
-const resetNewItem = () => {
-  newItem.value = { barang_id: '', qty: 1 }
-}
-
-const submitSO = async () => {
+const handleSubmit = async () => {
+  errors.value = {}
+  
+  if (!form.value.customer_id) {
+    errors.value.customer_id = 'Customer harus dipilih'
+    showMessage('Customer harus dipilih', true)
+    return
+  }
+  
   if (form.value.items.length === 0) {
-    showMessage('Anda harus menambahkan minimal 1 barang', true)
+    showMessage('Minimal harus ada 1 barang', true)
     return
   }
-  
-  // Cek jika ada permintaan melebihi stok
-  const overStock = form.value.items.find(item => item.qty > item.stok)
-  if (overStock) {
-    showMessage(`Permintaan ${overStock.name} (${overStock.qty}) melebihi stok (${overStock.stok})`, true)
-    return
-  }
-  
-  if (!form.value.customer_name.trim()) {
-    showMessage('Penerima/Tujuan harus diisi', true)
-    return
+
+  // Validate stock for each item
+  for (const item of form.value.items) {
+    const barang = barangList.value.find(b => b.id === item.barang_id)
+    if (barang && item.qty > barang.stok) {
+      showMessage(`Stok ${barang.nama} tidak mencukupi. Stok tersedia: ${barang.stok}`, true)
+      return
+    }
   }
   
   loading.value = true
   try {
     const payload = {
       customer_name: form.value.customer_name,
+      customer_phone: form.value.customer_phone,
+      customer_address: form.value.customer_address,
       tgl_order: form.value.tgl_order,
       tgl_kirim: form.value.tgl_kirim,
       catatan: form.value.catatan,
-      items: form.value.items.map(item => ({
-        barang_id: item.barang_id,
-        qty: item.qty,
-        harga_satuan: item.harga_satuan
-      })),
-      status: 'pending' as const
+      items: form.value.items,
+      subtotal: form.value.subtotal,
+      ppn: form.value.ppn,
+      total: form.value.total,
+      status: 'pending' as 'pending' | 'approved' | 'rejected' | 'completed'
     }
     
     const response = await (salesOrderService.create as any)(payload)
     if (response.success) {
-      showMessage('Sales Order berhasil dibuat dan diajukan untuk persetujuan!', false)
+      showMessage('Sales Order berhasil dibuat', false)
       setTimeout(() => {
         router.push('/admin/sales-orders')
       }, 1500)
     }
   } catch (error: any) {
     console.error('Error creating sales order:', error)
-    showMessage(error.response?.data?.message || 'Gagal membuat sales order', true)
+    const errorMsg = error.response?.data?.message || 'Gagal menyimpan sales order'
+    showMessage(errorMsg, true)
   } finally {
     loading.value = false
   }
+}
+
+const formatCurrency = (value: number) => {
+  if (!value) return 'Rp 0'
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(value)
 }
 
 const showMessage = (text: string, isError: boolean = false) => {
@@ -445,6 +537,7 @@ onMounted(() => {
   // Add click outside listener
   document.addEventListener('click', handleClickOutside)
   
+  fetchCustomers()
   fetchBarang()
 })
 

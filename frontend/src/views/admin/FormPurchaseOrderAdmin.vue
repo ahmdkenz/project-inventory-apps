@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex h-screen bg-gray-100">
     <!-- Sidebar Admin -->
     <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
       <div class="p-6 flex items-center space-x-3">
@@ -10,9 +10,19 @@
       </div>
       
       <AdminNavigation :current-path="$route.path" />
+      
+      <div class="absolute bottom-0 left-0 w-full p-4 border-t border-gray-700">
+        <div class="flex items-center space-x-3">
+          <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
+          <div>
+            <p class="text-sm font-medium text-white">Admin</p>
+            <p class="text-xs text-gray-400">Administrator</p>
+          </div>
+        </div>
+      </div>
     </aside>
 
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay"></div>
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay" @click="toggleSidebar"></div>
     
     <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
       <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
@@ -21,23 +31,40 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
-        <div class="relative hidden sm:block"></div>
+        <div class="relative hidden sm:block">
+          <input type="text" class="border border-gray-300 rounded-full py-2 px-4 pl-10" placeholder="Cari...">
+          <svg class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </div>
         <div class="flex items-center space-x-4">
-          <!-- Profile placeholder -->
+          <button class="text-gray-500 hover:text-gray-700 relative">
+            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+            </svg>
+          </button>
+          <div class="relative">
+            <button @click="showProfileMenu = !showProfileMenu" class="flex items-center space-x-2">
+              <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
+              <span class="hidden md:block text-sm font-medium text-gray-700">Admin</span>
+            </button>
+            <div v-if="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
+              <a @click.prevent="handleLogout" href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+            </div>
+          </div>
         </div>
       </header>
 
-      <!-- Alert Message -->
-      <div 
-        v-if="alert.show"
-        :class="['fixed top-20 right-6 py-3 px-6 rounded-lg shadow-lg z-50 transition-all duration-300', alert.type === 'error' ? 'bg-red-600 text-white' : 'bg-green-600 text-white']"
-      >
-        {{ alert.message }}
+      <!-- Success/Error Message -->
+      <div v-if="message.show" :class="message.isError ? 'bg-red-500' : 'bg-green-500'" class="text-white px-6 py-3 text-center">
+        {{ message.text }}
       </div>
 
       <main class="flex-1 p-6 overflow-y-auto">
         <div class="flex items-center justify-between mb-6">
-          <h1 class="text-3xl font-bold text-gray-900">Buat Purchase Order Baru</h1>
+          <h1 class="text-3xl font-bold text-gray-900">Buat Purchase Order</h1>
           <router-link
             to="/admin/purchase-orders"
             class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
@@ -45,72 +72,71 @@
             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
-            <span>Kembali ke Daftar</span>
+            <span>Kembali</span>
           </router-link>
         </div>
         
-        <div class="max-w-7xl mx-auto space-y-6">
-          <!-- Informasi Dokumen -->
-          <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Informasi Dokumen</h2>
+        <div class="max-w-6xl mx-auto">
+          <!-- Informasi Transaksi -->
+          <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Informasi Transaksi</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label for="supplier" class="block text-sm font-medium text-gray-700 mb-1">Supplier <span class="text-red-500">*</span></label>
                 <select
                   v-model="form.supplier_id"
                   id="supplier"
-                  required
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  :class="{ 'border-red-500': errors.supplier_id }"
+                  :class="{ 'border-red-500': errors.supplier_id, 'text-gray-500': !form.supplier_id, 'text-gray-900': form.supplier_id }"
                 >
-                  <option value="">Pilih Supplier...</option>
-                  <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
+                  <option value="" class="text-gray-500">Pilih Supplier</option>
+                  <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id" class="text-gray-900">
                     {{ supplier.nama }}
                   </option>
                 </select>
-                <span v-if="errors.supplier_id" class="text-red-500 text-xs mt-1">{{ errors.supplier_id }}</span>
+                <span v-if="errors.supplier_id" class="text-red-500 text-xs">{{ errors.supplier_id }}</span>
               </div>
               <div>
-                <label for="po_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal PO <span class="text-red-500">*</span></label>
+                <label for="tgl_pesan" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pesan <span class="text-red-500">*</span></label>
                 <input
                   v-model="form.tgl_pesan"
                   type="date"
-                  id="po_date"
-                  required
+                  id="tgl_pesan"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
                   :class="{ 'border-red-500': errors.tgl_pesan }"
                 />
-                <span v-if="errors.tgl_pesan" class="text-red-500 text-xs mt-1">{{ errors.tgl_pesan }}</span>
+                <span v-if="errors.tgl_pesan" class="text-red-500 text-xs">{{ errors.tgl_pesan }}</span>
               </div>
               <div>
-                <label for="po_number" class="block text-sm font-medium text-gray-700 mb-1">Nomor PO (Otomatis)</label>
+                <label for="tgl_estimasi" class="block text-sm font-medium text-gray-700 mb-1">Estimasi Tgl. Tiba <span class="text-red-500">*</span></label>
                 <input
-                  type="text"
-                  id="po_number"
-                  value="PO-XXXX-XXXX (Auto)"
-                  readonly
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 cursor-not-allowed"
+                  v-model="form.tgl_estimasi"
+                  type="date"
+                  id="tgl_estimasi"
+                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  :class="{ 'border-red-500': errors.tgl_estimasi }"
                 />
+                <span v-if="errors.tgl_estimasi" class="text-red-500 text-xs">{{ errors.tgl_estimasi }}</span>
               </div>
               <div class="md:col-span-3">
-                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Catatan (Opsional)</label>
+                <label for="catatan_po" class="block text-sm font-medium text-gray-700 mb-1">Catatan (Opsional)</label>
                 <textarea
                   v-model="form.catatan"
-                  id="notes"
+                  id="catatan_po"
                   rows="2"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Termin pembayaran, dll..."
+                  placeholder="Catatan untuk supplier..."
                 ></textarea>
               </div>
             </div>
           </div>
 
           <!-- Detail Barang -->
-          <div class="bg-white p-6 rounded-lg shadow-sm">
+          <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Detail Barang</h2>
             
             <!-- Form Tambah Item -->
-            <form @submit.prevent="addItem" class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end">
               <div class="md:col-span-5">
                 <label for="item_select" class="block text-sm font-medium text-gray-700 mb-1">Pilih Barang</label>
                 <select
@@ -118,10 +144,11 @@
                   @change="onBarangSelected"
                   id="item_select"
                   class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
+                  :class="{ 'text-gray-500': !newItem.barang_id, 'text-gray-900': newItem.barang_id }"
                 >
-                  <option value="">Pilih barang...</option>
-                  <option v-for="barang in barangList" :key="barang.id" :value="barang.id">
-                    {{ barang.kode_barang }} - {{ barang.nama }}
+                  <option value="" class="text-gray-500">Pilih barang...</option>
+                  <option v-for="barang in barangList" :key="barang.id" :value="barang.id" class="text-gray-900">
+                    {{ barang.kode }} - {{ barang.nama }}
                   </option>
                 </select>
               </div>
@@ -136,7 +163,7 @@
                 />
               </div>
               <div class="md:col-span-3">
-                <label for="item_price" class="block text-sm font-medium text-gray-700 mb-1">Harga Satuan (Rp)</label>
+                <label for="item_price" class="block text-sm font-medium text-gray-700 mb-1">Harga Beli (Satuan)</label>
                 <input
                   v-model.number="newItem.harga_satuan"
                   type="number"
@@ -147,7 +174,8 @@
               </div>
               <div class="md:col-span-2">
                 <button
-                  type="submit"
+                  @click="addItem"
+                  type="button"
                   class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
                 >
                   <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -156,7 +184,7 @@
                   <span>Tambah</span>
                 </button>
               </div>
-            </form>
+            </div>
             
             <!-- Tabel Item Ditambahkan -->
             <div class="overflow-x-auto border rounded-lg">
@@ -180,7 +208,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.nama }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ item.qty }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ formatCurrency(item.qty * item.harga_satuan) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.qty * item.harga_satuan) }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                       <button
                         @click="removeItem(index)"
@@ -188,27 +216,17 @@
                         class="text-red-600 hover:text-red-800"
                       >
                         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.578 0c-.275.046-.55.097-.824.15l-1.172 0m11.356 0c-.049-.02-.097-.04-.145-.059M4.772 5.79L4.772 5.79m0 0L3.105 5.79" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 0c-.275.046-.55.097-.824.15" />
                         </svg>
                       </button>
                     </td>
                   </tr>
                 </tbody>
-                <!-- Footer Total -->
-                <tfoot class="bg-gray-50 font-medium">
+                <!-- Footer Kalkulasi -->
+                <tfoot class="bg-gray-50 border-t-2 border-gray-300">
                   <tr>
-                    <td colspan="3" class="px-6 py-3 text-right text-sm text-gray-700 uppercase">Subtotal</td>
-                    <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(subtotal) }}</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td colspan="3" class="px-6 py-3 text-right text-sm text-gray-700 uppercase">PPN (11%)</td>
-                    <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(ppn) }}</td>
-                    <td></td>
-                  </tr>
-                  <tr class="text-base font-semibold">
-                    <td colspan="3" class="px-6 py-4 text-right text-gray-900 uppercase">Total</td>
-                    <td class="px-6 py-4 text-right text-gray-900">{{ formatCurrency(total) }}</td>
+                    <td colspan="3" class="px-6 py-3 text-right text-base font-bold text-gray-900">Total</td>
+                    <td class="px-6 py-3 text-right text-base font-bold text-gray-900">{{ formatCurrency(total) }}</td>
                     <td></td>
                   </tr>
                 </tfoot>
@@ -218,15 +236,14 @@
           </div>
 
           <!-- Tombol Aksi Bawah -->
-          <div class="flex justify-end">
+          <div class="flex justify-end space-x-4">
             <button
               @click="submitPO"
               :disabled="loading"
               type="button"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-150 disabled:bg-gray-400"
             >
-              <span v-if="loading">Menyimpan...</span>
-              <span v-else>Simpan dan Ajukan</span>
+              {{ loading ? 'Menyimpan...' : 'Simpan & Kirim PO' }}
             </button>
           </div>
         </div>
@@ -247,6 +264,7 @@ const router = useRouter()
 
 // State
 const loading = ref(false)
+const showProfileMenu = ref(false)
 const suppliers = ref<any[]>([])
 const barangList = ref<any[]>([])
 const items = ref<any[]>([])
@@ -254,6 +272,7 @@ const items = ref<any[]>([])
 const form = ref({
   supplier_id: '',
   tgl_pesan: new Date().toISOString().split('T')[0],
+  tgl_estimasi: '',
   catatan: ''
 })
 
@@ -266,23 +285,15 @@ const newItem = ref({
 
 const errors = ref<any>({})
 
-const alert = ref({
+const message = ref({
   show: false,
-  type: 'success',
-  message: ''
+  text: '',
+  isError: false
 })
 
 // Computed
-const subtotal = computed(() => {
-  return items.value.reduce((total, item) => total + (item.qty * item.harga_satuan), 0)
-})
-
-const ppn = computed(() => {
-  return subtotal.value * 0.11
-})
-
 const total = computed(() => {
-  return subtotal.value + ppn.value
+  return items.value.reduce((total, item) => total + (item.qty * item.harga_satuan), 0)
 })
 
 // Methods
@@ -303,11 +314,17 @@ const formatCurrency = (value: number) => {
   }).format(value)
 }
 
-const showAlert = (message: string, type: 'success' | 'error' = 'success') => {
-  alert.value = { show: true, type, message }
+const showMessage = (text: string, isError: boolean = false) => {
+  message.value = { show: true, text, isError }
   setTimeout(() => {
-    alert.value.show = false
+    message.value.show = false
   }, 3000)
+}
+
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  router.push('/login')
 }
 
 const fetchSuppliers = async () => {
@@ -337,20 +354,20 @@ const onBarangSelected = () => {
   if (selectedBarang) {
     newItem.value.nama = selectedBarang.nama
     // Set harga default jika ada
-    if (selectedBarang.harga_jual) {
-      newItem.value.harga_satuan = selectedBarang.harga_jual
+    if (selectedBarang.harga_beli) {
+      newItem.value.harga_satuan = selectedBarang.harga_beli
     }
   }
 }
 
 const addItem = () => {
   if (!newItem.value.barang_id || newItem.value.qty <= 0) {
-    showAlert('Silakan pilih barang dan isi jumlah (minimal 1).', 'error')
+    showMessage('Silakan pilih barang dan isi jumlah (minimal 1).', true)
     return
   }
 
   if (newItem.value.harga_satuan <= 0) {
-    showAlert('Harga satuan harus lebih dari 0.', 'error')
+    showMessage('Harga satuan harus lebih dari 0.', true)
     return
   }
 
@@ -384,11 +401,15 @@ const validateForm = () => {
   }
 
   if (!form.value.tgl_pesan) {
-    errors.value.tgl_pesan = 'Tanggal PO harus diisi'
+    errors.value.tgl_pesan = 'Tanggal pesan harus diisi'
+  }
+
+  if (!form.value.tgl_estimasi) {
+    errors.value.tgl_estimasi = 'Estimasi tanggal tiba harus diisi'
   }
 
   if (items.value.length === 0) {
-    errors.value.items = 'Anda harus menambahkan minimal 1 barang'
+    errors.value.items = 'Minimal harus ada 1 barang'
   }
 
   return Object.keys(errors.value).length === 0
@@ -396,7 +417,7 @@ const validateForm = () => {
 
 const submitPO = async () => {
   if (!validateForm()) {
-    showAlert('Mohon lengkapi form dengan benar', 'error')
+    showMessage('Mohon lengkapi semua field yang wajib diisi', true)
     return
   }
 
@@ -405,9 +426,12 @@ const submitPO = async () => {
     const payload = {
       supplier_id: parseInt(form.value.supplier_id),
       tgl_pesan: form.value.tgl_pesan,
-      tgl_estimasi: form.value.tgl_pesan, // sama dengan tgl_pesan untuk sementara
+      tgl_estimasi: form.value.tgl_estimasi,
       catatan: form.value.catatan || '',
       status: 'pending' as const,
+      subtotal: total.value,
+      ppn: 0,
+      total: total.value,
       items: items.value.map(item => ({
         barang_id: item.barang_id,
         qty: item.qty,
@@ -418,14 +442,14 @@ const submitPO = async () => {
 
     const response = await purchaseOrderService.create(payload as any)
     if (response.success) {
-      showAlert('Purchase Order berhasil dibuat dan diajukan!', 'success')
+      showMessage('Purchase Order berhasil dibuat dan diajukan!', false)
       setTimeout(() => {
         router.push('/admin/purchase-orders')
       }, 1500)
     }
   } catch (error: any) {
     console.error('Error creating PO:', error)
-    showAlert(error.response?.data?.message || 'Gagal membuat Purchase Order', 'error')
+    showMessage(error.response?.data?.message || 'Gagal membuat Purchase Order', true)
   } finally {
     loading.value = false
   }
