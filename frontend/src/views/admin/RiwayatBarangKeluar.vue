@@ -169,7 +169,16 @@
               <tbody class="divide-y divide-gray-200">
                 <tr v-for="item in outgoingItems" :key="item.id">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800">
-                    <router-link :to="`/admin/outgoing-items/${item.id}`">
+                    <router-link 
+                      v-if="item.tipe === 'so'"
+                      :to="`/admin/outgoing-items/${item.original_id}`"
+                    >
+                      {{ item.no_dokumen }}
+                    </router-link>
+                    <router-link 
+                      v-else
+                      :to="`/admin/non-po/issue/${item.original_id}/print`"
+                    >
                       {{ item.no_dokumen }}
                     </router-link>
                   </td>
@@ -197,12 +206,20 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {{ item.dicatat_oleh }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     <router-link
-                      :to="`/admin/outgoing-items/${item.id}`"
+                      v-if="item.tipe === 'so'"
+                      :to="`/admin/outgoing-items/${item.original_id}`"
                       class="text-indigo-600 hover:text-indigo-900"
                     >
                       Lihat Detail
+                    </router-link>
+                    <router-link
+                      v-else
+                      :to="`/admin/non-po/issue/${item.original_id}/print`"
+                      class="text-purple-600 hover:text-purple-800"
+                    >
+                      Cetak
                     </router-link>
                   </td>
                 </tr>

@@ -1,7 +1,8 @@
 import api from './api'
 
 export interface OutgoingItem {
-  id: number
+  id: number | string
+  original_id: number
   no_dokumen: string
   tanggal: string
   tipe: 'so' | 'non-so'

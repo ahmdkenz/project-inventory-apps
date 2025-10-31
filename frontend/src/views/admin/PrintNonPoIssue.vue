@@ -90,7 +90,7 @@
                 </div>
                 <div>
                   <span class="text-sm font-semibold text-gray-500 uppercase">Dikeluarkan Oleh: </span>
-                  <span class="text-sm font-medium text-gray-800">{{ issueData?.creator_name }}</span>
+                  <span class="text-sm font-medium text-gray-800">{{ issueData?.creator?.name || '-' }}</span>
                 </div>
               </div>
             </div>
@@ -107,7 +107,12 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                  <tr v-for="(item, index) in issueData?.items" :key="item.id">
+                  <tr v-if="!issueData?.items || issueData.items.length === 0">
+                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                      Tidak ada data barang
+                    </td>
+                  </tr>
+                  <tr v-else v-for="(item, index) in issueData.items" :key="item.barang_id">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ index + 1 }}.</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="text-sm font-medium text-gray-900">{{ item.nama_barang }}</div>
@@ -152,13 +157,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import api from '@/services/api'
 import AdminNavigation from '@/components/AdminNavigation.vue'
 
 const route = useRoute()
 
 interface IssueItem {
-  id: number
+  barang_id: number
   nama_barang: string
   kode_barang: string
   qty: number
@@ -170,7 +175,9 @@ interface IssueData {
   recipient: string
   issue_date: string
   notes: string | null
-  creator_name: string
+  creator: {
+    name: string
+  } | null
   items: IssueItem[]
 }
 
@@ -191,17 +198,36 @@ const fetchIssueData = async () => {
     error.value = ''
     
     const issueId = route.params.id
-    const token = localStorage.getItem('authToken')
     
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/non-po/issue/${issueId}/print`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+    console.log('Fetching issue data for ID:', issueId)
+    
+    const response = await api.get(`/admin/non-po/issue/${issueId}/print`)
+    
+    console.log('Full response:', response)
+    console.log('Response data:', response.data)
+    
+    if (response.data && response.data.success && response.data.data) {
+      const data = response.data.data
+      
+      // Ensure items is an array
+      if (!data.items) {
+        data.items = []
+      } else if (typeof data.items === 'object' && !Array.isArray(data.items)) {
+        // Convert object to array if needed
+        data.items = Object.values(data.items)
       }
-    })
-    
-    issueData.value = response.data.data
+      
+      issueData.value = data
+      console.log('Issue data set:', issueData.value)
+      console.log('Issue items count:', data.items?.length)
+      console.log('Issue items:', data.items)
+    } else {
+      error.value = 'Format data tidak sesuai'
+      console.error('Invalid response format:', response.data)
+    }
   } catch (err: any) {
     console.error('Error fetching issue data:', err)
+    console.error('Error response:', err.response)
     error.value = err.response?.data?.message || 'Gagal memuat data bukti pengeluaran'
   } finally {
     isLoading.value = false

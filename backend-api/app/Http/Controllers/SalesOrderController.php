@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use App\Models\Barang;
+use App\Models\NonPoIssue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -566,70 +567,104 @@ class SalesOrderController extends Controller
     public function outgoingItems(Request $request)
     {
         try {
-            $query = SalesOrder::with(['creator'])
-                ->where('status', 'completed');
-
-            // Filter by type
-            if ($request->has('type') && $request->type != '') {
-                if ($request->type === 'so') {
-                    // Already filtered by SO
-                } elseif ($request->type === 'non-so') {
-                    // For future: handle non-SO outgoing items
-                    return response()->json([
-                        'success' => true,
-                        'data' => [],
-                        'meta' => [
-                            'current_page' => 1,
-                            'last_page' => 1,
-                            'per_page' => 10,
-                            'total' => 0
-                        ]
-                    ]);
-                }
-            }
-
-            // Filter by date range
-            if ($request->has('start_date') && $request->start_date) {
-                $query->whereDate('completed_at', '>=', $request->start_date);
-            }
-            if ($request->has('end_date') && $request->end_date) {
-                $query->whereDate('completed_at', '<=', $request->end_date);
-            }
-
-            // Search
-            if ($request->has('search') && $request->search) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('no_so', 'like', "%{$search}%")
-                      ->orWhere('customer_name', 'like', "%{$search}%");
-                });
-            }
-
-            // Paginate
             $perPage = $request->get('per_page', 10);
-            $outgoingItems = $query->orderBy('completed_at', 'desc')->paginate($perPage);
+            $page = $request->get('page', 1);
+            $search = $request->get('search', '');
+            $type = $request->get('type', '');
+            $startDate = $request->get('start_date', '');
+            $endDate = $request->get('end_date', '');
 
-            // Transform data to match frontend interface
-            $transformedData = $outgoingItems->map(function ($so) {
-                return [
-                    'id' => $so->id,
-                    'no_dokumen' => $this->generateOutDocNumber($so),
-                    'tanggal' => $so->completed_at ? $so->completed_at->format('Y-m-d') : $so->approved_at->format('Y-m-d'),
-                    'tipe' => 'so',
-                    'no_referensi' => $so->no_so,
-                    'penerima' => $so->customer_name,
-                    'dicatat_oleh' => $so->creator->name ?? '-'
-                ];
-            });
+            // Collect all outgoing items (SO + Non-SO)
+            $allItems = collect();
+
+            // Get SO outgoing items (if not filtering for non-so only)
+            if ($type === '' || $type === 'so') {
+                $soQuery = SalesOrder::with(['creator'])
+                    ->where('status', 'completed');
+
+                // Apply filters
+                if ($startDate) {
+                    $soQuery->whereDate('completed_at', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $soQuery->whereDate('completed_at', '<=', $endDate);
+                }
+                if ($search) {
+                    $soQuery->where(function($q) use ($search) {
+                        $q->where('no_so', 'like', "%{$search}%")
+                          ->orWhere('customer_name', 'like', "%{$search}%");
+                    });
+                }
+
+                $soItems = $soQuery->get()->map(function ($so) {
+                    return [
+                        'id' => 'so_' . $so->id,
+                        'original_id' => $so->id,
+                        'no_dokumen' => $this->generateOutDocNumber($so),
+                        'tanggal' => $so->completed_at ? $so->completed_at->format('Y-m-d') : $so->approved_at->format('Y-m-d'),
+                        'tanggal_sort' => $so->completed_at ? $so->completed_at : $so->approved_at,
+                        'tipe' => 'so',
+                        'no_referensi' => $so->no_so,
+                        'penerima' => $so->customer_name,
+                        'dicatat_oleh' => $so->creator->name ?? '-'
+                    ];
+                });
+
+                $allItems = $allItems->merge($soItems);
+            }
+
+            // Get Non-SO outgoing items (if not filtering for so only)
+            if ($type === '' || $type === 'non-so') {
+                $nonSoQuery = NonPoIssue::with(['creator']);
+
+                // Apply filters
+                if ($startDate) {
+                    $nonSoQuery->whereDate('issue_date', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $nonSoQuery->whereDate('issue_date', '<=', $endDate);
+                }
+                if ($search) {
+                    $nonSoQuery->where(function($q) use ($search) {
+                        $q->where('no_dokumen', 'like', "%{$search}%")
+                          ->orWhere('recipient', 'like', "%{$search}%");
+                    });
+                }
+
+                $nonSoItems = $nonSoQuery->get()->map(function ($issue) {
+                    return [
+                        'id' => 'non_so_' . $issue->id,
+                        'original_id' => $issue->id,
+                        'no_dokumen' => $issue->no_dokumen,
+                        'tanggal' => $issue->issue_date,
+                        'tanggal_sort' => Carbon::parse($issue->issue_date),
+                        'tipe' => 'non-so',
+                        'no_referensi' => $issue->no_dokumen,
+                        'penerima' => $issue->recipient ?? '-',
+                        'dicatat_oleh' => $issue->creator->name ?? '-'
+                    ];
+                });
+
+                $allItems = $allItems->merge($nonSoItems);
+            }
+
+            // Sort by date (newest first)
+            $allItems = $allItems->sortByDesc('tanggal_sort')->values();
+
+            // Manual pagination
+            $total = $allItems->count();
+            $lastPage = ceil($total / $perPage);
+            $offset = ($page - 1) * $perPage;
+            $paginatedItems = $allItems->slice($offset, $perPage)->values();
 
             return response()->json([
                 'success' => true,
-                'data' => $transformedData,
+                'data' => $paginatedItems,
                 'meta' => [
-                    'current_page' => $outgoingItems->currentPage(),
-                    'last_page' => $outgoingItems->lastPage(),
-                    'per_page' => $outgoingItems->perPage(),
-                    'total' => $outgoingItems->total()
+                    'current_page' => (int) $page,
+                    'last_page' => (int) $lastPage,
+                    'per_page' => (int) $perPage,
+                    'total' => $total
                 ]
             ]);
         } catch (\Exception $e) {
