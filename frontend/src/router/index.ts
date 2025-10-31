@@ -317,6 +317,42 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresStaff: true }
     },
     {
+      path: '/staff/received-items',
+      name: 'staff-received-items',
+      component: () => import('@/views/staff/ReceivedItemsHistoryStaff.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/outgoing-items',
+      name: 'staff-outgoing-items',
+      component: () => import('@/views/staff/OutgoingItemsHistoryStaff.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/non-po/receipt/create',
+      name: 'staff-non-po-receipt-create',
+      component: () => import('@/views/staff/NonPoReceiptFormStaff.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/non-po/receipt/:id/print',
+      name: 'staff-non-po-receipt-print',
+      component: () => import('@/views/staff/PrintNonPoReceiptStaff.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/non-po/issue/create',
+      name: 'staff-non-po-issue-create',
+      component: () => import('@/views/staff/NonPoIssueFormStaff.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/non-po/issue/:id/print',
+      name: 'staff-non-po-issue-print',
+      component: () => import('@/views/staff/PrintNonPoIssueStaff.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
       path: '/staff/laporan',
       name: 'staff-laporan',
       component: StaffReportDashboard,

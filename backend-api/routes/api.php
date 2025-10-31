@@ -121,6 +121,20 @@ Route::middleware('auth:sanctum')->group(function () {
         // Sales Order routes (staff - create/manage own SO)
         Route::apiResource('sales-order', SalesOrderController::class);
         
+        // Received Items (Barang Masuk) routes for staff
+        Route::get('/received-items', [PurchaseOrderController::class, 'receivedItems']);
+        Route::get('/received-items/{id}', [PurchaseOrderController::class, 'receivedItemDetail']);
+        
+        // Outgoing Items (Barang Keluar) routes for staff
+        Route::get('/outgoing-items', [SalesOrderController::class, 'outgoingItems']);
+        Route::get('/outgoing-items/{id}', [SalesOrderController::class, 'outgoingItemDetail']);
+        
+        // Non-PO routes (staff)
+        Route::post('/non-po/receipt', [NonPoController::class, 'storeReceipt']);
+        Route::get('/non-po/receipt/{id}/print', [NonPoController::class, 'getReceiptPrintData']);
+        Route::post('/non-po/issue', [NonPoController::class, 'storeIssue']);
+        Route::get('/non-po/issue/{id}/print', [NonPoController::class, 'getIssuePrintData']);
+        
         // Staff Report routes
         Route::prefix('reports')->group(function () {
             Route::get('/dashboard', [StaffReportController::class, 'dashboard']);

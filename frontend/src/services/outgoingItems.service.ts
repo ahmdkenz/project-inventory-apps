@@ -30,7 +30,7 @@ export interface OutgoingItemsFilter {
 }
 
 const outgoingItemsService = {
-  async getAll(filters?: OutgoingItemsFilter): Promise<OutgoingItemsResponse> {
+  async getAll(filters?: OutgoingItemsFilter, role: 'admin' | 'staff' = 'admin'): Promise<OutgoingItemsResponse> {
     const params = new URLSearchParams()
     
     if (filters?.search) {
@@ -49,7 +49,7 @@ const outgoingItemsService = {
       params.append('page', filters.page.toString())
     }
 
-    const response = await api.get(`/admin/outgoing-items?${params.toString()}`)
+    const response = await api.get(`/${role}/outgoing-items?${params.toString()}`)
     return response.data
   }
 }

@@ -31,7 +31,7 @@ export interface ReceivedItemsFilter {
 }
 
 const receivedItemsService = {
-  async getAll(filters?: ReceivedItemsFilter): Promise<ReceivedItemsResponse> {
+  async getAll(filters?: ReceivedItemsFilter, role: 'admin' | 'staff' = 'admin'): Promise<ReceivedItemsResponse> {
     const params = new URLSearchParams()
     
     if (filters?.search) {
@@ -50,7 +50,7 @@ const receivedItemsService = {
       params.append('page', filters.page.toString())
     }
 
-    const response = await api.get(`/admin/received-items?${params.toString()}`)
+    const response = await api.get(`/${role}/received-items?${params.toString()}`)
     return response.data
   }
 }
