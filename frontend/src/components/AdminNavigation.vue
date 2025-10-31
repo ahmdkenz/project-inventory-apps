@@ -51,7 +51,8 @@ const menuGroups: MenuGroup[] = [
     items: [
       { path: '/admin/barang', name: 'Data Barang' },
       { path: '/admin/kategori', name: 'Kategori' },
-      { path: '/admin/supplier', name: 'Supplier' }
+      { path: '/admin/supplier', name: 'Supplier' },
+      { path: '/admin/customers', name: 'Customer' }
     ]
   },
   {
