@@ -172,7 +172,16 @@
               <tbody class="divide-y divide-gray-200">
                 <tr v-for="item in receivedItems" :key="item.id">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800">
-                    <router-link :to="`/admin/received-items/${item.id}`">
+                    <router-link 
+                      v-if="item.tipe === 'po'"
+                      :to="`/admin/received-items/${item.original_id}`"
+                    >
+                      {{ item.no_dokumen }}
+                    </router-link>
+                    <router-link 
+                      v-else
+                      :to="`/admin/non-po/receipt/${item.original_id}/print`"
+                    >
                       {{ item.no_dokumen }}
                     </router-link>
                   </td>
@@ -205,13 +214,29 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     <router-link
-                      :to="`/admin/purchase-orders/${item.id}/print`"
+                      v-if="item.tipe === 'po'"
+                      :to="`/admin/purchase-orders/${item.original_id}/print`"
                       class="text-purple-600 hover:text-purple-800"
                     >
                       Cetak
                     </router-link>
                     <router-link
-                      :to="`/admin/received-items/${item.id}`"
+                      v-else
+                      :to="`/admin/non-po/receipt/${item.original_id}/print`"
+                      class="text-purple-600 hover:text-purple-800"
+                    >
+                      Cetak
+                    </router-link>
+                    <router-link
+                      v-if="item.tipe === 'po'"
+                      :to="`/admin/received-items/${item.original_id}`"
+                      class="text-indigo-600 hover:text-indigo-900"
+                    >
+                      Lihat Detail
+                    </router-link>
+                    <router-link
+                      v-else
+                      :to="`/admin/non-po/receipt/${item.original_id}/print`"
                       class="text-indigo-600 hover:text-indigo-900"
                     >
                       Lihat Detail

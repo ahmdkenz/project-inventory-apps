@@ -1,7 +1,8 @@
 import api from './api'
 
 export interface ReceivedItem {
-  id: number
+  id: number | string
+  original_id: number
   no_dokumen: string
   tanggal: string
   tipe: 'po' | 'non-po'

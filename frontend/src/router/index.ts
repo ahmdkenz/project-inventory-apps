@@ -221,6 +221,30 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/non-po/receipt/create',
+      name: 'admin-non-po-receipt-create',
+      component: () => import('@/views/admin/NonPoReceiptForm.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/non-po/receipt/:id/print',
+      name: 'admin-non-po-receipt-print',
+      component: () => import('@/views/admin/PrintNonPoReceipt.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/non-po/issue/create',
+      name: 'admin-non-po-issue-create',
+      component: () => import('@/views/admin/NonPoIssueForm.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/non-po/issue/:id/print',
+      name: 'admin-non-po-issue-print',
+      component: () => import('@/views/admin/PrintNonPoIssue.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/staff/dashboard',
       name: 'staff-dashboard',
       component: StaffDashboard,
