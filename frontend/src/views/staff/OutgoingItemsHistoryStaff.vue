@@ -206,21 +206,54 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {{ item.dicatat_oleh }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <router-link
-                      v-if="item.tipe === 'so'"
-                      :to="`/staff/outgoing-items/${item.original_id}`"
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Lihat Detail
-                    </router-link>
-                    <router-link
-                      v-else
-                      :to="`/staff/non-po/issue/${item.original_id}/print`"
-                      class="text-purple-600 hover:text-purple-800"
-                    >
-                      Cetak
-                    </router-link>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end space-x-2">
+                      <!-- Tombol Detail -->
+                      <router-link
+                        v-if="item.tipe === 'so'"
+                        :to="`/staff/sales-order/detail/${item.original_id}`"
+                        class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Detail
+                      </router-link>
+                      <router-link
+                        v-else
+                        :to="`/staff/non-po/issue/${item.original_id}/detail`"
+                        class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Detail
+                      </router-link>
+                      
+                      <!-- Tombol Cetak -->
+                      <router-link
+                        v-if="item.tipe === 'so'"
+                        :to="`/staff/sales-orders/${item.original_id}/print-issue`"
+                        class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg transition"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Cetak
+                      </router-link>
+                      <router-link
+                        v-else
+                        :to="`/staff/non-po/issue/${item.original_id}/print`"
+                        class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg transition"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Cetak
+                      </router-link>
+                    </div>
                   </td>
                 </tr>
               </tbody>

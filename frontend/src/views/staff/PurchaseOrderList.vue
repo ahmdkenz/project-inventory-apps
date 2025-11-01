@@ -164,6 +164,7 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ formatCurrency(po.total || 0) }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end space-x-2">
+                      <!-- Tombol Detail -->
                       <router-link 
                         :to="`/staff/purchase-order/${po.id}`" 
                         class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition"
@@ -174,6 +175,20 @@
                         </svg>
                         Detail
                       </router-link>
+                      
+                      <!-- Tombol Cetak untuk PO yang sudah completed -->
+                      <router-link
+                        v-if="po.status === 'completed'"
+                        :to="`/staff/purchase-orders/${po.id}/print-receipt`"
+                        class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg transition"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Cetak Bukti
+                      </router-link>
+                      
+                      <!-- Tombol Edit (hanya untuk pending) -->
                       <router-link 
                         v-if="po.status === 'pending'" 
                         :to="`/staff/purchase-order/edit/${po.id}`" 
@@ -184,6 +199,8 @@
                         </svg>
                         Edit
                       </router-link>
+                      
+                      <!-- Tombol Hapus (hanya untuk pending) -->
                       <button 
                         v-if="po.status === 'pending'" 
                         @click="confirmDelete(po)" 
