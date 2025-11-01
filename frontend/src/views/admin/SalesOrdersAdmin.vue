@@ -187,7 +187,13 @@
                       <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat SO</router-link>
                     </template>
                     
-                    <!-- Status completed atau rejected: Hanya Lihat -->
+                    <!-- Status completed: Cetak Bukti -->
+                    <template v-else-if="so.status === 'completed'">
+                      <router-link :to="`/admin/sales-orders/${so.id}/print-issue`" class="text-green-600 hover:text-green-800">Cetak Bukti</router-link>
+                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
+                    </template>
+                    
+                    <!-- Status rejected: Hanya Lihat -->
                     <template v-else>
                       <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
                     </template>
