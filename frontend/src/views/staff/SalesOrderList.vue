@@ -319,10 +319,10 @@ const getStatusBadgeClass = (status: string) => {
 
 const getStatusLabel = (status: string) => {
   const labels: any = {
-    'pending': 'Pending',
-    'approved': 'Approved',
-    'rejected': 'Rejected',
-    'completed': 'Completed'
+    'pending': 'Approved (Pending)',
+    'approved': 'Approved (Pending)',
+    'rejected': 'Reject',
+    'completed': 'Done'
   }
   return labels[status] || status
 }
