@@ -283,12 +283,22 @@ const formatDate = (date: string) => {
 
 const getStatusLabel = (status: string) => {
   const labels: any = {
-    'pending': 'Menunggu Persetujuan',
-    'approved': 'Disetujui (Pending)',
-    'rejected': 'Ditolak',
-    'completed': 'Selesai'
+    'pending': 'Approved (Pending)',
+    'approved': 'Approved (Pending)',
+    'rejected': 'Reject',
+    'completed': 'Done'
   }
   return labels[status] || status
+}
+
+const getStatusText = (status: string) => {
+  const texts = {
+    'pending': 'Approved (Pending)',
+    'approved': 'Approved (Pending)',
+    'rejected': 'Reject',
+    'completed': 'Done'
+  }
+  return texts[status as keyof typeof texts] || status
 }
 
 const getStatusBadgeClass = (status: string) => {
