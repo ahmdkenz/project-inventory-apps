@@ -223,7 +223,7 @@
                     </router-link>
                     <router-link
                       v-if="item.tipe === 'so'"
-                      :to="`/admin/outgoing-items/${item.original_id}`"
+                      :to="`/admin/sales-orders/detail/${item.original_id}`"
                       class="text-indigo-600 hover:text-indigo-900"
                     >
                       Lihat Detail

@@ -229,7 +229,7 @@
                     </router-link>
                     <router-link
                       v-if="item.tipe === 'po'"
-                      :to="`/admin/received-items/${item.original_id}`"
+                      :to="`/admin/purchase-orders/detail/${item.original_id}`"
                       class="text-indigo-600 hover:text-indigo-900"
                     >
                       Lihat Detail
