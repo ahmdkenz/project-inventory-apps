@@ -532,10 +532,10 @@ const getStatusBadgeClass = (status: string) => {
 
 const getStatusLabel = (status: string) => {
   const labels: any = {
-    'pending': 'Menunggu Persetujuan',
-    'approved': 'Pending (Disetujui)',
-    'rejected': 'Dibatalkan',
-    'completed': 'Selesai'
+    'pending': 'Approved (Pending)',
+    'approved': 'Approved (Pending)',
+    'rejected': 'Reject',
+    'completed': 'Done'
   }
   return labels[status] || status
 }

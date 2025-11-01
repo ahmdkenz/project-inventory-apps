@@ -446,10 +446,10 @@ const formatDate = (date: string) => {
 
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
-    pending: 'Menunggu Persetujuan',
-    approved: 'Disetujui (Pending)',
-    rejected: 'Ditolak',
-    completed: 'Selesai'
+    pending: 'Approved (Pending)',
+    approved: 'Approved (Pending)',
+    rejected: 'Reject',
+    completed: 'Done'
   }
   return labels[status] || status
 }
