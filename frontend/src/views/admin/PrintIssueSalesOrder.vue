@@ -50,9 +50,9 @@
             <tbody class="divide-y divide-gray-200">
               <tr v-for="(item, index) in salesOrder.outgoing_item?.items || salesOrder.items" :key="index">
                 <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
-                <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty }} {{ item.barang?.satuan || 'pcs' }}</td>
+                <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty }}</td>
                 <td class="px-4 py-4 text-sm font-bold text-gray-900 text-center">
-                  {{ item.qty_issued || item.qty }} {{ item.barang?.satuan || 'pcs' }}
+                  {{ item.qty_issued || item.qty }}
                 </td>
                 <td class="px-4 py-4 text-sm text-gray-800 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
                 <td class="px-4 py-4 text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal || 0) }}</td>

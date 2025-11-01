@@ -101,17 +101,10 @@
                   <tbody class="divide-y divide-gray-200">
                     <tr v-for="(item, index) in receiveData.items" :key="index">
                       <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
-                      <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty }} {{ item.barang?.satuan || 'pcs' }}</td>
+                      <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty }}</td>
                       <td class="px-4 py-4 text-sm font-bold text-gray-900 text-center">
-                        <input 
-                          v-model.number="item.received_qty" 
-                          type="number" 
-                          min="0" 
-                          :max="item.qty"
-                          class="w-20 border border-gray-300 rounded px-2 py-1 text-center print-hidden"
-                          @input="validateReceivedQty(item)"
-                        >
-                        <span class="hidden print:inline">{{ item.received_qty }} {{ item.barang?.satuan || 'pcs' }}</span>
+                        <!-- Non-editable display: show only the number without unit, no input box -->
+                        <span class="text-center">{{ item.received_qty }}</span>
                       </td>
                       <td class="px-4 py-4 text-sm text-gray-800 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
                       <td class="px-4 py-4 text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal || 0) }}</td>
