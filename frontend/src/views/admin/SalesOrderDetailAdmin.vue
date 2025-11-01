@@ -1,16 +1,30 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <AdminNavigation :current-path="$route.path" />
+  <div class="flex h-screen">
+    <!-- Sidebar Admin -->
+    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out print-hidden" id="sidebar">
+      <div class="p-6 flex items-center space-x-3">
+        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        </svg>
+        <span class="text-white text-2xl font-semibold">Inventori</span>
+      </div>
+      
+      <AdminNavigation :current-path="$route.path" />
+    </aside>
+
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden print-hidden" id="overlay"></div>
     
-    <div class="flex-1 flex flex-col lg:ml-64">
-      <!-- Header -->
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between print-hidden">
-        <button @click="toggleSidebar" class="text-gray-600 lg:hidden">
-          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
+      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10 print-hidden">
+        <button id="hamburger-btn" class="text-gray-600 lg:hidden" @click="toggleSidebar">
+          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
-        <div class="flex-1"></div>
+        <div class="relative hidden sm:block"></div>
+        <div class="flex items-center space-x-4">
+          <!-- Profile placeholder -->
+        </div>
       </header>
 
       <!-- Main Content -->
@@ -553,23 +567,38 @@ onMounted(() => {
 
 <style scoped>
 @media print {
-  body > * { display: none; }
-  .print-hidden { display: none !important; }
-  #main-content { margin-left: 0 !important; }
-  #printable-area-container {
+  /* Sembunyikan elemen yang tidak perlu dicetak */
+  .print-hidden {
+    display: none !important;
+  }
+  
+  /* Pastikan area cetak ditampilkan */
+  #printable-area {
     display: block !important;
-    width: 100%;
     margin: 0;
     padding: 0;
+    width: 100%;
+    font-size: 12pt;
+    color: #000;
   }
+  
+  /* Pastikan tidak ada bayangan atau border saat cetak */
   #printable-area-content {
     box-shadow: none !important;
     border: none !important;
-    font-size: 10pt;
-    color: #000;
   }
-  .print-no-break { page-break-inside: avoid; }
-  thead { display: table-header-group; }
-  tr, td, th { page-break-inside: avoid; }
+  
+  /* Hindari tabel terpotong */
+  tr, td, th {
+    page-break-inside: avoid;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  tfoot {
+    display: table-footer-group;
+  }
 }
 </style>

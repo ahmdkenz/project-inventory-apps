@@ -113,6 +113,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/purchase-orders/:id/print-receipt',
+      name: 'admin-purchase-order-print-receipt',
+      component: () => import('@/views/admin/PrintReceivePurchaseOrder.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/admin/sales-orders',
       name: 'admin-sales-orders',
       component: SalesOrdersAdmin,

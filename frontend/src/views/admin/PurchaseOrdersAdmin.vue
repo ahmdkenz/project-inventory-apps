@@ -203,10 +203,10 @@
                     <!-- Tombol untuk status completed -->
                     <template v-else-if="order.status === 'completed'">
                       <router-link 
-                        :to="`/admin/purchase-orders/${order.id}/print`" 
-                        class="text-purple-600 hover:text-purple-800"
+                        :to="`/admin/purchase-orders/${order.id}/print-receipt`" 
+                        class="text-green-600 hover:text-green-800"
                       >
-                        Cetak
+                        Cetak Bukti
                       </router-link>
                     </template>
                     

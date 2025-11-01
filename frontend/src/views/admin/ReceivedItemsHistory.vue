@@ -215,17 +215,17 @@
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     <router-link
                       v-if="item.tipe === 'po'"
-                      :to="`/admin/purchase-orders/${item.original_id}/print`"
-                      class="text-purple-600 hover:text-purple-800"
+                      :to="`/admin/purchase-orders/${item.original_id}/print-receipt`"
+                      class="text-green-600 hover:text-green-800"
                     >
-                      Cetak
+                      Cetak Bukti
                     </router-link>
                     <router-link
                       v-else
                       :to="`/admin/non-po/receipt/${item.original_id}/print`"
-                      class="text-purple-600 hover:text-purple-800"
+                      class="text-green-600 hover:text-green-800"
                     >
-                      Cetak
+                      Cetak Bukti
                     </router-link>
                     <router-link
                       v-if="item.tipe === 'po'"
