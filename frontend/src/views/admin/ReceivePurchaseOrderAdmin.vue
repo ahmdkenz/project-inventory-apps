@@ -56,7 +56,7 @@
               <div class="flex justify-between items-center border-b-2 border-gray-900 pb-4 mb-8">
                 <div>
                   <h1 class="text-3xl font-bold text-gray-900">BUKTI PENERIMAAN BARANG</h1>
-                  <p class="text-gray-600">No. Penerimaan: RCV-{{ purchaseOrder.id }}-{{ new Date().getFullYear() }}</p>
+                  <p class="text-gray-600">No. Penerimaan: {{ generateReceiptNumber(purchaseOrder.id) }}</p>
                   <p class="text-gray-600">
                     Ref. PO: 
                     <router-link :to="`/admin/purchase-orders/detail/${purchaseOrder.id}`" class="text-blue-600 hover:underline">
@@ -233,6 +233,14 @@ const formatDate = (date: Date | string) => {
     month: 'long',
     year: 'numeric'
   })
+}
+
+// Generate No. Penerimaan dengan format IN-YYYYMMDD-{PO_ID}
+const generateReceiptNumber = (poId: number, date: Date = new Date()) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `IN-${year}${month}${day}-${poId}`
 }
 
 const validateReceivedQty = (item: any) => {
