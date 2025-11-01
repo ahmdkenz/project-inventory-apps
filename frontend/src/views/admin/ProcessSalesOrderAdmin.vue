@@ -58,7 +58,7 @@
               <div class="flex justify-between items-center border-b-2 border-gray-900 pb-4 mb-8">
                 <div>
                   <h1 class="text-3xl font-bold text-gray-900">BUKTI PENGELUARAN BARANG</h1>
-                  <p class="text-gray-600">No. Pengeluaran: OUT-{{ salesOrder.id }}-{{ new Date().getFullYear() }}</p>
+                  <p class="text-gray-600">No. Pengeluaran: {{ salesOrder.id ? generateIssueNumber(salesOrder.id) : '-' }}</p>
                   <p class="text-gray-600">
                     Ref. SO: 
                     <router-link :to="`/admin/sales-orders/detail/${salesOrder.id}`" class="text-blue-600 hover:underline">
@@ -235,13 +235,12 @@ const formatCurrency = (value: number) => {
   }).format(value || 0)
 }
 
-const generateDocNumber = () => {
-  const date = new Date()
+// Generate No. Pengeluaran dengan format OUT-YYYYMMDD-{SO_ID}
+const generateIssueNumber = (soId: number, date: Date = new Date()) => {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
-  const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0')
-  return `OUT-${year}${month}${day}-${random}`
+  return `OUT-${year}${month}${day}-${soId}`
 }
 
 // Perhitungan subtotal per item

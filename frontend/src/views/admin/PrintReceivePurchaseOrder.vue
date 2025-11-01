@@ -10,7 +10,7 @@
         <div class="flex justify-between items-center border-b-2 border-gray-900 pb-4 mb-8">
           <div>
             <h1 class="text-3xl font-bold text-gray-900">BUKTI PENERIMAAN BARANG</h1>
-            <p class="text-gray-600">No. Penerimaan: RCV-{{ purchaseOrder.id }}-{{ new Date(purchaseOrder.completed_at || new Date()).getFullYear() }}</p>
+            <p class="text-gray-600">No. Penerimaan: {{ generateReceiptNumber(purchaseOrder.id, purchaseOrder.completed_at || new Date()) }}</p>
             <p class="text-gray-600">Ref. PO: {{ purchaseOrder.no_po }}</p>
           </div>
           <div>
@@ -140,6 +140,15 @@ const ppnPercent = computed(() => {
   if (!purchaseOrder.value || !purchaseOrder.value.subtotal || purchaseOrder.value.subtotal === 0) return 0
   return Math.round((purchaseOrder.value.ppn / purchaseOrder.value.subtotal) * 100)
 })
+
+// Generate No. Penerimaan dengan format IN-YYYYMMDD-{PO_ID}
+const generateReceiptNumber = (poId: number, completedDate: Date | string) => {
+  const date = new Date(completedDate)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `IN-${year}${month}${day}-${poId}`
+}
 
 const fetchPrintData = async () => {
   loading.value = true

@@ -10,7 +10,7 @@
         <div class="flex justify-between items-center border-b-2 border-gray-900 pb-4 mb-8">
           <div>
             <h1 class="text-3xl font-bold text-gray-900">BUKTI PENGELUARAN BARANG</h1>
-            <p class="text-gray-600">No. Pengeluaran: OUT-{{ salesOrder.id }}-{{ new Date(salesOrder.completed_at || new Date()).getFullYear() }}</p>
+            <p class="text-gray-600">No. Pengeluaran: {{ generateIssueNumber(salesOrder.id, salesOrder.completed_at || new Date()) }}</p>
             <p class="text-gray-600">Ref. SO: {{ salesOrder.no_so }}</p>
           </div>
           <div>
@@ -140,6 +140,15 @@ const ppnPercent = computed(() => {
   if (!salesOrder.value || !salesOrder.value.subtotal || salesOrder.value.subtotal === 0) return 0
   return Math.round((salesOrder.value.ppn / salesOrder.value.subtotal) * 100)
 })
+
+// Generate No. Pengeluaran dengan format OUT-YYYYMMDD-{SO_ID}
+const generateIssueNumber = (soId: number, completedDate: Date | string) => {
+  const date = new Date(completedDate)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `OUT-${year}${month}${day}-${soId}`
+}
 
 const fetchPrintData = async () => {
   loading.value = true

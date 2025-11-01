@@ -176,7 +176,7 @@
                       v-if="item.tipe === 'po'"
                       :to="`/admin/received-items/${item.original_id}`"
                     >
-                      {{ item.no_dokumen }}
+                      {{ generateReceiptNumber(item) }}
                     </router-link>
                     <router-link 
                       v-else
@@ -357,6 +357,15 @@ const formatCurrency = (amount: number) => {
     currency: 'IDR',
     minimumFractionDigits: 0
   }).format(amount)
+}
+
+// Generate No. Penerimaan dengan format IN-YYYYMMDD-{PO_ID}
+const generateReceiptNumber = (item: ReceivedItem) => {
+  const date = new Date(item.tanggal)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `IN-${year}${month}${day}-${item.original_id}`
 }
 
 const fetchReceivedItems = async () => {

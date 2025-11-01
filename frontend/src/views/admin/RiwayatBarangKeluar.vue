@@ -173,7 +173,7 @@
                       v-if="item.tipe === 'so'"
                       :to="`/admin/outgoing-items/${item.original_id}`"
                     >
-                      {{ item.no_dokumen }}
+                      {{ generateIssueNumber(item) }}
                     </router-link>
                     <router-link 
                       v-else
@@ -343,6 +343,15 @@ const formatDate = (dateString: string) => {
     month: 'short',
     year: 'numeric'
   })
+}
+
+// Generate No. Pengeluaran dengan format OUT-YYYYMMDD-{SO_ID}
+const generateIssueNumber = (item: OutgoingItem) => {
+  const date = new Date(item.tanggal)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `OUT-${year}${month}${day}-${item.original_id}`
 }
 
 const fetchOutgoingItems = async () => {
