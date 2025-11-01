@@ -24,6 +24,7 @@ class SalesOrder extends Model
         'approved_by',
         'approved_at',
         'completed_at',
+        'no_surat_jalan',
         'catatan_pengeluaran',
         'reject_reason',
     ];

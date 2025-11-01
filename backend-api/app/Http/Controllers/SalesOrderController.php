@@ -480,6 +480,7 @@ class SalesOrderController extends Controller
     public function process(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
+            'no_surat_jalan' => 'required|string',
             'items' => 'required|array|min:1',
             'items.*.item_id' => 'required|integer',
             'items.*.barang_id' => 'required|exists:barang,id',
@@ -534,6 +535,7 @@ class SalesOrderController extends Controller
             $salesOrder->update([
                 'status' => 'completed',
                 'completed_at' => now(),
+                'no_surat_jalan' => $request->no_surat_jalan,
                 'catatan_pengeluaran' => $request->catatan,
             ]);
 

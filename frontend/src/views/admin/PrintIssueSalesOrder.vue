@@ -31,7 +31,7 @@
             <h3 class="text-sm font-medium text-gray-500 uppercase mb-2">DETAIL:</h3>
             <p class="text-gray-700"><span class="font-medium">Tanggal Keluar:</span> {{ formatDate(salesOrder.completed_at || new Date()) }}</p>
             <p class="text-gray-700"><span class="font-medium">Dicatat Oleh:</span> {{ salesOrder.processor?.name || salesOrder.approver?.name || 'Admin' }}</p>
-            <p class="text-gray-700"><span class="font-medium">No. Surat Jalan:</span> {{ salesOrder.no_surat_jalan || '-' }}</p>
+            <p class="text-gray-700"><span class="font-medium">No. Surat Jalan:</span> {{ getNoSuratJalan() }}</p>
           </div>
         </div>
 
@@ -148,6 +148,32 @@ const generateIssueNumber = (soId: number, completedDate: Date | string) => {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `OUT-${year}${month}${day}-${soId}`
+}
+
+// Generate No. Surat Jalan jika tidak ada
+const generateSuratJalanNumber = (soId: number, completedDate: Date | string) => {
+  const date = new Date(completedDate)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `SJ-OUT-${year}${month}${day}-${soId}`
+}
+
+// Get No. Surat Jalan (dari database atau generate jika tidak ada)
+const getNoSuratJalan = () => {
+  if (!salesOrder.value) return '-'
+  
+  // Jika ada di database, gunakan itu
+  if (salesOrder.value.no_surat_jalan) {
+    return salesOrder.value.no_surat_jalan
+  }
+  
+  // Jika tidak ada, generate otomatis berdasarkan completed_at
+  if (salesOrder.value.completed_at && salesOrder.value.id) {
+    return generateSuratJalanNumber(salesOrder.value.id, salesOrder.value.completed_at)
+  }
+  
+  return '-'
 }
 
 const fetchPrintData = async () => {

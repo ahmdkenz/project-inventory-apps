@@ -40,6 +40,32 @@ export interface SalesOrder {
   }
   approved_at?: string
   reject_reason?: string
+  completed_at?: string
+  processor?: {
+    id: number
+    name: string
+    email: string
+  }
+  no_surat_jalan?: string
+  outgoing_item?: {
+    id: number
+    no_surat_jalan: string
+    items: Array<{
+      id: number
+      barang_id: number
+      barang?: {
+        id: number
+        nama: string
+        kode: string
+        satuan: string
+      }
+      qty: number
+      qty_issued: number
+      harga_satuan: number
+      subtotal: number
+      keterangan?: string
+    }>
+  }
   items: SalesOrderItem[]
   created_at?: string
   updated_at?: string
@@ -129,7 +155,8 @@ class SalesOrderService {
    * Process/Issue sales order (admin only)
    */
   async process(id: number, data: { 
-    items: Array<{item_id: number, barang_id: number, qty_issued: number}>,
+    no_surat_jalan: string,
+    items: Array<{item_id: number, barang_id: number, qty_issued: number, keterangan?: string}>,
     catatan?: string 
   }): Promise<SalesOrderResponse> {
     const response = await api.post(`/admin/sales-order/${id}/process`, data)
