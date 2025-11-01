@@ -95,52 +95,60 @@
                   </div>
                 </div>
 
-                <!-- Tabel Item -->
-                <div class="overflow-x-auto border rounded-lg mb-6">
-                  <table class="w-full min-w-max">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No.</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah Diminta</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Catatan Item</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                      <tr v-for="(item, index) in salesOrder.items" :key="item.id">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ index + 1 }}.</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">-</td>
-                      </tr>
-                    </tbody>
-                    <tfoot class="bg-gray-50 font-medium print-no-break">
-                      <tr>
-                        <td colspan="4" class="px-6 py-3">
-                          <p class="text-xs text-gray-500 uppercase font-semibold">Catatan SO:</p>
-                          <p class="text-sm text-gray-600">{{ salesOrder.catatan || '-' }}</p>
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
+              <!-- Items Table -->
+              <div class="overflow-x-auto mb-8">
+                <table class="w-full min-w-max">
+                  <thead class="border-b border-gray-300">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Nama Barang</th>
+                      <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 uppercase">Dipesan</th>
+                      <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 uppercase">Diterima</th>
+                      <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Harga Satuan</th>
+                      <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr v-for="item in salesOrder.items" :key="item.id">
+                      <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
+                      <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty }} {{ item.barang?.satuan || 'pcs' }}</td>
+                      <td class="px-4 py-4 text-sm font-bold text-gray-900 text-center">{{ item.qty }} {{ item.barang?.satuan || 'pcs' }}</td>
+                      <td class="px-4 py-4 text-sm text-gray-800 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
+                      <td class="px-4 py-4 text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal) }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot class="border-t-2 border-gray-300">
+                    <tr>
+                      <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</td>
+                      <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(salesOrder.subtotal) }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">PPN ({{ ppnPercent }}%)</td>
+                      <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(salesOrder.ppn) }}</td>
+                    </tr>
+                    <tr class="bg-gray-50">
+                      <td colspan="4" class="px-4 py-3 text-right text-base font-bold text-gray-900 uppercase">Grand Total</td>
+                      <td class="px-4 py-3 text-right text-base font-bold text-gray-900">{{ formatCurrency(salesOrder.total) }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
 
                 <!-- Tanda Tangan -->
                 <div class="grid grid-cols-3 gap-8 pt-6 border-t border-gray-200 print-no-break">
-                  <div>
+                  <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Diajukan oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.creator?.name || '-' }})</p>
-                    <p class="text-xs text-gray-500">Staff</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.creator?.name || 'Staff' }})</p>
+                    <p class="text-xs text-gray-500">Staff Sales</p>
                   </div>
                   <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.approver?.name || 'Nama Admin' }})</p>
-                    <p class="text-xs text-gray-500">Manajer Logistik</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.approver?.name || 'Admin' }})</p>
+                    <p class="text-xs text-gray-500">Manajer</p>
                   </div>
                   <div class="text-center">
-                    <p class="text-sm text-gray-700 mb-16">Diserahkan oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Staff Gudang)</p>
-                    <p class="text-xs text-gray-500">Staff Gudang</p>
+                    <p class="text-sm text-gray-700 mb-16">Customer,</p>
+                    <p class="text-sm font-medium text-gray-400 border-t border-dashed border-gray-300 pt-1"></p>
+                    <p class="text-xs text-gray-700">{{ salesOrder.customer_name }}</p>
                   </div>
                 </div>
               </div>
@@ -178,27 +186,43 @@
                   </div>
                 </div>
 
-                <!-- Tabel Detail Barang -->
-                <div class="overflow-x-auto border rounded-lg mb-6">
-                  <table class="w-full min-w-max">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Kode</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah Dikeluarkan</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Keterangan Item</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                      <tr v-for="(item, index) in salesOrder.outgoing_item.items" :key="item.id">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ item.barang?.kode || '-' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty_issued }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ item.keterangan || '-' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+              <!-- Items Table -->
+              <div class="overflow-x-auto mb-8">
+                <table class="w-full min-w-max">
+                  <thead class="border-b border-gray-300">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Nama Barang</th>
+                      <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 uppercase">Dipesan</th>
+                      <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 uppercase">Diterima</th>
+                      <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Harga Satuan</th>
+                      <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr v-for="item in salesOrder.outgoing_item.items" :key="item.id">
+                      <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
+                      <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty_issued }} {{ item.barang?.satuan || 'pcs' }}</td>
+                      <td class="px-4 py-4 text-sm font-bold text-gray-900 text-center">{{ item.qty_issued }} {{ item.barang?.satuan || 'pcs' }}</td>
+                      <td class="px-4 py-4 text-sm text-gray-800 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
+                      <td class="px-4 py-4 text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal) }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot class="border-t-2 border-gray-300">
+                    <tr>
+                      <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</td>
+                      <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(salesOrder.subtotal) }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">PPN ({{ ppnPercent }}%)</td>
+                      <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(salesOrder.ppn) }}</td>
+                    </tr>
+                    <tr class="bg-gray-50">
+                      <td colspan="4" class="px-4 py-3 text-right text-base font-bold text-gray-900 uppercase">Grand Total</td>
+                      <td class="px-4 py-3 text-right text-base font-bold text-gray-900">{{ formatCurrency(salesOrder.total) }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
 
                 <!-- Tanda Tangan -->
                 <div class="grid grid-cols-3 gap-8 pt-6 border-t border-gray-200 print-no-break">
@@ -209,13 +233,13 @@
                   </div>
                   <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Diterima Oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(...........................)</p>
-                    <p class="text-xs text-gray-500">Penerima ({{ salesOrder.customer_name }})</p>
+                    <p class="text-sm font-medium text-gray-400 border-t border-dashed border-gray-300 pt-1"></p>
+                    <p class="text-xs text-gray-700">{{ salesOrder.customer_name }}</p>
                   </div>
                   <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Diketahui Oleh,</p>
                     <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.approver?.name || 'Admin' }})</p>
-                    <p class="text-xs text-gray-500">Manajer / Admin</p>
+                    <p class="text-xs text-gray-500">Manajer</p>
                   </div>
                 </div>
               </div>
@@ -397,7 +421,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
 import salesOrderService from '@/services/salesOrder.service'
@@ -443,6 +467,19 @@ const formatDate = (date: string) => {
     year: 'numeric'
   })
 }
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(value || 0)
+}
+
+const ppnPercent = computed(() => {
+  if (!salesOrder.value || !salesOrder.value.subtotal || salesOrder.value.subtotal === 0) return 0
+  return Math.round((salesOrder.value.ppn / salesOrder.value.subtotal) * 100)
+})
 
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {

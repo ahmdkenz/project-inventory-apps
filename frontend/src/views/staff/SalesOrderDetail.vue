@@ -77,7 +77,7 @@
                     <p class="text-sm font-semibold text-gray-500 uppercase mb-2">PENERIMA / TUJUAN:</p>
                     <p class="text-lg font-bold text-gray-900">{{ salesOrder.customer_name }}</p>
                     <p v-if="salesOrder.customer_address" class="text-sm text-gray-600">{{ salesOrder.customer_address }}</p>
-                    <p v-if="salesOrder.customer_phone" class="text-sm text-gray-600">UP: {{ salesOrder.customer_phone }}</p>
+                    <p v-if="salesOrder.customer_phone" class="text-sm text-gray-600">Telp: {{ salesOrder.customer_phone }}</p>
                   </div>
                   <div class="text-right">
                     <div class="mb-2">
@@ -100,8 +100,9 @@
                       <tr>
                         <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No.</th>
                         <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah Diminta</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Catatan Item</th>
+                        <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah</th>
+                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Harga Satuan</th>
+                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Subtotal</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -109,39 +110,134 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ index + 1 }}.</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">-</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal) }}</td>
                       </tr>
                     </tbody>
+                    <!-- Footer Total -->
                     <tfoot class="bg-gray-50 font-medium print-no-break">
                       <tr>
-                        <td colspan="4" class="px-6 py-3">
+                        <td colspan="3" rowspan="3" class="px-6 py-3 align-top">
                           <p class="text-xs text-gray-500 uppercase font-semibold">Catatan SO:</p>
                           <p class="text-sm text-gray-600">{{ salesOrder.catatan || '-' }}</p>
                         </td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-700 uppercase">Subtotal</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(salesOrder.subtotal) }}</td>
+                      </tr>
+                      <tr>
+                        <td class="px-6 py-3 text-right text-sm text-gray-700 uppercase">PPN ({{ ppnPercent }}%)</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(salesOrder.ppn) }}</td>
+                      </tr>
+                      <tr class="text-base font-semibold">
+                        <td class="px-6 py-4 text-right text-gray-900 uppercase">Total</td>
+                        <td class="px-6 py-4 text-right text-gray-900">{{ formatCurrency(salesOrder.total) }}</td>
                       </tr>
                     </tfoot>
                   </table>
                 </div>
 
                 <!-- Tanda Tangan -->
-                <div class="grid grid-cols-3 gap-8 pt-6 border-t border-gray-200 print-no-break">
+                <div class="grid grid-cols-2 gap-8 pt-6 border-t border-gray-200 print-no-break">
                   <div>
                     <p class="text-sm text-gray-700 mb-16">Diajukan oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.creator?.name || 'Nama Staff' }})</p>
-                    <p class="text-xs text-gray-500">Staff Peminta</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.creator?.name || '-' }})</p>
+                    <p class="text-xs text-gray-500">Staff</p>
                   </div>
                   <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
-                    <p v-if="salesOrder.status === 'pending'" class="text-sm font-medium text-gray-900 border-t border-dashed border-gray-400 pt-1">(Menunggu Persetujuan)</p>
-                    <p v-else-if="salesOrder.approver" class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.approver?.name || 'Admin' }})</p>
-                    <p v-else class="text-sm font-medium text-gray-900 border-t border-dashed border-gray-400 pt-1">(Belum Diproses)</p>
-                    <p class="text-xs text-gray-500">Manajer Logistik</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.approver?.name || 'Nama Admin' }})</p>
+                    <p class="text-xs text-gray-500">Manajer</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bukti Barang Keluar (jika status completed) -->
+              <div v-if="salesOrder.status === 'completed' && salesOrder.outgoing_item" class="bg-white p-8 rounded-lg shadow-lg border border-gray-200 mt-6" id="bukti-barang-keluar">
+                <!-- Header Dokumen -->
+                <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900">
+                  <div>
+                    <h2 class="text-3xl font-bold text-gray-900">BUKTI BARANG KELUAR</h2>
+                    <p class="text-lg font-semibold text-blue-600">{{ salesOrder.outgoing_item.no_dokumen }}</p>
+                  </div>
+                  <div class="text-right">
+                    <img src="https://placehold.co/150x50/000000/FFFFFF?text=LOGO+PERUSAHAAN" alt="Logo Perusahaan" class="h-12 mb-2 ml-auto">
+                    <p class="text-sm font-semibold text-gray-800">Nama Perusahaan Anda</p>
+                    <p class="text-sm text-gray-600">Jl. Jend. Sudirman No. 1, Jakarta</p>
+                    <p class="text-sm text-gray-600">Telepon: (021) 123456</p>
+                  </div>
+                </div>
+
+                <!-- Info Transaksi -->
+                <div class="grid grid-cols-2 gap-8 my-6">
+                  <div>
+                    <p class="text-sm font-semibold text-gray-500 uppercase mb-2">DITERIMA OLEH:</p>
+                    <p class="text-lg font-bold text-gray-900">{{ salesOrder.customer_name }}</p>
+                    <p v-if="salesOrder.customer_address" class="text-sm text-gray-600">{{ salesOrder.customer_address }}</p>
+                    <p v-if="salesOrder.customer_phone" class="text-sm text-gray-600">Telp: {{ salesOrder.customer_phone }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-500 uppercase mb-2">DETAIL:</p>
+                    <p class="text-sm text-gray-700"><span class="font-medium">Tanggal Transaksi:</span> {{ formatDate(salesOrder.outgoing_item.tanggal) }}</p>
+                    <p class="text-sm text-gray-700"><span class="font-medium">Referensi SO:</span> {{ salesOrder.no_so }}</p>
+                    <p class="text-sm text-gray-700"><span class="font-medium">Dicatat Oleh:</span> {{ salesOrder.outgoing_item.dicatat_oleh || '-' }}</p>
+                    <p v-if="salesOrder.outgoing_item.catatan" class="text-sm text-gray-700"><span class="font-medium">Keterangan:</span> {{ salesOrder.outgoing_item.catatan }}</p>
+                  </div>
+                </div>
+
+                <!-- Tabel Detail Barang -->
+                <div class="overflow-x-auto border rounded-lg mb-6">
+                  <table class="w-full min-w-max">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No.</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
+                        <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah</th>
+                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Harga Satuan</th>
+                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                      <tr v-for="(item, index) in salesOrder.outgoing_item.items" :key="item.id">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ index + 1 }}.</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty_issued }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal) }}</td>
+                      </tr>
+                    </tbody>
+                    <!-- Footer Total -->
+                    <tfoot class="bg-gray-50 font-medium print-no-break">
+                      <tr>
+                        <td colspan="3" rowspan="3" class="px-6 py-3 align-top">
+                          <p class="text-xs text-gray-500 uppercase font-semibold">Catatan:</p>
+                          <p class="text-sm text-gray-600">{{ salesOrder.outgoing_item.catatan || '-' }}</p>
+                        </td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-700 uppercase">Subtotal</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(salesOrder.subtotal) }}</td>
+                      </tr>
+                      <tr>
+                        <td class="px-6 py-3 text-right text-sm text-gray-700 uppercase">PPN ({{ ppnPercent }}%)</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(salesOrder.ppn) }}</td>
+                      </tr>
+                      <tr class="text-base font-semibold">
+                        <td class="px-6 py-4 text-right text-gray-900 uppercase">Total</td>
+                        <td class="px-6 py-4 text-right text-gray-900">{{ formatCurrency(salesOrder.total) }}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                <!-- Tanda Tangan -->
+                <div class="grid grid-cols-2 gap-8 pt-6 border-t border-gray-200 print-no-break">
+                  <div>
+                    <p class="text-sm text-gray-700 mb-16">Diserahkan Oleh,</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.outgoing_item.dicatat_oleh || 'Staff Gudang' }})</p>
+                    <p class="text-xs text-gray-500">Staff Inventori</p>
                   </div>
                   <div class="text-center">
-                    <p class="text-sm text-gray-700 mb-16">Diserahkan oleh,</p>
-                    <p v-if="salesOrder.status === 'completed'" class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Staff Gudang)</p>
-                    <p v-else class="text-sm font-medium text-gray-900 border-t border-dashed border-gray-400 pt-1">(Belum Diproses)</p>
-                    <p class="text-xs text-gray-500">Staff Gudang</p>
+                    <p class="text-sm text-gray-700 mb-16">Diketahui Oleh,</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ salesOrder.approver?.name || 'Nama Admin' }})</p>
+                    <p class="text-xs text-gray-500">Manajer</p>
                   </div>
                 </div>
               </div>
@@ -157,7 +253,7 @@
                   {{ getStatusLabel(salesOrder.status) }}
                 </span>
                 <p class="text-sm text-gray-500 mt-2">
-                  Diajukan oleh Anda pada {{ formatDate(salesOrder.created_at) }}.
+                  Diajukan oleh {{ salesOrder.creator?.name || '-' }} pada {{ formatDate(salesOrder.created_at) }}.
                 </p>
                 <!-- TIDAK ADA TOMBOL APPROVE/REJECT UNTUK STAFF -->
               </div>
@@ -167,39 +263,43 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Riwayat Status</h3>
                 <ol class="relative border-l border-gray-200">
                   <!-- Status: Dibuat -->
-                  <li class="mb-6 ml-4">
+                  <li class="ml-4">
                     <div class="absolute w-3 h-3 bg-blue-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
                     <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.created_at) }}</time>
                     <h3 class="text-base font-semibold text-gray-900">Dibuat & Diajukan</h3>
                     <p class="text-sm font-normal text-gray-500">
-                      SO dibuat oleh Anda dan menunggu persetujuan Admin.
+                      SO dibuat oleh {{ salesOrder.creator?.name || '-' }} dan menunggu persetujuan Admin.
                     </p>
                   </li>
                   
                   <!-- Status: Disetujui -->
-                  <li v-if="salesOrder.status === 'approved' || salesOrder.status === 'completed'" class="mb-6 ml-4">
+                  <li v-if="salesOrder.approved_at" class="ml-4 mt-4">
                     <div class="absolute w-3 h-3 bg-green-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
-                    <time v-if="salesOrder.approved_at" class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.approved_at) }}</time>
+                    <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.approved_at) }}</time>
                     <h3 class="text-base font-semibold text-gray-900">Disetujui</h3>
                     <p class="text-sm font-normal text-gray-500">
                       SO disetujui oleh {{ salesOrder.approver?.name || 'Admin' }}.
                     </p>
                   </li>
                   
-                  <!-- Status: Ditolak -->
-                  <li v-if="salesOrder.status === 'rejected'" class="mb-6 ml-4">
-                    <div class="absolute w-3 h-3 bg-red-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
-                    <time v-if="salesOrder.approved_at" class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.approved_at) }}</time>
-                    <h3 class="text-base font-semibold text-gray-900">Ditolak oleh Admin</h3>
-                    <p v-if="salesOrder.reject_reason" class="text-sm font-normal text-gray-500">Alasan: {{ salesOrder.reject_reason }}</p>
+                  <!-- Status: Selesai -->
+                  <li v-if="salesOrder.status === 'completed' && salesOrder.completed_at" class="ml-4 mt-4">
+                    <div class="absolute w-3 h-3 bg-purple-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                    <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.completed_at) }}</time>
+                    <h3 class="text-base font-semibold text-gray-900">Diproses & Diselesaikan</h3>
+                    <p class="text-sm font-normal text-gray-500">
+                      Barang telah dikeluarkan dan SO selesai. Bukti barang keluar: {{ salesOrder.outgoing_item?.no_dokumen || '-' }}.
+                    </p>
                   </li>
                   
-                  <!-- Status: Selesai -->
-                  <li v-if="salesOrder.status === 'completed'" class="ml-4">
-                    <div class="absolute w-3 h-3 bg-blue-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
-                    <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.updated_at) }}</time>
-                    <h3 class="text-base font-semibold text-gray-900">Selesai</h3>
-                    <p class="text-sm font-normal text-gray-500">SO telah diserahkan kepada penerima.</p>
+                  <!-- Status: Ditolak -->
+                  <li v-if="salesOrder.status === 'rejected' && salesOrder.rejected_at" class="ml-4 mt-4">
+                    <div class="absolute w-3 h-3 bg-red-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                    <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(salesOrder.rejected_at) }}</time>
+                    <h3 class="text-base font-semibold text-gray-900">Ditolak</h3>
+                    <p class="text-sm font-normal text-gray-500">
+                      SO ditolak oleh Admin. Alasan: {{ salesOrder.reject_reason || '-' }}
+                    </p>
                   </li>
                 </ol>
               </div>
@@ -208,7 +308,7 @@
               <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Info Penerima</h3>
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500">Divisi</dt>
+                  <dt class="text-sm font-medium text-gray-500">Nama/Divisi</dt>
                   <dd class="text-base text-gray-900 font-medium mb-2">{{ salesOrder.customer_name }}</dd>
                   <dt v-if="salesOrder.customer_phone" class="text-sm font-medium text-gray-500">Kontak</dt>
                   <dd v-if="salesOrder.customer_phone" class="text-base text-gray-900 font-medium mb-2">{{ salesOrder.customer_phone }}</dd>
@@ -230,7 +330,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import StaffNavigation from '@/components/StaffNavigation.vue'
 import salesOrderService from '@/services/salesOrder.service'
@@ -265,6 +365,19 @@ const formatDate = (date: string) => {
     year: 'numeric'
   })
 }
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(value || 0)
+}
+
+const ppnPercent = computed(() => {
+  if (!salesOrder.value || !salesOrder.value.subtotal || salesOrder.value.subtotal === 0) return 0
+  return Math.round((salesOrder.value.ppn / salesOrder.value.subtotal) * 100)
+})
 
 const getStatusLabel = (status: string) => {
   const labels: any = {
