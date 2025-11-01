@@ -311,6 +311,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresStaff: true }
     },
     {
+      path: '/staff/purchase-orders/:id/print-receipt',
+      name: 'staff-purchase-order-print-receipt',
+      component: () => import('@/views/staff/PrintReceivePurchaseOrder.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
       path: '/staff/sales-order',
       name: 'staff-sales-order',
       component: SalesOrderList,
@@ -332,6 +338,12 @@ const router = createRouter({
       path: '/staff/sales-order/detail/:id',
       name: 'staff-sales-order-detail',
       component: SalesOrderDetail,
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/sales-orders/:id/print-issue',
+      name: 'staff-sales-order-print-issue',
+      component: () => import('@/views/staff/PrintIssueSalesOrder.vue'),
       meta: { requiresAuth: true, requiresStaff: true }
     },
     {
