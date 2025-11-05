@@ -438,7 +438,7 @@ class PurchaseOrderController extends Controller
     }
 
     /**
-     * Get received items (completed PO) for admin
+     * Get received items (completed PO) - for both Admin and Staff
      */
     public function receivedItems(Request $request)
     {
@@ -449,6 +449,7 @@ class PurchaseOrderController extends Controller
             $type = $request->get('type', '');
             $startDate = $request->get('start_date', '');
             $endDate = $request->get('end_date', '');
+            $user = $request->user();
 
             // Collect all received items (PO + Non-PO)
             $allItems = collect();
@@ -457,6 +458,11 @@ class PurchaseOrderController extends Controller
             if ($type === '' || $type === 'po') {
                 $poQuery = PurchaseOrder::with(['supplier', 'creator'])
                     ->where('status', 'completed');
+
+                // If staff, only show their own PO
+                if ($user->role === 'staff') {
+                    $poQuery->where('created_by', $user->id);
+                }
 
                 // Apply filters
                 if ($startDate) {
@@ -494,7 +500,13 @@ class PurchaseOrderController extends Controller
 
             // Get Non-PO received items (if not filtering for po only)
             if ($type === '' || $type === 'non-po') {
-                $nonPoQuery = \App\Models\NonPoReceipt::with(['creator']);
+                $nonPoQuery = \App\Models\NonPoReceipt::with(['creator'])
+                    ->where('status', 'completed'); // Only show completed Non-PO
+
+                // If staff, only show their own Non-PO
+                if ($user->role === 'staff') {
+                    $nonPoQuery->where('created_by', $user->id);
+                }
 
                 // Apply filters
                 if ($startDate) {

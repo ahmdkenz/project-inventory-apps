@@ -85,9 +85,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/outgoing-items/{id}', [SalesOrderController::class, 'outgoingItemDetail']);
         
         // Non-PO routes (admin)
+        Route::get('/non-po/receipts', [NonPoController::class, 'getStaffReceipts']);
         Route::post('/non-po/receipt', [NonPoController::class, 'storeReceipt']);
+        Route::get('/non-po/receipt/{id}', [NonPoController::class, 'getReceiptDetail']);
+        Route::post('/non-po/receipt/{id}/approve', [NonPoController::class, 'approveReceipt']);
+        Route::post('/non-po/receipt/{id}/reject', [NonPoController::class, 'rejectReceipt']);
         Route::get('/non-po/receipt/{id}/print', [NonPoController::class, 'getReceiptPrintData']);
+        Route::get('/non-po/issues', [NonPoController::class, 'getStaffIssues']);
         Route::post('/non-po/issue', [NonPoController::class, 'storeIssue']);
+        Route::get('/non-po/issue/{id}', [NonPoController::class, 'getIssueDetail']);
+        Route::post('/non-po/issue/{id}/approve', [NonPoController::class, 'approveIssue']);
+        Route::post('/non-po/issue/{id}/reject', [NonPoController::class, 'rejectIssue']);
         Route::get('/non-po/issue/{id}/print', [NonPoController::class, 'getIssuePrintData']);
         
         // Report routes
@@ -136,9 +144,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/outgoing-items/{id}', [SalesOrderController::class, 'outgoingItemDetail']);
         
         // Non-PO routes (staff)
+        Route::get('/non-po/receipts', [NonPoController::class, 'getStaffReceipts']);
         Route::post('/non-po/receipt', [NonPoController::class, 'storeReceipt']);
+        Route::get('/non-po/receipt/{id}', [NonPoController::class, 'getReceiptDetail']);
         Route::get('/non-po/receipt/{id}/print', [NonPoController::class, 'getReceiptPrintData']);
+        Route::get('/non-po/issues', [NonPoController::class, 'getStaffIssues']);
         Route::post('/non-po/issue', [NonPoController::class, 'storeIssue']);
+        Route::get('/non-po/issue/{id}', [NonPoController::class, 'getIssueDetail']);
         Route::get('/non-po/issue/{id}/print', [NonPoController::class, 'getIssuePrintData']);
         
         // Staff Report routes

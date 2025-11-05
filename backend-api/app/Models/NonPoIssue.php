@@ -16,11 +16,16 @@ class NonPoIssue extends Model
         'recipient',
         'issue_date',
         'notes',
-        'created_by'
+        'created_by',
+        'status',
+        'approved_by',
+        'approved_at',
+        'reject_reason'
     ];
 
     protected $casts = [
-        'issue_date' => 'date'
+        'issue_date' => 'date',
+        'approved_at' => 'datetime'
     ];
 
     public function items(): HasMany
@@ -31,5 +36,10 @@ class NonPoIssue extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

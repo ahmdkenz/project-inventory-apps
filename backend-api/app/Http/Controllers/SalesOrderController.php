@@ -14,40 +14,108 @@ use App\Http\Controllers\AuditLogController;
 
 class SalesOrderController extends Controller
 {
-    // Staff: Get all sales orders
+    // Staff: Get all sales orders (including own Non-SO)
     public function index(Request $request)
     {
         try {
-            $query = SalesOrder::with(['items.barang', 'creator', 'approver'])
-                ->where('created_by', $request->user()->id);
+            $userId = $request->user()->id;
+            $status = $request->get('status', '');
+            $search = $request->get('search', '');
+            $dateFrom = $request->get('date_from', '');
+            $dateTo = $request->get('date_to', '');
+            $type = $request->get('type', ''); // '', 'so', 'non-so'
 
-            // Filter by status
-            if ($request->has('status') && $request->status != '') {
-                $query->where('status', $request->status);
+            $allOrders = collect();
+
+            // Get regular Sales Orders (own only)
+            if ($type === '' || $type === 'so') {
+                $soQuery = SalesOrder::with(['items.barang', 'creator', 'approver'])
+                    ->where('created_by', $userId);
+
+                if ($status !== '') {
+                    $soQuery->where('status', $status);
+                }
+
+                if ($dateFrom !== '') {
+                    $soQuery->whereDate('tgl_order', '>=', $dateFrom);
+                }
+
+                if ($dateTo !== '') {
+                    $soQuery->whereDate('tgl_order', '<=', $dateTo);
+                }
+
+                if ($search !== '') {
+                    $soQuery->where(function($q) use ($search) {
+                        $q->where('no_so', 'like', "%{$search}%")
+                          ->orWhere('customer_name', 'like', "%{$search}%");
+                    });
+                }
+
+                $salesOrders = $soQuery->orderBy('created_at', 'desc')->get();
+                $allOrders = $allOrders->merge($salesOrders);
             }
 
-            // Filter by date range
-            if ($request->has('date_from') && $request->date_from != '') {
-                $query->whereDate('tgl_order', '>=', $request->date_from);
-            }
-            if ($request->has('date_to') && $request->date_to != '') {
-                $query->whereDate('tgl_order', '<=', $request->date_to);
-            }
+            // Get Non-SO Issues (own only)
+            if ($type === '' || $type === 'non-so') {
+                $nonSoQuery = NonPoIssue::with(['items.barang', 'creator', 'approver'])
+                    ->where('created_by', $userId);
 
-            // Search
-            if ($request->has('search') && $request->search != '') {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('no_so', 'like', "%{$search}%")
-                      ->orWhere('customer_name', 'like', "%{$search}%");
+                if ($status !== '') {
+                    $nonSoQuery->where('status', $status);
+                }
+
+                if ($dateFrom !== '') {
+                    $nonSoQuery->whereDate('issue_date', '>=', $dateFrom);
+                }
+
+                if ($dateTo !== '') {
+                    $nonSoQuery->whereDate('issue_date', '<=', $dateTo);
+                }
+
+                if ($search !== '') {
+                    $nonSoQuery->where(function($q) use ($search) {
+                        $q->where('no_dokumen', 'like', "%{$search}%")
+                          ->orWhere('recipient', 'like', "%{$search}%");
+                    });
+                }
+
+                $nonSoIssues = $nonSoQuery->orderBy('created_at', 'desc')->get()->map(function ($issue) {
+                    // Transform Non-SO to match SO structure for frontend
+                    return (object)[
+                        'id' => $issue->id,
+                        'type' => 'non-so', // Add type identifier
+                        'no_so' => $issue->no_dokumen, // Map no_dokumen to no_so
+                        'customer_name' => $issue->recipient, // Map recipient to customer_name
+                        'customer_phone' => null,
+                        'customer_address' => null,
+                        'tgl_order' => $issue->issue_date, // Map issue_date to tgl_order
+                        'tgl_kirim' => null,
+                        'catatan' => $issue->notes,
+                        'status' => $issue->status,
+                        'subtotal' => 0,
+                        'ppn' => 0,
+                        'total' => 0,
+                        'created_by' => $issue->created_by,
+                        'approved_by' => $issue->approved_by,
+                        'approved_at' => $issue->approved_at,
+                        'reject_reason' => $issue->reject_reason,
+                        'created_at' => $issue->created_at,
+                        'updated_at' => $issue->updated_at,
+                        'items' => $issue->items,
+                        'creator' => $issue->creator,
+                        'approver' => $issue->approver
+                    ];
                 });
+
+                $allOrders = $allOrders->merge($nonSoIssues);
             }
 
-            $salesOrders = $query->orderBy('created_at', 'desc')->get();
+            // Sort by created_at desc
+            $allOrders = $allOrders->sortByDesc('created_at')->values();
 
             return response()->json([
                 'success' => true,
-                'data' => $salesOrders
+                'data' => $allOrders
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -57,13 +125,55 @@ class SalesOrderController extends Controller
         }
     }
 
-    // Staff: Get single sales order
+    // Staff: Get single sales order or non-so detail (own only)
     public function show(Request $request, $id)
     {
         try {
+            $userId = $request->user()->id;
+            $type = $request->get('type', 'so'); // default 'so', pass 'non-so' for Non-SO Issue
+
+            if ($type === 'non-so') {
+                $issue = NonPoIssue::with(['items.barang', 'creator', 'approver'])
+                    ->where('id', $id)
+                    ->where('created_by', $userId)
+                    ->firstOrFail();
+
+                // Transform Non-SO to match SO structure for frontend
+                $detail = (object)[
+                    'id' => $issue->id,
+                    'type' => 'non-so',
+                    'no_so' => $issue->no_dokumen,
+                    'customer_name' => $issue->recipient,
+                    'customer_phone' => null,
+                    'customer_address' => null,
+                    'tgl_order' => $issue->issue_date,
+                    'tgl_kirim' => null,
+                    'catatan' => $issue->notes,
+                    'status' => $issue->status,
+                    'subtotal' => 0,
+                    'ppn' => 0,
+                    'total' => 0,
+                    'created_by' => $issue->created_by,
+                    'approved_by' => $issue->approved_by,
+                    'approved_at' => $issue->approved_at,
+                    'reject_reason' => $issue->reject_reason,
+                    'created_at' => $issue->created_at,
+                    'updated_at' => $issue->updated_at,
+                    'items' => $issue->items,
+                    'creator' => $issue->creator,
+                    'approver' => $issue->approver
+                ];
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $detail
+                ]);
+            }
+
+            // Default: regular Sales Order
             $salesOrder = SalesOrder::with(['items.barang', 'creator', 'approver'])
                 ->where('id', $id)
-                ->where('created_by', $request->user()->id)
+                ->where('created_by', $userId)
                 ->firstOrFail();
 
             return response()->json([
@@ -299,39 +409,105 @@ class SalesOrderController extends Controller
         }
     }
 
-    // Admin: Get all sales orders
+    // Admin: Get all sales orders (including Non-SO Issues)
     public function adminIndex(Request $request)
     {
         try {
-            $query = SalesOrder::with(['items.barang', 'creator', 'approver']);
+            $status = $request->get('status', '');
+            $search = $request->get('search', '');
+            $dateFrom = $request->get('date_from', '');
+            $dateTo = $request->get('date_to', '');
+            $type = $request->get('type', ''); // '', 'so', 'non-so'
 
-            // Filter by status
-            if ($request->has('status') && $request->status != '') {
-                $query->where('status', $request->status);
+            $allOrders = collect();
+
+            // Get regular Sales Orders
+            if ($type === '' || $type === 'so') {
+                $soQuery = SalesOrder::with(['items.barang', 'creator', 'approver']);
+
+                if ($status !== '') {
+                    $soQuery->where('status', $status);
+                }
+
+                if ($dateFrom !== '') {
+                    $soQuery->whereDate('tgl_order', '>=', $dateFrom);
+                }
+
+                if ($dateTo !== '') {
+                    $soQuery->whereDate('tgl_order', '<=', $dateTo);
+                }
+
+                if ($search !== '') {
+                    $soQuery->where(function($q) use ($search) {
+                        $q->where('no_so', 'like', "%{$search}%")
+                          ->orWhere('customer_name', 'like', "%{$search}%");
+                    });
+                }
+
+                $salesOrders = $soQuery->orderBy('created_at', 'desc')->get();
+                $allOrders = $allOrders->merge($salesOrders);
             }
 
-            // Filter by date range
-            if ($request->has('date_from') && $request->date_from != '') {
-                $query->whereDate('tgl_order', '>=', $request->date_from);
-            }
-            if ($request->has('date_to') && $request->date_to != '') {
-                $query->whereDate('tgl_order', '<=', $request->date_to);
-            }
+            // Get Non-SO Issues
+            if ($type === '' || $type === 'non-so') {
+                $nonSoQuery = NonPoIssue::with(['items.barang', 'creator', 'approver']);
 
-            // Search
-            if ($request->has('search') && $request->search != '') {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('no_so', 'like', "%{$search}%")
-                      ->orWhere('customer_name', 'like', "%{$search}%");
+                if ($status !== '') {
+                    $nonSoQuery->where('status', $status);
+                }
+
+                if ($dateFrom !== '') {
+                    $nonSoQuery->whereDate('issue_date', '>=', $dateFrom);
+                }
+
+                if ($dateTo !== '') {
+                    $nonSoQuery->whereDate('issue_date', '<=', $dateTo);
+                }
+
+                if ($search !== '') {
+                    $nonSoQuery->where(function($q) use ($search) {
+                        $q->where('no_dokumen', 'like', "%{$search}%")
+                          ->orWhere('recipient', 'like', "%{$search}%");
+                    });
+                }
+
+                $nonSoIssues = $nonSoQuery->orderBy('created_at', 'desc')->get()->map(function ($issue) {
+                    // Transform Non-SO to match SO structure for frontend
+                    return (object)[
+                        'id' => $issue->id,
+                        'type' => 'non-so', // Add type identifier
+                        'no_so' => $issue->no_dokumen, // Map no_dokumen to no_so
+                        'customer_name' => $issue->recipient, // Map recipient to customer_name
+                        'customer_phone' => null,
+                        'customer_address' => null,
+                        'tgl_order' => $issue->issue_date, // Map issue_date to tgl_order
+                        'tgl_kirim' => null,
+                        'catatan' => $issue->notes,
+                        'status' => $issue->status,
+                        'subtotal' => 0,
+                        'ppn' => 0,
+                        'total' => 0,
+                        'created_by' => $issue->created_by,
+                        'approved_by' => $issue->approved_by,
+                        'approved_at' => $issue->approved_at,
+                        'reject_reason' => $issue->reject_reason,
+                        'created_at' => $issue->created_at,
+                        'updated_at' => $issue->updated_at,
+                        'items' => $issue->items,
+                        'creator' => $issue->creator,
+                        'approver' => $issue->approver
+                    ];
                 });
+
+                $allOrders = $allOrders->merge($nonSoIssues);
             }
 
-            $salesOrders = $query->orderBy('created_at', 'desc')->get();
+            // Sort by created_at desc
+            $allOrders = $allOrders->sortByDesc('created_at')->values();
 
             return response()->json([
                 'success' => true,
-                'data' => $salesOrders
+                'data' => $allOrders
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -341,10 +517,49 @@ class SalesOrderController extends Controller
         }
     }
 
-    // Admin: Get single sales order
-    public function adminShow($id)
+    // Admin: Get single sales order or non-so detail
+    public function adminShow(Request $request, $id)
     {
         try {
+            $type = $request->get('type', 'so'); // default 'so', pass 'non-so' for Non-SO Issue
+
+            if ($type === 'non-so') {
+                $issue = NonPoIssue::with(['items.barang', 'creator', 'approver'])
+                    ->findOrFail($id);
+
+                // Transform Non-SO to match SO structure for frontend
+                $detail = (object)[
+                    'id' => $issue->id,
+                    'type' => 'non-so',
+                    'no_so' => $issue->no_dokumen,
+                    'customer_name' => $issue->recipient,
+                    'customer_phone' => null,
+                    'customer_address' => null,
+                    'tgl_order' => $issue->issue_date,
+                    'tgl_kirim' => null,
+                    'catatan' => $issue->notes,
+                    'status' => $issue->status,
+                    'subtotal' => 0,
+                    'ppn' => 0,
+                    'total' => 0,
+                    'created_by' => $issue->created_by,
+                    'approved_by' => $issue->approved_by,
+                    'approved_at' => $issue->approved_at,
+                    'reject_reason' => $issue->reject_reason,
+                    'created_at' => $issue->created_at,
+                    'updated_at' => $issue->updated_at,
+                    'items' => $issue->items,
+                    'creator' => $issue->creator,
+                    'approver' => $issue->approver
+                ];
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $detail
+                ]);
+            }
+
+            // Default: regular Sales Order
             $salesOrder = SalesOrder::with(['items.barang', 'creator', 'approver'])
                 ->findOrFail($id);
 
@@ -565,7 +780,7 @@ class SalesOrderController extends Controller
         }
     }
 
-    // Admin: Get outgoing items (completed SO)
+    // Get outgoing items (completed SO) - for both Admin and Staff
     public function outgoingItems(Request $request)
     {
         try {
@@ -575,6 +790,7 @@ class SalesOrderController extends Controller
             $type = $request->get('type', '');
             $startDate = $request->get('start_date', '');
             $endDate = $request->get('end_date', '');
+            $user = $request->user();
 
             // Collect all outgoing items (SO + Non-SO)
             $allItems = collect();
@@ -583,6 +799,11 @@ class SalesOrderController extends Controller
             if ($type === '' || $type === 'so') {
                 $soQuery = SalesOrder::with(['creator'])
                     ->where('status', 'completed');
+
+                // If staff, only show their own SO
+                if ($user->role === 'staff') {
+                    $soQuery->where('created_by', $user->id);
+                }
 
                 // Apply filters
                 if ($startDate) {
@@ -617,7 +838,13 @@ class SalesOrderController extends Controller
 
             // Get Non-SO outgoing items (if not filtering for so only)
             if ($type === '' || $type === 'non-so') {
-                $nonSoQuery = NonPoIssue::with(['creator']);
+                $nonSoQuery = NonPoIssue::with(['creator'])
+                    ->where('status', 'completed'); // Only show completed Non-SO
+
+                // If staff, only show their own Non-SO
+                if ($user->role === 'staff') {
+                    $nonSoQuery->where('created_by', $user->id);
+                }
 
                 // Apply filters
                 if ($startDate) {

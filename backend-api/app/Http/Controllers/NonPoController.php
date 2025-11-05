@@ -15,6 +15,80 @@ use App\Http\Controllers\AuditLogController;
 class NonPoController extends Controller
 {
     /**
+     * Get all non-PO receipts for staff (own receipts only)
+     */
+    public function getStaffReceipts(Request $request)
+    {
+        try {
+            $query = NonPoReceipt::with(['items.barang', 'creator', 'approver'])
+                ->where('created_by', $request->user()->id);
+
+            // Filter by status
+            if ($request->has('status') && $request->status != '') {
+                $query->where('status', $request->status);
+            }
+
+            // Search
+            if ($request->has('search') && $request->search != '') {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('no_dokumen', 'like', "%{$search}%")
+                      ->orWhere('source', 'like', "%{$search}%");
+                });
+            }
+
+            $receipts = $query->orderBy('created_at', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $receipts
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all non-SO issues for staff (own issues only)
+     */
+    public function getStaffIssues(Request $request)
+    {
+        try {
+            $query = NonPoIssue::with(['items.barang', 'creator', 'approver'])
+                ->where('created_by', $request->user()->id);
+
+            // Filter by status
+            if ($request->has('status') && $request->status != '') {
+                $query->where('status', $request->status);
+            }
+
+            // Search
+            if ($request->has('search') && $request->search != '') {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('no_dokumen', 'like', "%{$search}%")
+                      ->orWhere('recipient', 'like', "%{$search}%");
+                });
+            }
+
+            $issues = $query->orderBy('created_at', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $issues
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store non-PO receipt (Penerimaan Barang Non-PO)
      */
     public function storeReceipt(Request $request)
@@ -55,17 +129,18 @@ class NonPoController extends Controller
                 $total_value += $item['qty'] * $price;
             }
 
-            // Create receipt
+            // Create receipt with pending status
             $receipt = NonPoReceipt::create([
                 'no_dokumen' => $no_dokumen,
                 'source' => $request->source,
                 'receive_date' => $request->receive_date,
                 'notes' => $request->notes,
                 'total_value' => $total_value,
-                'created_by' => $request->user()->id
+                'created_by' => $request->user()->id,
+                'status' => 'pending'
             ]);
 
-            // Create items and update stock
+            // Create items (don't update stock yet, wait for approval)
             foreach ($request->items as $item) {
                 $price = $item['price'] ?? 0;
                 $subtotal = $item['qty'] * $price;
@@ -77,10 +152,6 @@ class NonPoController extends Controller
                     'price' => $price,
                     'subtotal' => $subtotal
                 ]);
-
-                // Update stock barang
-                $barang = Barang::findOrFail($item['barang_id']);
-                $barang->increment('stok', $item['qty']);
             }
 
             DB::commit();
@@ -97,7 +168,7 @@ class NonPoController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Penerimaan barang Non-PO berhasil disimpan',
+                'message' => 'Penerimaan barang Non-PO berhasil dibuat dan menunggu persetujuan admin',
                 'data' => $receipt
             ]);
         } catch (\Exception $e) {
@@ -106,6 +177,26 @@ class NonPoController extends Controller
                 'success' => false,
                 'message' => 'Gagal menyimpan penerimaan barang: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Get single non-PO receipt detail (for admin review)
+     */
+    public function getReceiptDetail($id)
+    {
+        try {
+            $receipt = NonPoReceipt::with(['items.barang', 'creator', 'approver'])->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $receipt
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan: ' . $e->getMessage()
+            ], 404);
         }
     }
 
@@ -175,7 +266,7 @@ class NonPoController extends Controller
 
         DB::beginTransaction();
         try {
-            // Validate stock availability
+            // Validate stock availability (untuk validasi awal)
             foreach ($request->items as $item) {
                 $barang = Barang::findOrFail($item['barang_id']);
                 if ($barang->stok < $item['qty']) {
@@ -195,26 +286,23 @@ class NonPoController extends Controller
             $counter = $lastIssue ? (int)substr($lastIssue->no_dokumen, -5) + 1 : 1;
             $no_dokumen = 'OUT-NON-' . date('Ym') . '-' . str_pad($counter, 5, '0', STR_PAD_LEFT);
 
-            // Create issue
+            // Create issue with pending status
             $issue = NonPoIssue::create([
                 'no_dokumen' => $no_dokumen,
                 'recipient' => $request->recipient,
                 'issue_date' => $request->issue_date,
                 'notes' => $request->notes,
-                'created_by' => $request->user()->id
+                'created_by' => $request->user()->id,
+                'status' => 'pending'
             ]);
 
-            // Create items and update stock
+            // Create items (don't update stock yet, wait for approval)
             foreach ($request->items as $item) {
                 NonPoIssueItem::create([
                     'non_po_issue_id' => $issue->id,
                     'barang_id' => $item['barang_id'],
                     'qty' => $item['qty']
                 ]);
-
-                // Decrease stock barang
-                $barang = Barang::findOrFail($item['barang_id']);
-                $barang->decrement('stok', $item['qty']);
             }
 
             DB::commit();
@@ -231,7 +319,7 @@ class NonPoController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pengeluaran barang Non-PO berhasil disimpan',
+                'message' => 'Pengeluaran barang Non-SO berhasil dibuat dan menunggu persetujuan admin',
                 'data' => $issue
             ]);
         } catch (\Exception $e) {
@@ -240,6 +328,26 @@ class NonPoController extends Controller
                 'success' => false,
                 'message' => 'Gagal menyimpan pengeluaran barang: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Get single non-PO issue detail (for admin review)
+     */
+    public function getIssueDetail($id)
+    {
+        try {
+            $issue = NonPoIssue::with(['items.barang', 'creator', 'approver'])->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $issue
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan: ' . $e->getMessage()
+            ], 404);
         }
     }
 
@@ -279,6 +387,234 @@ class NonPoController extends Controller
                 'success' => false,
                 'message' => 'Data tidak ditemukan: ' . $e->getMessage()
             ], 404);
+        }
+    }
+
+    /**
+     * Approve Non-PO Receipt (admin only)
+     */
+    public function approveReceipt(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $receipt = NonPoReceipt::with('items.barang')->findOrFail($id);
+
+            if ($receipt->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Penerimaan Non-PO sudah diproses sebelumnya'
+                ], 400);
+            }
+
+            // Update stock barang
+            foreach ($receipt->items as $item) {
+                $barang = Barang::findOrFail($item->barang_id);
+                $barang->increment('stok', $item->qty);
+            }
+
+            // Update receipt status to 'completed' (same as regular PO)
+            $receipt->update([
+                'status' => 'completed',
+                'approved_by' => $request->user()->id,
+                'approved_at' => now(),
+            ]);
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'approve',
+                'menyetujui Penerimaan Non-PO: ' . $receipt->no_dokumen . ' (Sumber: ' . $receipt->source . ')',
+                'NonPoReceipt',
+                $receipt->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Penerimaan Non-PO berhasil disetujui'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyetujui penerimaan Non-PO: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject Non-PO Receipt (admin only)
+     */
+    public function rejectReceipt(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'reason' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $receipt = NonPoReceipt::findOrFail($id);
+
+            if ($receipt->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Penerimaan Non-PO sudah diproses sebelumnya'
+                ], 400);
+            }
+
+            $receipt->update([
+                'status' => 'rejected',
+                'approved_by' => $request->user()->id,
+                'approved_at' => now(),
+                'reject_reason' => $request->reason,
+            ]);
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'reject',
+                'menolak Penerimaan Non-PO: ' . $receipt->no_dokumen . ($request->reason ? ' - Alasan: ' . $request->reason : ''),
+                'NonPoReceipt',
+                $receipt->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Penerimaan Non-PO berhasil ditolak'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menolak penerimaan Non-PO: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Approve Non-SO Issue (admin only)
+     */
+    public function approveIssue(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $issue = NonPoIssue::with('items.barang')->findOrFail($id);
+
+            if ($issue->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengeluaran Non-SO sudah diproses sebelumnya'
+                ], 400);
+            }
+
+            // Validate stock availability again before approval
+            foreach ($issue->items as $item) {
+                $barang = Barang::findOrFail($item->barang_id);
+                if ($barang->stok < $item->qty) {
+                    throw new \Exception("Stok {$barang->nama} tidak mencukupi. Stok tersedia: {$barang->stok}");
+                }
+            }
+
+            // Update stock barang
+            foreach ($issue->items as $item) {
+                $barang = Barang::findOrFail($item->barang_id);
+                $barang->decrement('stok', $item->qty);
+            }
+
+            // Update issue status to 'completed' (same as regular SO)
+            $issue->update([
+                'status' => 'completed',
+                'approved_by' => $request->user()->id,
+                'approved_at' => now(),
+            ]);
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'approve',
+                'menyetujui Pengeluaran Non-SO: ' . $issue->no_dokumen . ' (Penerima: ' . $issue->recipient . ')',
+                'NonPoIssue',
+                $issue->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengeluaran Non-SO berhasil disetujui'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyetujui pengeluaran Non-SO: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject Non-SO Issue (admin only)
+     */
+    public function rejectIssue(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'reason' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $issue = NonPoIssue::findOrFail($id);
+
+            if ($issue->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengeluaran Non-SO sudah diproses sebelumnya'
+                ], 400);
+            }
+
+            $issue->update([
+                'status' => 'rejected',
+                'approved_by' => $request->user()->id,
+                'approved_at' => now(),
+                'reject_reason' => $request->reason,
+            ]);
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'reject',
+                'menolak Pengeluaran Non-SO: ' . $issue->no_dokumen . ($request->reason ? ' - Alasan: ' . $request->reason : ''),
+                'NonPoIssue',
+                $issue->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengeluaran Non-SO berhasil ditolak'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menolak pengeluaran Non-SO: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
