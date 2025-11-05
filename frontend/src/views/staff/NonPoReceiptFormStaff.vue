@@ -205,7 +205,7 @@ const toggleSidebar = () => {
 const fetchBarangList = async () => {
   try {
     const token = localStorage.getItem('token')
-    const response = await axios.get('http://localhost:8000/api/admin/barang', {
+    const response = await axios.get('http://localhost:8000/api/staff/barang', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json'
