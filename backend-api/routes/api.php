@@ -95,6 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/non-po/issue', [NonPoController::class, 'storeIssue']);
         Route::get('/non-po/issue/{id}', [NonPoController::class, 'getIssueDetail']);
         Route::post('/non-po/issue/{id}/approve', [NonPoController::class, 'approveIssue']);
+        Route::post('/non-po/issue/{id}/process', [NonPoController::class, 'processIssue']);
         Route::post('/non-po/issue/{id}/reject', [NonPoController::class, 'rejectIssue']);
         Route::get('/non-po/issue/{id}/print', [NonPoController::class, 'getIssuePrintData']);
         

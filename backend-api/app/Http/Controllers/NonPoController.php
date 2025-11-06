@@ -515,7 +515,7 @@ class NonPoController extends Controller
                 ], 400);
             }
 
-            // Validate stock availability again before approval
+            // Validate stock availability before approval
             foreach ($issue->items as $item) {
                 $barang = Barang::findOrFail($item->barang_id);
                 if ($barang->stok < $item->qty) {
@@ -523,15 +523,9 @@ class NonPoController extends Controller
                 }
             }
 
-            // Update stock barang
-            foreach ($issue->items as $item) {
-                $barang = Barang::findOrFail($item->barang_id);
-                $barang->decrement('stok', $item->qty);
-            }
-
-            // Update issue status to 'completed' (same as regular SO)
+            // Update issue status to 'approved' (DON'T update stock yet)
             $issue->update([
-                'status' => 'completed',
+                'status' => 'approved',
                 'approved_by' => $request->user()->id,
                 'approved_at' => now(),
             ]);
@@ -555,6 +549,64 @@ class NonPoController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyetujui pengeluaran Non-SO: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Process Non-SO Issue - keluarkan barang dan update stok (admin only)
+     */
+    public function processIssue(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $issue = NonPoIssue::with('items.barang')->findOrFail($id);
+
+            if ($issue->status !== 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengeluaran Non-SO harus disetujui terlebih dahulu sebelum diproses'
+                ], 400);
+            }
+
+            // Validate stock availability again before processing
+            foreach ($issue->items as $item) {
+                $barang = Barang::findOrFail($item->barang_id);
+                if ($barang->stok < $item->qty) {
+                    throw new \Exception("Stok {$barang->nama} tidak mencukupi. Stok tersedia: {$barang->stok}");
+                }
+            }
+
+            // Update stock barang
+            foreach ($issue->items as $item) {
+                $barang = Barang::findOrFail($item->barang_id);
+                $barang->decrement('stok', $item->qty);
+            }
+
+            // Update issue status to 'completed'
+            $issue->update([
+                'status' => 'completed'
+            ]);
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'process',
+                'memproses/mengeluarkan barang Non-SO: ' . $issue->no_dokumen . ' (Penerima: ' . $issue->recipient . ')',
+                'NonPoIssue',
+                $issue->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengeluaran Non-SO berhasil diproses dan stok telah dikurangi'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses pengeluaran Non-SO: ' . $e->getMessage()
             ], 500);
         }
     }

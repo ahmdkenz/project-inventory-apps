@@ -183,7 +183,10 @@
                     
                     <!-- Status approved: Proses/Keluarkan, Lihat SO -->
                     <template v-else-if="so.status === 'approved'">
-                      <router-link :to="getProcessRoute(so)" class="text-green-600 hover:text-green-800">Proses/Keluarkan</router-link>
+                      <!-- For Non-SO: use button to call process API directly -->
+                      <button v-if="(so as any).type === 'non-so'" @click="processNonSO(so)" class="text-green-600 hover:text-green-800">Proses/Keluarkan</button>
+                      <!-- For regular SO: use router link to process page -->
+                      <router-link v-else :to="getProcessRoute(so)" class="text-green-600 hover:text-green-800">Proses/Keluarkan</router-link>
                       <router-link :to="getDetailRoute(so)" class="text-indigo-600 hover:text-indigo-900">Lihat SO</router-link>
                     </template>
                     
@@ -428,7 +431,22 @@ const confirmApprove = async () => {
   if (!selectedSO.value?.id) return
   
   try {
-    const response = await salesOrderService.approve(selectedSO.value.id)
+    let response
+    // Check if this is Non-SO, use different endpoint
+    if ((selectedSO.value as any).type === 'non-so') {
+      const token = localStorage.getItem('token')
+      response = await fetch(`http://localhost:8000/api/admin/non-po/issue/${selectedSO.value.id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      }).then(res => res.json())
+    } else {
+      response = await salesOrderService.approve(selectedSO.value.id)
+    }
+    
     if (response.success) {
       showMessage('Sales order berhasil di-approve', false)
       closeApproveModal()
@@ -463,7 +481,23 @@ const confirmReject = async () => {
   
   loading.value = true
   try {
-    const response = await salesOrderService.reject(selectedSO.value.id, rejectReason.value)
+    let response
+    // Check if this is Non-SO, use different endpoint
+    if ((selectedSO.value as any).type === 'non-so') {
+      const token = localStorage.getItem('token')
+      response = await fetch(`http://localhost:8000/api/admin/non-po/issue/${selectedSO.value.id}/reject`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason: rejectReason.value })
+      }).then(res => res.json())
+    } else {
+      response = await salesOrderService.reject(selectedSO.value.id, rejectReason.value)
+    }
+    
     if (response.success) {
       showMessage('Sales order berhasil ditolak', false)
       closeRejectModal()
@@ -472,6 +506,37 @@ const confirmReject = async () => {
   } catch (error: any) {
     console.error('Error rejecting order:', error)
     showMessage(error.response?.data?.message || 'Gagal menolak sales order', true)
+  } finally {
+    loading.value = false
+  }
+}
+
+const processNonSO = async (so: any) => {
+  if (!confirm('Apakah Anda yakin ingin memproses/mengeluarkan barang Non-SO ini? Stok akan dikurangi.')) {
+    return
+  }
+  
+  loading.value = true
+  try {
+    const token = localStorage.getItem('token')
+    const response = await fetch(`http://localhost:8000/api/admin/non-po/issue/${so.id}/process`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    }).then(res => res.json())
+    
+    if (response.success) {
+      showMessage('Pengeluaran Non-SO berhasil diproses dan stok telah dikurangi', false)
+      await fetchSalesOrders()
+    } else {
+      showMessage(response.message || 'Gagal memproses Non-SO', true)
+    }
+  } catch (error: any) {
+    console.error('Error processing Non-SO:', error)
+    showMessage('Gagal memproses Non-SO', true)
   } finally {
     loading.value = false
   }
