@@ -80,20 +80,30 @@
               <!-- Form Tambah Item -->
               <div class="p-6 border-b border-gray-200">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                  <div class="md:col-span-6">
+                  <div class="md:col-span-4">
                     <label for="item_select" class="block text-sm font-medium text-gray-700 mb-1">Pilih Barang</label>
-                    <select v-model="newItem.barang_id" id="item_select" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 border">
+                    <select v-model="newItem.barang_id" @change="onBarangChange" id="item_select" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 border">
                       <option value="">Pilih barang...</option>
                       <option v-for="barang in barangList" :key="barang.id" :value="barang.id">
                         {{ barang.kode }} - {{ barang.nama }} (Stok: {{ barang.stok }})
                       </option>
                     </select>
                   </div>
-                  <div class="md:col-span-4">
-                    <label for="item_qty" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Dikeluarkan</label>
+                  <div class="md:col-span-2">
+                    <label for="item_qty" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
                     <input v-model.number="newItem.qty" type="number" id="item_qty" min="1" :max="selectedBarangStock" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 border">
                   </div>
+                  <div class="md:col-span-3">
+                    <label for="item_harga" class="block text-sm font-medium text-gray-700 mb-1">Harga Satuan</label>
+                    <input v-model.number="newItem.harga_satuan" type="number" id="item_harga" min="0" class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500 border">
+                  </div>
                   <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal</label>
+                    <div class="w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 border text-sm">
+                      {{ formatCurrency((newItem.qty || 0) * (newItem.harga_satuan || 0)) }}
+                    </div>
+                  </div>
+                  <div class="md:col-span-1">
                     <label class="block text-sm font-medium text-transparent mb-1">Aksi</label>
                     <button @click="addItem" type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition duration-150">
                       <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -110,13 +120,15 @@
                     <tr>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
                       <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stok Tersedia</th>
-                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Dikeluarkan</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                      <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Satuan</th>
+                      <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
                       <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200">
                     <tr v-if="formData.items.length === 0">
-                      <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                         Belum ada barang ditambahkan
                       </td>
                     </tr>
@@ -128,7 +140,15 @@
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-center" :class="item.stok >= item.qty ? 'text-green-600 font-medium' : 'text-red-600 font-medium'">
                         {{ item.stok }}
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        <input v-model.number="item.qty" type="number" min="1" :max="item.stok" @input="calculateItemSubtotal(index)" class="w-20 text-center rounded border-gray-300 p-1">
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                        <input v-model.number="item.harga_satuan" type="number" min="0" @input="calculateItemSubtotal(index)" class="w-32 text-right rounded border-gray-300 p-1">
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                        {{ formatCurrency(item.subtotal || 0) }}
+                      </td>
                       <td class="px-6 py-4 whitespace-nowrap text-center">
                         <button @click="removeItem(index)" type="button" class="text-red-600 hover:text-red-800">
                           <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -136,6 +156,21 @@
                           </svg>
                         </button>
                       </td>
+                    </tr>
+                    <tr v-if="formData.items.length > 0" class="bg-gray-50">
+                      <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-700">Subtotal</td>
+                      <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(formData.subtotal) }}</td>
+                      <td></td>
+                    </tr>
+                    <tr v-if="formData.items.length > 0" class="bg-gray-50">
+                      <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-700">PPN (0%)</td>
+                      <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(formData.ppn) }}</td>
+                      <td></td>
+                    </tr>
+                    <tr v-if="formData.items.length > 0" class="bg-gray-100 border-t-2 border-gray-300">
+                      <td colspan="4" class="px-6 py-3 text-right text-sm font-bold text-gray-900">Total</td>
+                      <td class="px-6 py-3 text-right text-lg font-bold text-blue-600">{{ formatCurrency(formData.total) }}</td>
+                      <td></td>
                     </tr>
                   </tbody>
                 </table>
@@ -167,12 +202,16 @@ const formData = ref({
   recipient: '',
   issue_date: new Date().toISOString().split('T')[0],
   notes: '',
-  items: [] as any[]
+  items: [] as any[],
+  subtotal: 0,
+  ppn: 0,
+  total: 0
 })
 
 const newItem = ref({
   barang_id: '',
-  qty: 1
+  qty: 1,
+  harga_satuan: 0
 })
 
 const barangList = ref<any[]>([])
@@ -186,6 +225,41 @@ const selectedBarangStock = computed(() => {
   const barang = barangList.value.find(b => b.id === parseInt(newItem.value.barang_id as any))
   return barang ? barang.stok : 999999
 })
+
+const onBarangChange = () => {
+  if (!newItem.value.barang_id) {
+    newItem.value.harga_satuan = 0
+    return
+  }
+  
+  const barang = barangList.value.find(b => b.id === parseInt(newItem.value.barang_id as any))
+  if (barang) {
+    // Set harga_satuan to harga_jual (selling price)
+    newItem.value.harga_satuan = barang.harga_jual || 0
+  }
+}
+
+const calculateItemSubtotal = (index: number) => {
+  const item = formData.value.items[index]
+  if (!item) return
+  item.subtotal = (item.qty || 0) * (item.harga_satuan || 0)
+  calculateTotal()
+}
+
+const calculateTotal = () => {
+  formData.value.subtotal = formData.value.items.reduce((sum, item) => sum + (item.subtotal || 0), 0)
+  formData.value.ppn = 0 // No PPN (same as Sales Order)
+  formData.value.total = formData.value.subtotal + formData.value.ppn
+}
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value || 0)
+}
 
 const toggleSidebar = () => {
   const sidebar = document.getElementById('sidebar')
@@ -234,27 +308,34 @@ const addItem = () => {
   const existingItem = formData.value.items.find(item => item.barang_id === newItem.value.barang_id)
   if (existingItem) {
     existingItem.qty += newItem.value.qty
+    existingItem.subtotal = existingItem.qty * existingItem.harga_satuan
   } else {
+    const subtotal = newItem.value.qty * newItem.value.harga_satuan
     formData.value.items.push({
       barang_id: newItem.value.barang_id,
       name: selectedBarang.nama,
       kode: selectedBarang.kode,
       stok: selectedBarang.stok,
-      qty: newItem.value.qty
+      qty: newItem.value.qty,
+      harga_satuan: newItem.value.harga_satuan,
+      subtotal: subtotal
     })
   }
 
+  calculateTotal()
   resetNewItem()
 }
 
 const removeItem = (index: number) => {
   formData.value.items.splice(index, 1)
+  calculateTotal()
 }
 
 const resetNewItem = () => {
   newItem.value = {
     barang_id: '',
-    qty: 1
+    qty: 1,
+    harga_satuan: 0
   }
 }
 

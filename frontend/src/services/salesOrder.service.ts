@@ -88,10 +88,11 @@ class SalesOrderService {
   }
 
   /**
-   * Get single sales order by ID
+   * Get single sales order by ID (staff)
    */
-  async getById(id: number): Promise<SalesOrderResponse> {
-    const response = await api.get(`/staff/sales-order/${id}`)
+  async getById(id: number, type?: string): Promise<SalesOrderResponse> {
+    const params = type ? { type } : {}
+    const response = await api.get(`/staff/sales-order/${id}`, { params })
     return response.data
   }
 
@@ -130,8 +131,9 @@ class SalesOrderService {
   /**
    * Get single sales order by ID (admin)
    */
-  async adminGetById(id: number): Promise<SalesOrderResponse> {
-    const response = await api.get(`/admin/sales-order/${id}`)
+  async adminGetById(id: number, type?: string): Promise<SalesOrderResponse> {
+    const params = type ? { type } : {}
+    const response = await api.get(`/admin/sales-order/${id}`, { params })
     return response.data
   }
 

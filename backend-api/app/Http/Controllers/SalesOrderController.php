@@ -81,10 +81,13 @@ class SalesOrderController extends Controller
 
                 $nonSoIssues = $nonSoQuery->orderBy('created_at', 'desc')->get()->map(function ($issue) {
                     // Transform Non-SO to match SO structure for frontend
+                    // Transform OUT-NON- to SO-NON- for display in Sales Order list
+                    $noSo = str_replace('OUT-NON-', 'SO-NON-', $issue->no_dokumen);
+                    
                     return (object)[
                         'id' => $issue->id,
                         'type' => 'non-so', // Add type identifier
-                        'no_so' => $issue->no_dokumen, // Map no_dokumen to no_so
+                        'no_so' => $noSo, // Map no_dokumen to no_so with SO-NON- prefix
                         'customer_name' => $issue->recipient, // Map recipient to customer_name
                         'customer_phone' => null,
                         'customer_address' => null,
@@ -139,16 +142,21 @@ class SalesOrderController extends Controller
                     ->firstOrFail();
 
                 // Transform Non-SO to match SO structure for frontend
-                $detail = (object)[
+                // Transform OUT-NON- to SO-NON- for display
+                $noSo = str_replace('OUT-NON-', 'SO-NON-', $issue->no_dokumen);
+                
+                $detail = [
                     'id' => $issue->id,
                     'type' => 'non-so',
-                    'no_so' => $issue->no_dokumen,
+                    'no_so' => $noSo,
                     'customer_name' => $issue->recipient,
                     'customer_phone' => null,
                     'customer_address' => null,
                     'tgl_order' => $issue->issue_date,
                     'tgl_kirim' => null,
                     'catatan' => $issue->notes,
+                    'catatan_pengeluaran' => $issue->notes,
+                    'no_surat_jalan' => null,
                     'status' => $issue->status,
                     'subtotal' => 0,
                     'ppn' => 0,
@@ -156,10 +164,24 @@ class SalesOrderController extends Controller
                     'created_by' => $issue->created_by,
                     'approved_by' => $issue->approved_by,
                     'approved_at' => $issue->approved_at,
+                    'completed_at' => $issue->approved_at,
                     'reject_reason' => $issue->reject_reason,
                     'created_at' => $issue->created_at,
                     'updated_at' => $issue->updated_at,
-                    'items' => $issue->items,
+                    'items' => $issue->items->map(function($item) {
+                        return [
+                            'id' => $item->id,
+                            'sales_order_id' => $item->non_po_issue_id,
+                            'barang_id' => $item->barang_id,
+                            'qty' => $item->qty,
+                            'qty_issued' => $item->qty,
+                            'harga_satuan' => 0,
+                            'subtotal' => 0,
+                            'barang' => $item->barang,
+                            'created_at' => $item->created_at,
+                            'updated_at' => $item->updated_at
+                        ];
+                    }),
                     'creator' => $issue->creator,
                     'approver' => $issue->approver
                 ];
@@ -473,10 +495,13 @@ class SalesOrderController extends Controller
 
                 $nonSoIssues = $nonSoQuery->orderBy('created_at', 'desc')->get()->map(function ($issue) {
                     // Transform Non-SO to match SO structure for frontend
+                    // Transform OUT-NON- to SO-NON- for display in Sales Order list
+                    $noSo = str_replace('OUT-NON-', 'SO-NON-', $issue->no_dokumen);
+                    
                     return (object)[
                         'id' => $issue->id,
                         'type' => 'non-so', // Add type identifier
-                        'no_so' => $issue->no_dokumen, // Map no_dokumen to no_so
+                        'no_so' => $noSo, // Map no_dokumen to no_so with SO-NON- prefix
                         'customer_name' => $issue->recipient, // Map recipient to customer_name
                         'customer_phone' => null,
                         'customer_address' => null,
@@ -528,16 +553,21 @@ class SalesOrderController extends Controller
                     ->findOrFail($id);
 
                 // Transform Non-SO to match SO structure for frontend
-                $detail = (object)[
+                // Transform OUT-NON- to SO-NON- for display
+                $noSo = str_replace('OUT-NON-', 'SO-NON-', $issue->no_dokumen);
+                
+                $detail = [
                     'id' => $issue->id,
                     'type' => 'non-so',
-                    'no_so' => $issue->no_dokumen,
+                    'no_so' => $noSo,
                     'customer_name' => $issue->recipient,
                     'customer_phone' => null,
                     'customer_address' => null,
                     'tgl_order' => $issue->issue_date,
                     'tgl_kirim' => null,
                     'catatan' => $issue->notes,
+                    'catatan_pengeluaran' => $issue->notes,
+                    'no_surat_jalan' => null,
                     'status' => $issue->status,
                     'subtotal' => 0,
                     'ppn' => 0,
@@ -545,10 +575,24 @@ class SalesOrderController extends Controller
                     'created_by' => $issue->created_by,
                     'approved_by' => $issue->approved_by,
                     'approved_at' => $issue->approved_at,
+                    'completed_at' => $issue->approved_at,
                     'reject_reason' => $issue->reject_reason,
                     'created_at' => $issue->created_at,
                     'updated_at' => $issue->updated_at,
-                    'items' => $issue->items,
+                    'items' => $issue->items->map(function($item) {
+                        return [
+                            'id' => $item->id,
+                            'sales_order_id' => $item->non_po_issue_id,
+                            'barang_id' => $item->barang_id,
+                            'qty' => $item->qty,
+                            'qty_issued' => $item->qty,
+                            'harga_satuan' => 0,
+                            'subtotal' => 0,
+                            'barang' => $item->barang,
+                            'created_at' => $item->created_at,
+                            'updated_at' => $item->updated_at
+                        ];
+                    }),
                     'creator' => $issue->creator,
                     'approver' => $issue->approver
                 ];

@@ -153,7 +153,7 @@
                   <div class="flex items-center justify-end space-x-2">
                     <!-- Tombol Detail -->
                     <router-link 
-                      :to="`/staff/sales-order/detail/${so.id}`" 
+                      :to="getDetailRoute(so)" 
                       class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition"
                     >
                       <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,7 +166,7 @@
                     <!-- Tombol Cetak untuk SO yang sudah completed -->
                     <router-link 
                       v-if="so.status === 'completed'" 
-                      :to="`/staff/sales-orders/${so.id}/print-issue`" 
+                      :to="getPrintRoute(so)" 
                       class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg transition"
                     >
                       <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -175,9 +175,9 @@
                       Cetak Bukti
                     </router-link>
                     
-                    <!-- Tombol Edit (hanya untuk pending) -->
+                    <!-- Tombol Edit (hanya untuk pending dan bukan Non-SO) -->
                     <router-link 
-                      v-if="so.status === 'pending'" 
+                      v-if="so.status === 'pending' && so.type !== 'non-so'" 
                       :to="`/staff/sales-order/edit/${so.id}`" 
                       class="inline-flex items-center px-3 py-1.5 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 rounded-lg transition"
                     >
@@ -187,9 +187,9 @@
                       Edit
                     </router-link>
                     
-                    <!-- Tombol Hapus (hanya untuk pending) -->
+                    <!-- Tombol Hapus (hanya untuk pending dan bukan Non-SO) -->
                     <button 
-                      v-if="so.status === 'pending'" 
+                      v-if="so.status === 'pending' && so.type !== 'non-so'" 
                       @click="confirmDelete(so)" 
                       class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition"
                     >
@@ -305,6 +305,16 @@ const deleteSalesOrder = async () => {
   } catch (error: any) {
     showMessage(error.response?.data?.message || 'Gagal menghapus sales order', true)
   }
+}
+
+const getDetailRoute = (so: any) => {
+  const path = `/staff/sales-order/detail/${so.id}`
+  return so.type === 'non-so' ? `${path}?type=non-so` : path
+}
+
+const getPrintRoute = (so: any) => {
+  const path = `/staff/sales-orders/${so.id}/print-issue`
+  return so.type === 'non-so' ? `${path}?type=non-so` : path
 }
 
 const getStatusBadgeClass = (status: string) => {

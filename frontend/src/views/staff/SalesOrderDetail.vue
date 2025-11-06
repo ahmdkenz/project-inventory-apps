@@ -413,7 +413,8 @@ const fetchSalesOrder = async () => {
   loading.value = true
   try {
     const id = route.params.id as string
-    const response = await salesOrderService.getById(parseInt(id))
+    const type = route.query.type as string | undefined
+    const response = await salesOrderService.getById(parseInt(id), type)
     if (response.success && !Array.isArray(response.data)) {
       salesOrder.value = response.data
     }

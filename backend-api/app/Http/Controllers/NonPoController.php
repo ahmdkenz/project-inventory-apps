@@ -278,13 +278,12 @@ class NonPoController extends Controller
             }
 
             // Generate nomor dokumen
-            $lastIssue = NonPoIssue::whereYear('created_at', date('Y'))
-                ->whereMonth('created_at', date('m'))
+            $lastIssue = NonPoIssue::whereDate('created_at', date('Y-m-d'))
                 ->orderBy('id', 'desc')
                 ->first();
             
-            $counter = $lastIssue ? (int)substr($lastIssue->no_dokumen, -5) + 1 : 1;
-            $no_dokumen = 'OUT-NON-' . date('Ym') . '-' . str_pad($counter, 5, '0', STR_PAD_LEFT);
+            $counter = $lastIssue ? (int)substr($lastIssue->no_dokumen, -4) + 1 : 1;
+            $no_dokumen = 'OUT-NON-' . date('Ymd') . '-' . str_pad($counter, 4, '0', STR_PAD_LEFT);
 
             // Create issue with pending status
             $issue = NonPoIssue::create([

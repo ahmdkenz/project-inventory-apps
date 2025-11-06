@@ -163,7 +163,7 @@
                 </tr>
                 <tr v-for="so in salesOrders" :key="so.id">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800">
-                    <router-link :to="`/admin/sales-orders/detail/${so.id}`">{{ so.no_so }}</router-link>
+                    <router-link :to="getDetailRoute(so)">{{ so.no_so }}</router-link>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ so.customer_name }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ so.creator?.name || '-' }}</td>
@@ -178,24 +178,24 @@
                     <template v-if="so.status === 'pending'">
                       <button @click="openApproveModal(so)" class="text-green-600 hover:text-green-800">Setujui</button>
                       <button @click="openRejectModal(so)" class="text-red-600 hover:text-red-800">Tolak</button>
-                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
+                      <router-link :to="getDetailRoute(so)" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
                     </template>
                     
                     <!-- Status approved: Proses/Keluarkan, Lihat SO -->
                     <template v-else-if="so.status === 'approved'">
-                      <router-link :to="`/admin/sales-orders/${so.id}/process`" class="text-green-600 hover:text-green-800">Proses/Keluarkan</router-link>
-                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat SO</router-link>
+                      <router-link :to="getProcessRoute(so)" class="text-green-600 hover:text-green-800">Proses/Keluarkan</router-link>
+                      <router-link :to="getDetailRoute(so)" class="text-indigo-600 hover:text-indigo-900">Lihat SO</router-link>
                     </template>
                     
                     <!-- Status completed: Cetak Bukti -->
                     <template v-else-if="so.status === 'completed'">
-                      <router-link :to="`/admin/sales-orders/${so.id}/print-issue`" class="text-green-600 hover:text-green-800">Cetak Bukti</router-link>
-                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
+                      <router-link :to="getPrintRoute(so)" class="text-green-600 hover:text-green-800">Cetak Bukti</router-link>
+                      <router-link :to="getDetailRoute(so)" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
                     </template>
                     
                     <!-- Status rejected: Hanya Lihat -->
                     <template v-else>
-                      <router-link :to="`/admin/sales-orders/detail/${so.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
+                      <router-link :to="getDetailRoute(so)" class="text-indigo-600 hover:text-indigo-900">Lihat</router-link>
                     </template>
                   </td>
                 </tr>
@@ -475,6 +475,21 @@ const confirmReject = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const getDetailRoute = (so: any) => {
+  const path = `/admin/sales-orders/detail/${so.id}`
+  return so.type === 'non-so' ? `${path}?type=non-so` : path
+}
+
+const getProcessRoute = (so: any) => {
+  const path = `/admin/sales-orders/${so.id}/process`
+  return so.type === 'non-so' ? `${path}?type=non-so` : path
+}
+
+const getPrintRoute = (so: any) => {
+  const path = `/admin/sales-orders/${so.id}/print-issue`
+  return so.type === 'non-so' ? `${path}?type=non-so` : path
 }
 
 const getStatusBadgeClass = (status: string) => {
