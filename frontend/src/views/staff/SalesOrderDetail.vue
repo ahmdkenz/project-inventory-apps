@@ -381,7 +381,7 @@ const ppnPercent = computed(() => {
 
 const getStatusLabel = (status: string) => {
   const labels: any = {
-    'pending': 'Approved (Pending)',
+    'pending': 'pending',
     'approved': 'Approved (Pending)',
     'rejected': 'Reject',
     'completed': 'Done'

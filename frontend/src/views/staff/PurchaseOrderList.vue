@@ -386,7 +386,7 @@ const getStatusClass = (status: string) => {
 
 const getStatusText = (status: string) => {
   const texts = {
-    'pending': 'Approved (Pending)',
+    'pending': 'pending',
     'approved': 'Approved (Pending)',
     'rejected': 'Reject',
     'completed': 'Done'

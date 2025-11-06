@@ -37,9 +37,8 @@
       <main class="flex-1 p-6 overflow-y-auto">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900">Pengeluaran Barang (Non-PO)</h1>
-            <p class="text-lg text-gray-600">Pengeluaran tanpa Sales Order</p>
-          </div>
+            <h1 class="text-3xl font-bold text-gray-900">Pengeluaran Barang (Non-SO)</h1>
+                    </div>
           <router-link to="/admin/sales-orders" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
