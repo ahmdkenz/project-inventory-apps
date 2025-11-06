@@ -10,7 +10,9 @@ class NonPoIssueItem extends Model
     protected $fillable = [
         'non_po_issue_id',
         'barang_id',
-        'qty'
+        'qty',
+        'harga_satuan',
+        'subtotal'
     ];
 
     protected $casts = [

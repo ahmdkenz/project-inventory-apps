@@ -233,8 +233,8 @@ const onBarangChange = () => {
   
   const barang = barangList.value.find(b => b.id === parseInt(newItem.value.barang_id as any))
   if (barang) {
-    // Set harga_satuan to harga_jual (selling price)
-    newItem.value.harga_satuan = barang.harga_jual || 0
+    // Set harga_satuan to harga_beli (purchase price) - same as Sales Order uses harga_jual
+    newItem.value.harga_satuan = barang.harga_beli || 0
   }
 }
 
@@ -361,10 +361,10 @@ const submitIssue = async () => {
     })
 
     if (response.data.success) {
-      showAlertMessage('Pengeluaran Non-PO berhasil disimpan!', 'success')
+      showAlertMessage('Pengeluaran Non-SO berhasil disimpan!', 'success')
       
       setTimeout(() => {
-        router.push(`/staff/non-po/issue/${response.data.data.id}/print`)
+        router.push('/staff/sales-order')
       }, 1500)
     } else {
       showAlertMessage(response.data.message || 'Gagal menyimpan data', 'danger')

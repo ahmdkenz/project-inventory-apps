@@ -251,9 +251,14 @@ class NonPoController extends Controller
             'recipient' => 'required|string',
             'issue_date' => 'required|date',
             'notes' => 'nullable|string',
+            'subtotal' => 'required|numeric|min:0',
+            'ppn' => 'required|numeric|min:0',
+            'total' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barang,id',
-            'items.*.qty' => 'required|integer|min:1'
+            'items.*.qty' => 'required|integer|min:1',
+            'items.*.harga_satuan' => 'required|numeric|min:0',
+            'items.*.subtotal' => 'required|numeric|min:0'
         ]);
 
         if ($validator->fails()) {
@@ -291,6 +296,9 @@ class NonPoController extends Controller
                 'recipient' => $request->recipient,
                 'issue_date' => $request->issue_date,
                 'notes' => $request->notes,
+                'subtotal' => $request->subtotal,
+                'ppn' => $request->ppn,
+                'total' => $request->total,
                 'created_by' => $request->user()->id,
                 'status' => 'pending'
             ]);
@@ -300,7 +308,9 @@ class NonPoController extends Controller
                 NonPoIssueItem::create([
                     'non_po_issue_id' => $issue->id,
                     'barang_id' => $item['barang_id'],
-                    'qty' => $item['qty']
+                    'qty' => $item['qty'],
+                    'harga_satuan' => $item['harga_satuan'],
+                    'subtotal' => $item['subtotal']
                 ]);
             }
 
