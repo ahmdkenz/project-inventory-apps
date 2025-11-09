@@ -11,7 +11,7 @@
           <div>
             <h1 class="text-3xl font-bold text-gray-900">BUKTI PENGELUARAN BARANG</h1>
             <p class="text-gray-600">No. Pengeluaran: {{ issueData.no_dokumen }}</p>
-            <p class="text-gray-600">Ref: Non-SO</p>
+            <p class="text-gray-600">Ref. SO: {{ issueData.no_dokumen }}</p>
           </div>
           <div>
             <h2 class="text-xl font-semibold text-gray-800">Nama Perusahaan Anda</h2>
