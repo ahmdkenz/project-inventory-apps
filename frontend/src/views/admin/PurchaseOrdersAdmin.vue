@@ -148,6 +148,7 @@
               <thead class="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. PO</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
                   <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
@@ -157,13 +158,20 @@
               </thead>
               <tbody class="divide-y divide-gray-200">
                 <tr v-if="orders.length === 0">
-                  <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                  <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                     Tidak ada data purchase order.
                   </td>
                 </tr>
-                <tr v-for="order in orders" :key="order.id">
+                <tr v-for="order in orders" :key="`${order.tipe}-${order.id}`">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800">
-                    <router-link :to="`/admin/purchase-orders/detail/${order.id}`">{{ order.no_po }}</router-link>
+                    <router-link :to="order.tipe === 'non-po' ? `/admin/non-po/receipt/${order.id}/detail` : `/admin/purchase-orders/detail/${order.id}`">
+                      {{ order.no_po }}
+                    </router-link>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="order.tipe === 'non-po' ? 'px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-800' : 'px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800'">
+                      {{ order.tipe === 'non-po' ? 'Non-PO' : 'PO Reguler' }}
+                    </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.supplier?.nama || '-' }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.creator?.name || '-' }}</td>
@@ -174,49 +182,89 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <!-- Tombol untuk status pending -->
-                    <template v-if="order.status === 'pending'">
-                      <button 
-                        @click="confirmApprove(order)" 
-                        class="text-green-600 hover:text-green-800"
-                      >
-                        Setujui
-                      </button>
-                      <button 
-                        @click="openRejectModal(order)" 
-                        class="text-red-600 hover:text-red-800"
-                      >
-                        Tolak
-                      </button>
-                    </template>
-                    
-                    <!-- Tombol untuk status approved -->
-                    <template v-else-if="order.status === 'approved'">
+                    <!-- Tombol untuk Non-PO -->
+                    <template v-if="order.tipe === 'non-po'">
+                      <!-- Pending: Approve/Reject -->
+                      <template v-if="order.status === 'pending'">
+                        <button 
+                          @click="confirmApproveNonPo(order)" 
+                          class="text-green-600 hover:text-green-800"
+                        >
+                          Setujui
+                        </button>
+                        <button 
+                          @click="openRejectNonPoModal(order)" 
+                          class="text-red-600 hover:text-red-800"
+                        >
+                          Tolak
+                        </button>
+                      </template>
+                      
+                      <!-- Completed: Cetak -->
+                      <template v-else-if="order.status === 'completed'">
+                        <router-link 
+                          :to="`/admin/non-po/receipt/${order.id}/print`" 
+                          class="text-green-600 hover:text-green-800"
+                        >
+                          Cetak Bukti
+                        </router-link>
+                      </template>
+                      
+                      <!-- Detail button -->
                       <router-link 
-                        :to="`/admin/purchase-orders/${order.id}/receive`" 
-                        class="text-blue-600 hover:text-blue-800"
+                        :to="`/admin/non-po/receipt/${order.id}/detail`" 
+                        class="text-indigo-600 hover:text-indigo-900"
                       >
-                        Terima Barang
+                        Detail
                       </router-link>
                     </template>
                     
-                    <!-- Tombol untuk status completed -->
-                    <template v-else-if="order.status === 'completed'">
+                    <!-- Tombol untuk PO Reguler -->
+                    <template v-else>
+                      <!-- Tombol untuk status pending -->
+                      <template v-if="order.status === 'pending'">
+                        <button 
+                          @click="confirmApprove(order)" 
+                          class="text-green-600 hover:text-green-800"
+                        >
+                          Setujui
+                        </button>
+                        <button 
+                          @click="openRejectModal(order)" 
+                          class="text-red-600 hover:text-red-800"
+                        >
+                          Tolak
+                        </button>
+                      </template>
+                      
+                      <!-- Tombol untuk status approved -->
+                      <template v-else-if="order.status === 'approved'">
+                        <router-link 
+                          :to="`/admin/purchase-orders/${order.id}/receive`" 
+                          class="text-blue-600 hover:text-blue-800"
+                        >
+                          Terima Barang
+                        </router-link>
+                      </template>
+                      
+                      <!-- Tombol untuk status completed -->
+                      <template v-else-if="order.status === 'completed'">
+                        <router-link 
+                          :to="`/admin/purchase-orders/${order.id}/print-receipt`" 
+                          class="text-green-600 hover:text-green-800"
+                        >
+                          Cetak Bukti
+                        </router-link>
+                      </template>
+                      
+                      <!-- Tombol Detail (tersedia untuk semua status) -->
                       <router-link 
-                        :to="`/admin/purchase-orders/${order.id}/print-receipt`" 
-                        class="text-green-600 hover:text-green-800"
+                        :to="`/admin/purchase-orders/detail/${order.id}`" 
+                        class="text-indigo-600 hover:text-indigo-900"
                       >
-                        Cetak Bukti
+                        Detail
                       </router-link>
                     </template>
-                    
-                    <!-- Tombol Detail (tersedia untuk semua status) -->
-                    <router-link 
-                      :to="`/admin/purchase-orders/detail/${order.id}`" 
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Detail
-                    </router-link>
                   </td>
                 </tr>
               </tbody>
@@ -331,6 +379,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AdminNavigation from '@/components/AdminNavigation.vue'
 import purchaseOrderService from '@/services/purchaseOrder.service'
+import api from '@/services/api'
 
 // Router & auth
 const router = useRouter()
@@ -413,10 +462,41 @@ const fetchOrders = async () => {
     if (filters.value.dateStart) params.date_from = filters.value.dateStart
     if (filters.value.dateEnd) params.date_to = filters.value.dateEnd
 
-    const response = await purchaseOrderService.adminGetAll(params)
-    if (response.success && Array.isArray(response.data)) {
-      orders.value = response.data
-    }
+    // Fetch both regular PO and Non-PO
+    const [poResponse, nonPoResponse] = await Promise.all([
+      purchaseOrderService.adminGetAll(params),
+      api.get('/admin/non-po/receipts', { params })
+    ])
+
+    console.log('PO Response:', poResponse)
+    console.log('Non-PO Response:', nonPoResponse)
+
+    const regularPOs = Array.isArray(poResponse.data) ? poResponse.data : []
+    const nonPOs = Array.isArray(nonPoResponse.data.data) ? nonPoResponse.data.data : []
+
+    console.log('Regular POs:', regularPOs)
+    console.log('Non-POs:', nonPOs)
+
+    // Merge and add tipe field
+    const allOrders = [
+      ...regularPOs.map((po: any) => ({ ...po, tipe: 'po' })),
+      ...nonPOs.map((nonPo: any) => ({
+        ...nonPo,
+        tipe: 'non-po',
+        no_po: nonPo.no_dokumen,
+        supplier: { nama: nonPo.source || '-' },
+        total: nonPo.total_value || 0
+      }))
+    ]
+
+    console.log('All Orders (merged):', allOrders)
+
+    // Sort by created_at desc
+    orders.value = allOrders.sort((a: any, b: any) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+    
+    console.log('Final orders:', orders.value)
   } catch (error: any) {
     console.error('Error fetching orders:', error)
     showMessage('Gagal memuat data purchase order', true)
@@ -446,6 +526,12 @@ const closeApproveModal = () => {
 const approveOrder = async () => {
   if (!orderToApprove.value) return
   
+  // Check if it's Non-PO
+  if (orderToApprove.value.tipe === 'non-po') {
+    await approveNonPo()
+    return
+  }
+  
   loading.value = true
   try {
     const response = await purchaseOrderService.approve(orderToApprove.value.id)
@@ -462,25 +548,17 @@ const approveOrder = async () => {
   }
 }
 
-const openRejectModal = (order: any) => {
-  orderToReject.value = order
-  rejectReason.value = ''
-  rejectReasonError.value = ''
-  showRejectModal.value = true
-}
-
-const closeRejectModal = () => {
-  showRejectModal.value = false
-  orderToReject.value = null
-  rejectReason.value = ''
-  rejectReasonError.value = ''
-}
-
 const rejectOrder = async () => {
   if (!orderToReject.value) return
   
   if (!rejectReason.value.trim()) {
     rejectReasonError.value = 'Alasan penolakan harus diisi'
+    return
+  }
+  
+  // Check if it's Non-PO
+  if (orderToReject.value.tipe === 'non-po') {
+    await rejectNonPo()
     return
   }
   
@@ -498,6 +576,20 @@ const rejectOrder = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const openRejectModal = (order: any) => {
+  orderToReject.value = order
+  rejectReason.value = ''
+  rejectReasonError.value = ''
+  showRejectModal.value = true
+}
+
+const closeRejectModal = () => {
+  showRejectModal.value = false
+  orderToReject.value = null
+  rejectReason.value = ''
+  rejectReasonError.value = ''
 }
 
 const confirmDelete = (order: any) => {
@@ -560,6 +652,63 @@ const showMessage = (text: string, isError: boolean = false) => {
   setTimeout(() => {
     message.value.show = false
   }, 3000)
+}
+
+const confirmApproveNonPo = (order: any) => {
+  orderToApprove.value = order
+  showApproveModal.value = true
+}
+
+const openRejectNonPoModal = (order: any) => {
+  orderToReject.value = order
+  rejectReason.value = ''
+  rejectReasonError.value = ''
+  showRejectModal.value = true
+}
+
+const approveNonPo = async () => {
+  if (!orderToApprove.value) return
+  
+  loading.value = true
+  try {
+    const response = await api.post(`/admin/non-po/receipt/${orderToApprove.value.id}/approve`)
+    if (response.data.success) {
+      showMessage('Non-PO Receipt berhasil disetujui', false)
+      closeApproveModal()
+      await fetchOrders()
+    }
+  } catch (error: any) {
+    console.error('Error approving non-po:', error)
+    showMessage(error.response?.data?.message || 'Gagal menyetujui Non-PO receipt', true)
+  } finally {
+    loading.value = false
+  }
+}
+
+const rejectNonPo = async () => {
+  if (!orderToReject.value) return
+  
+  if (!rejectReason.value.trim()) {
+    rejectReasonError.value = 'Alasan penolakan harus diisi'
+    return
+  }
+  
+  loading.value = true
+  try {
+    const response = await api.post(`/admin/non-po/receipt/${orderToReject.value.id}/reject`, {
+      reason: rejectReason.value
+    })
+    if (response.data.success) {
+      showMessage('Non-PO Receipt berhasil ditolak', false)
+      closeRejectModal()
+      await fetchOrders()
+    }
+  } catch (error: any) {
+    console.error('Error rejecting non-po:', error)
+    showMessage(error.response?.data?.message || 'Gagal menolak Non-PO receipt', true)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Lifecycle

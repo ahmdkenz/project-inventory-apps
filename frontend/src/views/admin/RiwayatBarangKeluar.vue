@@ -230,7 +230,7 @@
                     </router-link>
                     <router-link
                       v-else
-                      :to="`/admin/non-po/issue/${item.original_id}/print`"
+                      :to="`/admin/non-po/issue/${item.original_id}/detail`"
                       class="text-indigo-600 hover:text-indigo-900"
                     >
                       Lihat Detail

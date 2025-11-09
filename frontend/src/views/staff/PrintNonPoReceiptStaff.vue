@@ -58,7 +58,8 @@
               <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900">
                 <div>
                   <h2 class="text-3xl font-bold text-gray-900">BUKTI PENERIMAAN (NON-PO)</h2>
-                  <p class="text-lg font-semibold text-gray-600">{{ receipt.no_dokumen }}</p>
+                  <p class="text-gray-600">No. Penerimaan: {{ receipt.no_dokumen }}</p>
+                  <p class="text-gray-600">Ref. PO: {{ receipt.no_dokumen.replace('IN-NON-', 'PO-NON-') }}</p>
                 </div>
                 <div class="text-right">
                   <p class="text-sm font-semibold text-gray-800">PT. NAMA PERUSAHAAN ANDA</p>

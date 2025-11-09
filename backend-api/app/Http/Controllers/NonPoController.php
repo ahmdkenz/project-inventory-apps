@@ -16,12 +16,18 @@ class NonPoController extends Controller
 {
     /**
      * Get all non-PO receipts for staff (own receipts only)
+     * For admin, get all receipts
      */
     public function getStaffReceipts(Request $request)
     {
         try {
-            $query = NonPoReceipt::with(['items.barang', 'creator', 'approver'])
-                ->where('created_by', $request->user()->id);
+            $query = NonPoReceipt::with(['items.barang', 'creator', 'approver']);
+            
+            // If user is staff, only show their own receipts
+            // If user is admin, show all receipts
+            if ($request->user()->role === 'staff') {
+                $query->where('created_by', $request->user()->id);
+            }
 
             // Filter by status
             if ($request->has('status') && $request->status != '') {
@@ -53,12 +59,18 @@ class NonPoController extends Controller
 
     /**
      * Get all non-SO issues for staff (own issues only)
+     * For admin, get all issues
      */
     public function getStaffIssues(Request $request)
     {
         try {
-            $query = NonPoIssue::with(['items.barang', 'creator', 'approver'])
-                ->where('created_by', $request->user()->id);
+            $query = NonPoIssue::with(['items.barang', 'creator', 'approver']);
+            
+            // If user is staff, only show their own issues
+            // If user is admin, show all issues
+            if ($request->user()->role === 'staff') {
+                $query->where('created_by', $request->user()->id);
+            }
 
             // Filter by status
             if ($request->has('status') && $request->status != '') {

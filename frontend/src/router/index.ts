@@ -257,6 +257,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/non-po/receipt/:id/detail',
+      name: 'admin-non-po-receipt-detail',
+      component: () => import('@/views/admin/NonPoReceiptDetailAdmin.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/admin/non-po/receipt/:id/print',
       name: 'admin-non-po-receipt-print',
       component: () => import('@/views/admin/PrintNonPoReceipt.vue'),
@@ -266,6 +272,12 @@ const router = createRouter({
       path: '/admin/non-po/issue/create',
       name: 'admin-non-po-issue-create',
       component: () => import('@/views/admin/NonPoIssueForm.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/non-po/issue/:id/detail',
+      name: 'admin-non-po-issue-detail',
+      component: () => import('@/views/admin/NonPoIssueDetailAdmin.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
@@ -374,6 +386,12 @@ const router = createRouter({
       path: '/staff/non-po/receipt/create',
       name: 'staff-non-po-receipt-create',
       component: () => import('@/views/staff/NonPoReceiptFormStaff.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
+      path: '/staff/non-po/receipt/:id/detail',
+      name: 'staff-non-po-receipt-detail',
+      component: () => import('@/views/staff/NonPoReceiptDetailStaff.vue'),
       meta: { requiresAuth: true, requiresStaff: true }
     },
     {

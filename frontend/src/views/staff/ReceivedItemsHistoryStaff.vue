@@ -201,7 +201,7 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ item.no_referensi || '-' }}
+                    {{ item.tipe === 'non-po' ? item.no_dokumen.replace('IN-NON-', 'PO-NON-') : (item.no_referensi || '-') }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ item.sumber }}
