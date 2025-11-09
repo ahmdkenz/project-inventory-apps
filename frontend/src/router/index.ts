@@ -389,6 +389,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresStaff: true }
     },
     {
+      path: '/staff/non-po/issue/:id/detail',
+      name: 'staff-non-po-issue-detail',
+      component: () => import('@/views/staff/NonPoIssueDetailStaff.vue'),
+      meta: { requiresAuth: true, requiresStaff: true }
+    },
+    {
       path: '/staff/non-po/issue/:id/print',
       name: 'staff-non-po-issue-print',
       component: () => import('@/views/staff/PrintNonPoIssueStaff.vue'),
