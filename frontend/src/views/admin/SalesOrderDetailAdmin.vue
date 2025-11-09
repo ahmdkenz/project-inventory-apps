@@ -110,8 +110,8 @@
                   <tbody class="divide-y divide-gray-200">
                     <tr v-for="item in salesOrder.items" :key="item.id">
                       <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
-                      <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty }} {{ item.barang?.satuan || 'pcs' }}</td>
-                      <td class="px-4 py-4 text-sm font-bold text-gray-900 text-center">{{ item.qty }} {{ item.barang?.satuan || 'pcs' }}</td>
+                      <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty }}</td>
+                      <td class="px-4 py-4 text-sm font-bold text-gray-900 text-center">{{ item.qty }}</td>
                       <td class="px-4 py-4 text-sm text-gray-800 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
                       <td class="px-4 py-4 text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal) }}</td>
                     </tr>
@@ -201,8 +201,8 @@
                   <tbody class="divide-y divide-gray-200">
                     <tr v-for="item in salesOrder.outgoing_item.items" :key="item.id">
                       <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
-                      <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty_issued }} {{ item.barang?.satuan || 'pcs' }}</td>
-                      <td class="px-4 py-4 text-sm font-bold text-gray-900 text-center">{{ item.qty_issued }} {{ item.barang?.satuan || 'pcs' }}</td>
+                      <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty_issued }}</td>
+                      <td class="px-4 py-4 text-sm font-bold text-gray-900 text-center">{{ item.qty_issued }}</td>
                       <td class="px-4 py-4 text-sm text-gray-800 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
                       <td class="px-4 py-4 text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal) }}</td>
                     </tr>
