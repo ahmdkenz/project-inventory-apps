@@ -199,6 +199,16 @@
                           Tolak
                         </button>
                       </template>
+
+                      <!-- Approved: Terima Barang -->
+                      <template v-else-if="order.status === 'approved'">
+                        <router-link 
+                          :to="`/admin/non-po/receipt/${order.id}/receive`" 
+                          class="text-blue-600 hover:text-blue-800"
+                        >
+                          Terima Barang
+                        </router-link>
+                      </template>
                       
                       <!-- Completed: Cetak -->
                       <template v-else-if="order.status === 'completed'">

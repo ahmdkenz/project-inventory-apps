@@ -263,6 +263,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/non-po/receipt/:id/receive',
+      name: 'admin-non-po-receipt-receive',
+      component: () => import('@/views/admin/ReceiveNonPoReceipt.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/admin/non-po/receipt/:id/print',
       name: 'admin-non-po-receipt-print',
       component: () => import('@/views/admin/PrintNonPoReceipt.vue'),

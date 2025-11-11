@@ -89,6 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/non-po/receipt', [NonPoController::class, 'storeReceipt']);
         Route::get('/non-po/receipt/{id}', [NonPoController::class, 'getReceiptDetail']);
         Route::post('/non-po/receipt/{id}/approve', [NonPoController::class, 'approveReceipt']);
+        Route::post('/non-po/receipt/{id}/receive', [NonPoController::class, 'receiveReceipt']);
         Route::post('/non-po/receipt/{id}/reject', [NonPoController::class, 'rejectReceipt']);
         Route::get('/non-po/receipt/{id}/print', [NonPoController::class, 'getReceiptPrintData']);
         Route::get('/non-po/issues', [NonPoController::class, 'getStaffIssues']);

@@ -16,18 +16,22 @@ class NonPoReceipt extends Model
         'source',
         'receive_date',
         'notes',
+        'no_surat_jalan',
         'total_value',
         'created_by',
         'status',
         'approved_by',
         'approved_at',
+        'received_by',
+        'received_at',
         'reject_reason'
     ];
 
     protected $casts = [
         'receive_date' => 'date',
         'total_value' => 'decimal:2',
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
+        'received_at' => 'datetime'
     ];
 
     public function items(): HasMany
@@ -43,5 +47,10 @@ class NonPoReceipt extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function receiver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by');
     }
 }
