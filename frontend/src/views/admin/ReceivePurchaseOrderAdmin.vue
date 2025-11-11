@@ -15,17 +15,8 @@
     <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden print-hidden" id="overlay"></div>
     
     <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10 print-hidden">
-        <button id="hamburger-btn" class="text-gray-600 lg:hidden" @click="toggleSidebar">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-        <div class="relative hidden sm:block"></div>
-        <div class="flex items-center space-x-4">
-          <!-- Profile placeholder -->
-        </div>
-      </header>
+      <!-- Header -->
+      <Header @toggle-sidebar="toggleSidebar" />
 
       <main class="flex-1 p-6 overflow-y-auto">
         <div v-if="loading" class="flex justify-center items-center py-12">
@@ -165,6 +156,8 @@
         <div v-else class="text-center py-12">
           <p class="text-gray-500">Purchase Order tidak ditemukan</p>
         </div>
+
+        <Footer />
       </main>
     </div>
   </div>
@@ -174,6 +167,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
 import purchaseOrderService from '@/services/purchaseOrder.service'
 
 const router = useRouter()

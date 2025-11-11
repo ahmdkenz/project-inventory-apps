@@ -468,15 +468,7 @@ onMounted(() => {
     user.value = JSON.parse(userData)
   }
   
-  // Add click outside listener
-  document.addEventListener('click', handleClickOutside)
-  
   fetchCustomers()
   fetchBarang()
-})
-
-onBeforeUnmount(() => {
-  // Remove click outside listener
-  document.removeEventListener('click', handleClickOutside)
 })
 </script>

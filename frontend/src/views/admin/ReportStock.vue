@@ -25,32 +25,7 @@
     <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay" @click="toggleSidebar"></div>
     
     <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10 print:hidden">
-        <button id="hamburger-btn" @click="toggleSidebar" class="text-gray-600 lg:hidden">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-        <div class="relative hidden sm:block"></div>
-        <div class="flex items-center space-x-4">
-          <button class="text-gray-500 hover:text-gray-700 relative">
-            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-            </svg>
-          </button>
-          <div class="relative">
-            <button @click="showProfileMenu = !showProfileMenu" class="flex items-center space-x-2">
-              <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF4FF/4299E1?text=A" alt="Avatar">
-              <span class="hidden md:block text-sm font-medium text-gray-700">{{ currentUser.name || 'Admin' }}</span>
-            </button>
-            <div v-if="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
-              <a @click.prevent="handleLogout" href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header @toggle-sidebar="toggleSidebar" />
 
       <main class="flex-1 p-6 overflow-y-auto">
         <div class="print:hidden mb-4">
@@ -206,6 +181,7 @@
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   </div>
 </template>
@@ -214,10 +190,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
 import axios from 'axios'
 
 const router = useRouter()
-const showProfileMenu = ref(false)
 
 const currentUser = ref({
   name: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).name : 'Admin'
@@ -260,12 +237,6 @@ const toggleSidebar = () => {
     sidebar.classList.toggle('-translate-x-full')
     overlay.classList.toggle('hidden')
   }
-}
-
-const handleLogout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  router.push('/login')
 }
 
 const loadCategories = async () => {
