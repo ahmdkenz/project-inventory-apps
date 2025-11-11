@@ -20,23 +20,8 @@
     <!-- Konten Utama -->
     <div class="flex-1 flex flex-col lg:ml-64">
       <!-- Header -->
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between">
-        <!-- Tombol Hamburger (Mobile) -->
-        <button class="text-gray-600 lg:hidden" @click="toggleSidebar">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-        <h2 class="text-xl font-semibold text-gray-800">{{ isEditMode ? 'Edit' : 'Tambah' }} Customer</h2>
-        <div class="flex items-center space-x-4">
-          <div class="flex items-center space-x-3">
-            <span class="text-sm text-gray-600">Admin</span>
-            <div class="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
-              A
-            </div>
-          </div>
-        </div>
-      </header>
+      <!-- Header -->
+      <Header @toggle-sidebar="toggleSidebar" />
 
       <!-- Success Message -->
       <div 
@@ -180,6 +165,9 @@
             </button>
           </div>
         </form>
+
+        <!-- Footer -->
+        <Footer />
       </main>
     </div>
   </div>
@@ -189,6 +177,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
 import customerService, { type CustomerFormData } from '@/services/customer.service'
 
 const router = useRouter()

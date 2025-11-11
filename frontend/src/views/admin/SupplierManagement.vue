@@ -25,35 +25,8 @@
     <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden" id="overlay" @click="toggleSidebar"></div>
     
     <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
-        <button id="hamburger-btn" @click="toggleSidebar" class="text-gray-600 lg:hidden">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-        <div class="flex-1"></div>
-        <div class="flex items-center space-x-4">
-          <button class="text-gray-500 hover:text-gray-700 relative">
-            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-            </svg>
-          </button>
-          <div class="relative">
-            <button @click="showProfileMenu = !showProfileMenu" class="flex items-center space-x-2">
-              <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
-              <span class="hidden md:block text-sm font-medium text-gray-700">{{ user.name }}</span>
-              <svg class="h-4 w-4 text-gray-500 hidden md:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
-            </button>
-            <div v-if="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
-              <a @click.prevent="handleLogout" href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
-            </div>
-          </div>
-        </div>
-      </header>
+      <!-- Header -->
+      <Header @toggle-sidebar="toggleSidebar" />
 
       <main class="flex-1 p-6 overflow-y-auto">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -183,6 +156,8 @@
           </div>
         </div>
 
+        <!-- Footer -->
+        <Footer />
       </main>
     </div>
   </div>
@@ -202,6 +177,8 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
 import supplierService, { type Supplier } from '@/services/supplier.service'
 
 const router = useRouter()
@@ -212,7 +189,6 @@ const user = ref({
   role: 'Administrator'
 })
 
-const showProfileMenu = ref(false)
 const loading = ref(false)
 const deletingSupplier = ref(false)
 const showDeleteModal = ref(false)
@@ -321,12 +297,6 @@ const showMessage = (text: string, isError: boolean = false) => {
   setTimeout(() => {
     message.show = false
   }, 3000)
-}
-
-const handleLogout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  router.push('/login')
 }
 </script>
 

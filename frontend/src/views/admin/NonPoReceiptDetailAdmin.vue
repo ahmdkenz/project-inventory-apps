@@ -16,14 +16,8 @@
     
     <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
       <!-- Header -->
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between print-hidden">
-        <button @click="toggleSidebar" class="text-gray-600 lg:hidden">
-          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-        <div class="flex-1"></div>
-      </header>
+      <!-- Header -->
+      <Header @toggle-sidebar="toggleSidebar" />
 
       <!-- Main Content -->
       <main class="flex-1 p-6 overflow-y-auto">
@@ -253,6 +247,9 @@
         <div v-else class="text-center py-8">
           <p class="text-gray-600">Data tidak ditemukan</p>
         </div>
+
+        <!-- Footer -->
+        <Footer />
       </main>
     </div>
 
@@ -341,6 +338,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
 import api from '@/services/api'
 
 const router = useRouter()
