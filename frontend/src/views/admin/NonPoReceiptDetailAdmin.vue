@@ -87,7 +87,7 @@
                   <div>
                     <p class="text-sm font-semibold text-gray-500 uppercase mb-2">SUMBER BARANG:</p>
                     <p class="text-lg font-bold text-gray-900">{{ receipt.source }}</p>
-                    <p v-if="receipt.notes" class="text-sm text-gray-600">{{ receipt.notes }}</p>
+                    <p v-if="receipt.notes" class="text-sm text-gray-600 mt-2">{{ receipt.notes }}</p>
                   </div>
                   <div class="text-right">
                     <div class="mb-2">
@@ -95,50 +95,44 @@
                       <span class="text-sm font-medium text-gray-800">{{ formatDate(receipt.receive_date) }}</span>
                     </div>
                     <div>
-                      <span class="text-sm font-semibold text-gray-500 uppercase">Dicatat Oleh: </span>
-                      <span class="text-sm font-medium text-gray-800">{{ receipt.creator?.name || '-' }}</span>
+                      <span class="text-sm font-semibold text-gray-500 uppercase">Status: </span>
+                      <span :class="getStatusColor(receipt.status)" class="text-sm font-medium">{{ getStatusText(receipt.status) }}</span>
                     </div>
                   </div>
                 </div>
 
                 <!-- Tabel Item -->
-                <div class="overflow-x-auto border rounded-lg mb-6">
+                <div class="overflow-x-auto mb-8">
                   <table class="w-full min-w-max">
-                    <thead class="bg-gray-100 text-gray-700">
+                    <thead class="border-b border-gray-300">
                       <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No.</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Jumlah</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Harga Satuan (Est.)</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Subtotal</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Nama Barang</th>
+                        <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 uppercase">Jumlah</th>
+                        <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Harga Satuan (Est.)</th>
+                        <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                       <tr v-for="(item, index) in receipt.items" :key="index">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ index + 1 }}.</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">{{ formatCurrency(item.price || 0) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal || 0) }}</td>
+                        <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ item.barang?.nama || '-' }}</td>
+                        <td class="px-4 py-4 text-sm text-gray-800 text-center">{{ item.qty }}</td>
+                        <td class="px-4 py-4 text-sm text-gray-800 text-right">{{ formatCurrency(item.price || 0) }}</td>
+                        <td class="px-4 py-4 text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.subtotal || 0) }}</td>
                       </tr>
                     </tbody>
                     <!-- Footer Total -->
-                    <tfoot class="bg-gray-50 font-medium">
-                      <tr>
-                        <td colspan="3" class="px-6 py-3 align-top">
-                          <p class="text-xs text-gray-500 uppercase font-semibold">Catatan:</p>
-                          <p class="text-sm text-gray-600">{{ receipt.notes || '-' }}</p>
-                        </td>
-                        <td class="px-6 py-4 text-right text-base text-gray-900 uppercase font-semibold">Total Nilai</td>
-                        <td class="px-6 py-4 text-right text-base text-gray-900 font-semibold">{{ formatCurrency(receipt.total_value || 0) }}</td>
+                    <tfoot class="border-t-2 border-gray-300">
+                      <tr class="bg-gray-50">
+                        <td colspan="3" class="px-4 py-3 text-right text-base font-bold text-gray-900 uppercase">Grand Total</td>
+                        <td class="px-4 py-3 text-right text-base font-bold text-gray-900">{{ formatCurrency(receipt.total_value || 0) }}</td>
                       </tr>
                     </tfoot>
                   </table>
                 </div>
 
                 <!-- Tanda Tangan -->
-                <div class="grid grid-cols-2 gap-8 pt-6 border-t border-gray-200">
-                  <div>
+                <div class="grid grid-cols-3 gap-8 pt-6 border-t border-gray-200">
+                  <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Diterima oleh,</p>
                     <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ receipt.creator?.name || 'Staff' }})</p>
                     <p class="text-xs text-gray-500">Staff Inventori</p>
@@ -148,6 +142,11 @@
                     <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ receipt.approver?.name || 'Admin' }})</p>
                     <p class="text-xs text-gray-500">Admin</p>
                   </div>
+                  <div class="text-center">
+                    <p class="text-sm text-gray-700 mb-16">Sumber,</p>
+                    <p class="text-sm font-medium text-gray-400 border-t border-dashed border-gray-300 pt-1"></p>
+                    <p class="text-xs text-gray-700">{{ receipt.source || '-' }}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -155,52 +154,28 @@
             <!-- Kolom Kanan: Info & Approval -->
             <div class="lg:col-span-4 space-y-6 print-hidden">
               
-              <!-- Info Penerimaan -->
+              <!-- Status Penerimaan -->
               <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Penerimaan</h3>
-                <div class="space-y-3">
-                  <div>
-                    <dt class="text-sm font-medium text-gray-500">No. Dokumen</dt>
-                    <dd class="text-base text-gray-900 font-medium">{{ receipt.no_dokumen }}</dd>
-                  </div>
-                  <div>
-                    <dt class="text-sm font-medium text-gray-500">Status</dt>
-                    <dd>
-                      <span :class="getStatusBadgeClass(receipt.status)" class="inline-block px-3 py-1 text-xs font-medium rounded-full">
-                        {{ getStatusText(receipt.status) }}
-                      </span>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt class="text-sm font-medium text-gray-500">Tanggal</dt>
-                    <dd class="text-base text-gray-900 font-medium">{{ formatDate(receipt.receive_date) }}</dd>
-                  </div>
-                  <div>
-                    <dt class="text-sm font-medium text-gray-500">Dicatat Oleh</dt>
-                    <dd class="text-base text-gray-900 font-medium">{{ receipt.creator?.name || '-' }}</dd>
-                  </div>
-                </div>
-              </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Penerimaan</h3>
+                <span :class="getStatusBadgeClass(receipt.status)" class="px-4 py-1.5 inline-flex text-base font-medium rounded-full">
+                  {{ getStatusText(receipt.status) }}
+                </span>
+                <p class="text-sm text-gray-500 mt-2">
+                  Dicatat oleh {{ receipt.creator?.name || '-' }} pada {{ formatDate(receipt.created_at) }}.
+                </p>
 
-              <!-- Tombol Approval (hanya muncul jika status pending) -->
-              <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Admin</h3>
-                <div v-if="receipt.status === 'pending'" class="space-y-3">
-                  <button @click="openApproveModal" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
-                    ✓ Setujui Penerimaan
+                <!-- Tombol Aksi Admin -->
+                <div v-if="receipt.status === 'pending'" class="mt-6 flex space-x-3">
+                  <button @click="openApproveModal" class="w-full flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                    Setujui
                   </button>
-                  <button @click="openRejectModal" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
-                    ✕ Tolak Penerimaan
+                  <button @click="openRejectModal" class="w-full flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                    Tolak
                   </button>
                 </div>
-                <div v-else-if="receipt.status === 'approved'" class="space-y-3">
-                  <div class="text-center py-4">
-                    <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p class="mt-2 text-sm text-gray-600">Penerimaan sudah disetujui</p>
-                    <p class="text-xs text-gray-500">{{ receipt.approved_at ? formatDate(receipt.approved_at) : '-' }}</p>
-                  </div>
+
+                <!-- Tombol Terima Barang untuk status approved -->
+                <div v-if="receipt.status === 'approved'" class="mt-6">
                   <router-link 
                     :to="`/admin/non-po/receipt/${receipt.id}/receive`" 
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 flex items-center justify-center space-x-2"
@@ -210,50 +185,65 @@
                     </svg>
                     <span>Terima Barang</span>
                   </router-link>
+                  <p class="text-xs text-gray-500 mt-2 text-center">Klik untuk mengisi No. Surat Jalan</p>
                 </div>
-                <div v-else-if="receipt.status === 'completed'" class="text-center py-4">
-                  <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p class="mt-2 text-sm font-medium text-gray-900">Barang Sudah Diterima</p>
-                  <p class="text-xs text-gray-500">{{ receipt.received_at ? formatDate(receipt.received_at) : '-' }}</p>
-                  <div v-if="receipt.no_surat_jalan" class="mt-3 text-sm text-gray-600">
-                    <p class="font-medium">No. Surat Jalan:</p>
-                    <p class="text-gray-900">{{ receipt.no_surat_jalan }}</p>
-                  </div>
+
+                <!-- Info penerimaan completed -->
+                <div v-if="receipt.status === 'completed' && receipt.no_surat_jalan" class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p class="text-sm font-medium text-green-900">Barang Sudah Diterima</p>
+                  <p class="text-xs text-green-700 mt-1">No. Surat Jalan: {{ receipt.no_surat_jalan }}</p>
+                  <p v-if="receipt.received_at" class="text-xs text-green-700">Diterima: {{ formatDate(receipt.received_at) }}</p>
                 </div>
-                <div v-else-if="receipt.status === 'rejected'" class="text-center py-4">
-                  <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p class="mt-2 text-sm text-gray-600">Penerimaan ditolak</p>
-                  <p class="text-xs text-gray-500">Alasan: {{ receipt.reject_reason || '-' }}</p>
+
+                <!-- Info penerimaan ditolak -->
+                <div v-if="receipt.status === 'rejected'" class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p class="text-sm font-medium text-red-900">Penerimaan Ditolak</p>
+                  <p class="text-xs text-red-700 mt-1">Alasan: {{ receipt.reject_reason || '-' }}</p>
                 </div>
               </div>
 
-              <!-- Timeline / History -->
+              <!-- Riwayat Status -->
               <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Riwayat</h3>
-                <ol class="relative border-l border-gray-300">
+                <ol class="relative border-l border-gray-200">
                   <li class="ml-4 mb-4">
-                    <div class="absolute w-3 h-3 bg-blue-500 rounded-full -left-1.5 border border-white"></div>
+                    <div class="absolute w-3 h-3 bg-blue-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
                     <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(receipt.created_at) }}</time>
-                    <p class="text-sm font-medium text-gray-900">Penerimaan dibuat</p>
-                    <p class="text-sm text-gray-600">Oleh {{ receipt.creator?.name || 'Staff' }}</p>
+                    <h3 class="text-base font-semibold text-gray-900">Penerimaan dibuat</h3>
+                    <p class="text-sm font-normal text-gray-500">Oleh {{ receipt.creator?.name || 'Staff' }}</p>
                   </li>
-                  <li v-if="receipt.approved_at && receipt.status === 'completed'" class="ml-4">
-                    <div class="absolute w-3 h-3 bg-green-500 rounded-full -left-1.5 border border-white"></div>
+                  <li v-if="receipt.approved_at && receipt.status === 'approved'" class="ml-4 mb-4">
+                    <div class="absolute w-3 h-3 bg-yellow-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
                     <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(receipt.approved_at) }}</time>
-                    <p class="text-sm font-medium text-gray-900">Penerimaan disetujui</p>
-                    <p class="text-sm text-gray-600">Oleh {{ receipt.approver?.name || 'Admin' }}</p>
+                    <h3 class="text-base font-semibold text-gray-900">Penerimaan disetujui</h3>
+                    <p class="text-sm font-normal text-gray-500">Oleh {{ receipt.approver?.name || 'Admin' }}</p>
+                  </li>
+                  <li v-if="receipt.received_at && receipt.status === 'completed'" class="ml-4 mb-4">
+                    <div class="absolute w-3 h-3 bg-green-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                    <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(receipt.received_at) }}</time>
+                    <h3 class="text-base font-semibold text-gray-900">Barang diterima</h3>
+                    <p class="text-sm font-normal text-gray-500">Oleh {{ receipt.receiver?.name || 'Admin' }}</p>
                   </li>
                   <li v-if="receipt.approved_at && receipt.status === 'rejected'" class="ml-4">
-                    <div class="absolute w-3 h-3 bg-red-500 rounded-full -left-1.5 border border-white"></div>
+                    <div class="absolute w-3 h-3 bg-red-600 rounded-full mt-1.5 -left-1.5 border border-white"></div>
                     <time class="mb-1 text-sm font-normal leading-none text-gray-500">{{ formatDate(receipt.approved_at) }}</time>
-                    <p class="text-sm font-medium text-gray-900">Penerimaan ditolak</p>
-                    <p class="text-sm text-gray-600">Alasan: {{ receipt.reject_reason || '-' }}</p>
+                    <h3 class="text-base font-semibold text-gray-900">Penerimaan ditolak</h3>
+                    <p class="text-sm font-normal text-gray-500">{{ receipt.reject_reason || '-' }}</p>
                   </li>
                 </ol>
+              </div>
+
+              <!-- Informasi Penerimaan -->
+              <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Penerimaan</h3>
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500">No. Dokumen</dt>
+                  <dd class="text-base text-gray-900 font-medium mb-2">{{ receipt.no_dokumen }}</dd>
+                  <dt class="text-sm font-medium text-gray-500">Sumber</dt>
+                  <dd class="text-base text-gray-900 font-medium mb-2">{{ receipt.source }}</dd>
+                  <dt class="text-sm font-medium text-gray-500">Total Nilai</dt>
+                  <dd class="text-base text-gray-900 font-medium">{{ formatCurrency(receipt.total_value || 0) }}</dd>
+                </dl>
               </div>
               
             </div>
@@ -381,6 +371,9 @@ interface Receipt {
   approver?: {
     name: string
   } | null
+  receiver?: {
+    name: string
+  } | null
   approved_at?: string
   received_at?: string
   no_surat_jalan?: string
@@ -430,7 +423,8 @@ const formatCurrency = (value: number) => {
 const getStatusText = (status: string) => {
   const statusMap: Record<string, string> = {
     pending: 'Menunggu Persetujuan',
-    completed: 'Disetujui',
+    approved: 'Disetujui',
+    completed: 'Selesai',
     rejected: 'Ditolak'
   }
   return statusMap[status] || status
@@ -439,10 +433,21 @@ const getStatusText = (status: string) => {
 const getStatusBadgeClass = (status: string) => {
   const classes: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
+    approved: 'bg-blue-100 text-blue-800',
     completed: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800'
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    pending: 'text-yellow-600',
+    approved: 'text-blue-600',
+    completed: 'text-green-600',
+    rejected: 'text-red-600'
+  }
+  return colors[status] || 'text-gray-600'
 }
 
 const openApproveModal = () => {
