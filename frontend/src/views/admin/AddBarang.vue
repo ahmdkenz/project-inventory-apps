@@ -298,9 +298,9 @@ const loadKategori = async () => {
 const generateCode = () => {
   if (formData.name && formData.name.trim() !== '') {
     // Ambil kata pertama atau 3 karakter pertama dari nama barang
-    const namePrefix = formData.name
+    const namePrefix = ((formData.name || '')
       .trim()
-      .split(' ')[0] // Ambil kata pertama
+      .split(' ')[0] || '') // Ambil kata pertama
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, '') // Hapus karakter khusus
       .substring(0, 5) // Maksimal 5 karakter

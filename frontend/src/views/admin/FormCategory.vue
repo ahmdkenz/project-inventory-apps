@@ -216,9 +216,9 @@ const loadKategori = async () => {
 // Generate kode kategori otomatis dengan pola CAT-(Nama Kategori)-(Kode Unik)
 const generateCode = () => {
   if (formData.name && formData.name.trim() !== '') {
-    const namePrefix = formData.name
+    const namePrefix = ((formData.name || '')
       .trim()
-      .split(' ')[0]
+      .split(' ')[0] || '')
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, '')
       .substring(0, 5)

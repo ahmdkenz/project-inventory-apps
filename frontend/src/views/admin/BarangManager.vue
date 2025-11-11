@@ -30,48 +30,7 @@
     
     <!-- Konten Utama -->
     <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
-      <!-- Header/Navbar Atas -->
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10">
-        <!-- Tombol Hamburger (Mobile) -->
-        <button id="hamburger-btn" class="text-gray-600 lg:hidden" @click="toggleSidebar">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-        
-        <!-- Search Bar -->
-        <div class="relative hidden sm:block">
-          <input type="text" class="border border-gray-300 rounded-full py-2 px-4 pl-10" placeholder="Cari...">
-          <svg class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
-        </div>
-        
-        <!-- User Profile dan Notifikasi -->
-        <div class="flex items-center space-x-4">
-          <!-- Notifikasi -->
-          <button class="text-gray-500 hover:text-gray-700 relative">
-            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-            </svg>
-          </button>
-          
-          <!-- Profile Dropdown -->
-          <div class="relative" v-click-outside="closeProfileMenu">
-            <button @click="toggleProfileMenu" class="flex items-center space-x-2">
-              <img class="h-9 w-9 rounded-full" src="https://placehold.co/100x100/EBF8FF/3182CE?text=A" alt="Avatar Pengguna">
-              <span class="hidden md:block text-sm font-medium text-gray-700">{{ user?.name || 'Admin' }}</span>
-            </button>
-            <div v-show="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengaturan</a>
-              <hr class="my-1">
-              <a href="#" @click.prevent="handleLogout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header @toggle-sidebar="toggleSidebar" />
 
       <!-- Konten Halaman -->
       <main class="flex-1 p-6 overflow-y-auto">
@@ -189,7 +148,7 @@
                       <span v-if="item.stok === 0" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                         Habis ({{ item.stok }})
                       </span>
-                      <span v-else-if="item.stok <= item.stok_minimum" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                      <span v-else-if="item.stok_minimum && item.stok <= item.stok_minimum" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                         Menipis ({{ item.stok }})
                       </span>
                       <span v-else class="text-sm font-medium text-gray-900">{{ item.stok }}</span>
@@ -253,6 +212,7 @@
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   </div>
 </template>
@@ -262,6 +222,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AdminNavigation from '@/components/AdminNavigation.vue'
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
 import barangService, { type Barang } from '@/services/barang.service'
 
 // Router & auth
@@ -269,16 +231,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 // Header/Profile state
-const showProfileMenu = ref(false)
 const user = ref<any>(null)
-
-const toggleProfileMenu = () => {
-  showProfileMenu.value = !showProfileMenu.value
-}
-
-const closeProfileMenu = () => {
-  showProfileMenu.value = false
-}
 
 const toggleSidebar = () => {
   const sidebar = document.getElementById('sidebar')
@@ -286,18 +239,6 @@ const toggleSidebar = () => {
   if (sidebar && overlay) {
     sidebar.classList.toggle('-translate-x-full')
     overlay.classList.toggle('hidden')
-  }
-}
-
-const handleLogout = async () => {
-  try {
-    await authStore.logout()
-    await router.push('/login')
-  } catch (error) {
-    console.error('Error during logout:', error)
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    await router.push('/login')
   }
 }
 
