@@ -182,7 +182,7 @@
                       v-else
                       :to="`/admin/non-po/receipt/${item.original_id}/print`"
                     >
-                      {{ item.no_dokumen }}
+                      {{ generateNonPoReceiptNumber(item) }}
                     </router-link>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -201,7 +201,7 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ item.no_referensi || '-' }}
+                    {{ item.tipe === 'non-po' ? generateSuratJalanNumber(item) : (item.no_referensi || '-') }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ item.sumber }}
@@ -366,6 +366,25 @@ const generateReceiptNumber = (item: ReceivedItem) => {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `IN-${year}${month}${day}-${item.original_id}`
+}
+
+// Generate No. Dokumen untuk Non-PO dengan format IN-YYYYMMDD-NP-{ID}
+const generateNonPoReceiptNumber = (item: ReceivedItem) => {
+  const date = new Date(item.tanggal)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `IN-${year}${month}${day}-NP-${item.original_id}`
+}
+
+// Generate No. Surat Jalan untuk Non-PO dengan format SJ-YYYYMMDD-{sequence}
+const generateSuratJalanNumber = (item: ReceivedItem) => {
+  const date = new Date(item.tanggal)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const sequence = String(item.original_id).padStart(3, '0')
+  return `SJ-${year}${month}${day}-${sequence}`
 }
 
 const fetchReceivedItems = async () => {

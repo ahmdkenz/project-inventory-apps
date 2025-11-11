@@ -449,6 +449,17 @@ const orderToReject = ref<any>(null)
 const rejectReason = ref('')
 const rejectReasonError = ref('')
 
+// Format No. Dokumen untuk Non-PO menjadi PO-NON-YYYYMMDD-0001
+const formatNonPoNumber = (id: number, createdAt: string) => {
+  if (!createdAt) return '-'
+  const date = new Date(createdAt)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const sequence = String(id).padStart(4, '0')
+  return `PO-NON-${year}${month}${day}-${sequence}`
+}
+
 const filters = ref({
   status: '',
   search: '',
@@ -493,7 +504,7 @@ const fetchOrders = async () => {
       ...nonPOs.map((nonPo: any) => ({
         ...nonPo,
         tipe: 'non-po',
-        no_po: nonPo.no_dokumen,
+        no_po: formatNonPoNumber(nonPo.id, nonPo.created_at),
         supplier: { nama: nonPo.source || '-' },
         total: nonPo.total_value || 0
       }))

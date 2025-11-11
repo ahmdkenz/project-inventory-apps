@@ -11,7 +11,7 @@
           <div>
             <h1 class="text-3xl font-bold text-gray-900">BUKTI PENERIMAAN BARANG (NON-PO)</h1>
             <p class="text-gray-600">No. Penerimaan: {{ generateReceiptNumber(receipt.id, receipt.approved_at || receipt.created_at) }}</p>
-            <p class="text-gray-600">Ref. Dokumen: {{ receipt.no_dokumen }}</p>
+            <p class="text-gray-600">Ref. Dokumen: {{ formatNoDokumen(receipt.id, receipt.created_at) }}</p>
           </div>
           <div>
             <h2 class="text-xl font-semibold text-gray-800">Nama Perusahaan Anda</h2>
@@ -126,6 +126,16 @@ const router = useRouter()
 
 const loading = ref(true)
 const receipt = ref<any>(null)
+
+// Format No. Dokumen menjadi PO-NON-YYYYMMDD-0001
+const formatNoDokumen = (receiptId: number, createdAt: Date | string) => {
+  const date = new Date(createdAt)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const sequence = String(receiptId).padStart(4, '0')
+  return `PO-NON-${year}${month}${day}-${sequence}`
+}
 
 // Generate No. Penerimaan dengan format IN-YYYYMMDD-{RECEIPT_ID}
 const generateReceiptNumber = (receiptId: number, completedDate: Date | string) => {

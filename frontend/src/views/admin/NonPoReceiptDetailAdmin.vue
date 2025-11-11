@@ -69,7 +69,7 @@
                 <div class="flex justify-between items-start pb-6 border-b-2 border-gray-900">
                   <div>
                     <h2 class="text-3xl font-bold text-gray-900">PENERIMAAN BARANG (NON-PO)</h2>
-                    <p class="text-lg font-semibold text-blue-600">{{ receipt.no_dokumen }}</p>
+                    <p class="text-lg font-semibold text-blue-600">{{ formatNoDokumen(receipt.id, receipt.created_at) }}</p>
                     <span :class="getStatusBadgeClass(receipt.status)" class="inline-block px-3 py-1 text-xs font-medium rounded-full mt-2">
                       {{ getStatusText(receipt.status) }}
                     </span>
@@ -238,7 +238,7 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Penerimaan</h3>
                 <dl>
                   <dt class="text-sm font-medium text-gray-500">No. Dokumen</dt>
-                  <dd class="text-base text-gray-900 font-medium mb-2">{{ receipt.no_dokumen }}</dd>
+                  <dd class="text-base text-gray-900 font-medium mb-2">{{ formatNoDokumen(receipt.id, receipt.created_at) }}</dd>
                   <dt class="text-sm font-medium text-gray-500">Sumber</dt>
                   <dd class="text-base text-gray-900 font-medium mb-2">{{ receipt.source }}</dd>
                   <dt class="text-sm font-medium text-gray-500">Total Nilai</dt>
@@ -268,7 +268,7 @@
         </div>
         <div class="p-6">
           <p class="text-sm text-gray-600">
-            Apakah Anda yakin ingin menyetujui penerimaan <strong>{{ receipt?.no_dokumen }}</strong>?
+            Apakah Anda yakin ingin menyetujui penerimaan <strong>{{ receipt ? formatNoDokumen(receipt.id, receipt.created_at) : '-' }}</strong>?
           </p>
           <p class="text-sm text-gray-600 mt-2">
             Stok barang akan ditambahkan setelah disetujui.
@@ -305,7 +305,7 @@
         </div>
         <div class="p-6">
           <p class="text-sm text-gray-600 mb-4">
-            Anda akan menolak penerimaan <strong>{{ receipt?.no_dokumen }}</strong>.
+            Anda akan menolak penerimaan <strong>{{ receipt ? formatNoDokumen(receipt.id, receipt.created_at) : '-' }}</strong>.
             Silakan berikan alasan penolakan:
           </p>
           <textarea
@@ -418,6 +418,17 @@ const formatCurrency = (value: number) => {
     currency: 'IDR',
     minimumFractionDigits: 0
   }).format(value || 0)
+}
+
+// Format No. Dokumen menjadi PO-NON-YYYYMMDD-0001
+const formatNoDokumen = (id: number, createdAt: string) => {
+  if (!createdAt) return '-'
+  const date = new Date(createdAt)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const sequence = String(id).padStart(4, '0')
+  return `PO-NON-${year}${month}${day}-${sequence}`
 }
 
 const getStatusText = (status: string) => {

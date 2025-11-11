@@ -60,7 +60,7 @@
                   <p class="text-gray-600">
                     Ref. Dokumen: 
                     <router-link :to="`/admin/non-po/receipt/${receipt.id}/detail`" class="text-blue-600 hover:underline">
-                      {{ receipt.no_dokumen }}
+                      {{ formatNoDokumen(receipt.id, receipt.created_at) }}
                     </router-link>
                   </p>
                 </div>
@@ -180,6 +180,16 @@ const receiveData = ref({
   no_surat_jalan: '',
   items: [] as any[]
 })
+
+// Format No. Dokumen menjadi PO-NON-YYYYMMDD-0001
+const formatNoDokumen = (receiptId: number, createdAt: Date | string) => {
+  const date = new Date(createdAt)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const sequence = String(receiptId).padStart(4, '0')
+  return `PO-NON-${year}${month}${day}-${sequence}`
+}
 
 const toggleSidebar = () => {
   const sidebar = document.getElementById('sidebar')
