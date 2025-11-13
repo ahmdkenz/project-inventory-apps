@@ -1,33 +1,6 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <!-- Sidebar Staff -->
-    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out print-hidden" id="sidebar">
-      <div class="p-6 flex items-center space-x-3">
-        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
-        </svg>
-        <span class="text-white text-2xl font-semibold">Inventori</span>
-      </div>
-      
-      <StaffNavigation :current-path="$route.path" />
-    </aside>
-
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden print-hidden" id="overlay"></div>
-    
-    <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
-      <!-- Header -->
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between print-hidden">
-        <button @click="toggleSidebar" class="text-gray-600 lg:hidden">
-          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-        <div class="flex-1"></div>
-      </header>
-
-      <!-- Main Content -->
-      <main class="flex-1 p-6 overflow-y-auto">
-        <div v-if="loading" class="flex justify-center items-center py-12">
+  <div class="bg-gray-100">
+    <div v-if="loading" class="flex justify-center items-center py-12">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
 
@@ -324,30 +297,18 @@
         <div v-else class="text-center py-8">
           <p class="text-gray-600">Data tidak ditemukan</p>
         </div>
-      </main>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import StaffNavigation from '@/components/StaffNavigation.vue'
 import salesOrderService from '@/services/salesOrder.service'
 
 const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const salesOrder = ref<any>(null)
-
-const toggleSidebar = () => {
-  const sidebar = document.getElementById('sidebar')
-  const overlay = document.getElementById('overlay')
-  if (sidebar && overlay) {
-    sidebar.classList.toggle('-translate-x-full')
-    overlay.classList.toggle('hidden')
-  }
-}
 
 const goBack = () => {
   router.push('/staff/sales-order')

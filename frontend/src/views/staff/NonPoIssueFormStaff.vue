@@ -1,40 +1,11 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <!-- Sidebar Admin -->
-    <aside class="fixed top-0 left-0 h-full w-64 bg-gray-900 text-gray-300 shadow-lg z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out print-hidden" id="sidebar">
-      <div class="p-6 flex items-center space-x-3">
-        <svg class="h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
-        </svg>
-        <span class="text-white text-2xl font-semibold">Inventori</span>
-      </div>
-      
-      <StaffNavigation :current-path="$route.path" />
-    </aside>
-
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden print-hidden" id="overlay"></div>
-    
-    <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out lg:ml-64" id="main-content">
-      <header class="bg-white shadow-sm p-4 flex items-center justify-between z-10 print-hidden">
-        <button id="hamburger-btn" class="text-gray-600 lg:hidden" @click="toggleSidebar">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-        <div class="relative hidden sm:block"></div>
-        <div class="flex items-center space-x-4">
-          <!-- Profile placeholder -->
-        </div>
-      </header>
-
-      <!-- Global Alert Message -->
-      <div v-if="showAlert" 
-        class="fixed top-20 right-6 py-3 px-6 rounded-lg shadow-lg z-50 text-white transition-all duration-300"
-        :class="alertType === 'success' ? 'bg-green-600' : 'bg-red-600'">
-        <span>{{ alertMessage }}</span>
-      </div>
-
-      <main class="flex-1 p-6 overflow-y-auto">
+  <div class="bg-gray-100">
+    <!-- Global Alert Message -->
+    <div v-if="showAlert" 
+      class="fixed top-20 right-6 py-3 px-6 rounded-lg shadow-lg z-50 text-white transition-all duration-300"
+      :class="alertType === 'success' ? 'bg-green-600' : 'bg-red-600'">
+      <span>{{ alertMessage }}</span>
+    </div>
         <div class="flex items-center justify-between mb-6">
           <h1 class="text-3xl font-bold text-gray-900">Pengeluaran Barang (Non-SO)</h1>
           <router-link to="/staff/sales-order" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150">
@@ -202,15 +173,12 @@
             </div>
           </form>
         </div>
-      </main>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import StaffNavigation from '@/components/StaffNavigation.vue'
 import axios from 'axios'
 
 const router = useRouter()
@@ -271,15 +239,6 @@ const formatCurrency = (value: number) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(value || 0)
-}
-
-const toggleSidebar = () => {
-  const sidebar = document.getElementById('sidebar')
-  const overlay = document.getElementById('overlay')
-  if (sidebar && overlay) {
-    sidebar.classList.toggle('-translate-x-full')
-    overlay.classList.toggle('hidden')
-  }
 }
 
 const fetchBarangList = async () => {

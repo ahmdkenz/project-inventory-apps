@@ -32,6 +32,7 @@ import StaffReportDashboard from '@/views/staff/StaffReportDashboard.vue'
 import StaffReportStock from '@/views/staff/StaffReportStock.vue'
 import StaffReportIncoming from '@/views/staff/StaffReportIncoming.vue'
 import StaffReportOutgoing from '@/views/staff/StaffReportOutgoing.vue'
+import StaffLayout from '@/components/StaffLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -292,161 +293,169 @@ const router = createRouter({
       component: () => import('@/views/admin/PrintNonPoIssue.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
+    // Staff Routes - Nested under StaffLayout
     {
-      path: '/staff/dashboard',
-      name: 'staff-dashboard',
-      component: StaffDashboard,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/barang',
-      name: 'staff-barang',
-      component: BarangListStaff,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/purchase-order',
-      name: 'staff-purchase-order',
-      component: PurchaseOrderList,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/purchase-order/create',
-      name: 'staff-purchase-order-create',
-      component: FormPurchaseOrder,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/purchase-order/edit/:id',
-      name: 'staff-purchase-order-edit',
-      component: FormPurchaseOrder,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/purchase-order/:id',
-      name: 'staff-purchase-order-detail',
-      component: () => import('../views/staff/PurchaseOrderDetail.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/purchase-orders/:id/print-receipt',
-      name: 'staff-purchase-order-print-receipt',
-      component: () => import('@/views/staff/PrintReceivePurchaseOrder.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/sales-order',
-      name: 'staff-sales-order',
-      component: SalesOrderList,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/sales-order/create',
-      name: 'staff-sales-order-create',
-      component: FormSalesOrder,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/sales-order/edit/:id',
-      name: 'staff-sales-order-edit',
-      component: FormSalesOrder,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/sales-order/detail/:id',
-      name: 'staff-sales-order-detail',
-      component: SalesOrderDetail,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/sales-orders/:id/print-issue',
-      name: 'staff-sales-order-print-issue',
-      component: () => import('@/views/staff/PrintIssueSalesOrder.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/purchase-orders',
-      name: 'staff-purchase-orders',
-      component: () => import('@/views/staff/PurchaseOrderList.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/aktivitas',
-      name: 'staff-aktivitas',
-      component: () => import('@/views/staff/MyActivities.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/received-items',
-      name: 'staff-received-items',
-      component: () => import('@/views/staff/ReceivedItemsHistoryStaff.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/outgoing-items',
-      name: 'staff-outgoing-items',
-      component: () => import('@/views/staff/OutgoingItemsHistoryStaff.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/non-po/receipt/create',
-      name: 'staff-non-po-receipt-create',
-      component: () => import('@/views/staff/NonPoReceiptFormStaff.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/non-po/receipt/:id/detail',
-      name: 'staff-non-po-receipt-detail',
-      component: () => import('@/views/staff/NonPoReceiptDetailStaff.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/non-po/receipt/:id/print',
-      name: 'staff-non-po-receipt-print',
-      component: () => import('@/views/staff/PrintNonPoReceiptStaff.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/non-po/issue/create',
-      name: 'staff-non-po-issue-create',
-      component: () => import('@/views/staff/NonPoIssueFormStaff.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/non-po/issue/:id/detail',
-      name: 'staff-non-po-issue-detail',
-      component: () => import('@/views/staff/NonPoIssueDetailStaff.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/non-po/issue/:id/print',
-      name: 'staff-non-po-issue-print',
-      component: () => import('@/views/staff/PrintNonPoIssueStaff.vue'),
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/laporan',
-      name: 'staff-laporan',
-      component: StaffReportDashboard,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/laporan/stok',
-      name: 'staff-laporan-stok',
-      component: StaffReportStock,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/laporan/barang-masuk',
-      name: 'staff-laporan-barang-masuk',
-      component: StaffReportIncoming,
-      meta: { requiresAuth: true, requiresStaff: true }
-    },
-    {
-      path: '/staff/laporan/barang-keluar',
-      name: 'staff-laporan-barang-keluar',
-      component: StaffReportOutgoing,
-      meta: { requiresAuth: true, requiresStaff: true }
+      path: '/staff',
+      component: StaffLayout,
+      meta: { requiresAuth: true, requiresStaff: true },
+      children: [
+        {
+          path: 'dashboard',
+          name: 'staff-dashboard',
+          component: StaffDashboard,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'barang',
+          name: 'staff-barang',
+          component: BarangListStaff,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'purchase-order',
+          name: 'staff-purchase-order',
+          component: PurchaseOrderList,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'purchase-order/create',
+          name: 'staff-purchase-order-create',
+          component: FormPurchaseOrder,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'purchase-order/edit/:id',
+          name: 'staff-purchase-order-edit',
+          component: FormPurchaseOrder,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'purchase-order/:id',
+          name: 'staff-purchase-order-detail',
+          component: () => import('../views/staff/PurchaseOrderDetail.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'purchase-orders/:id/print-receipt',
+          name: 'staff-purchase-order-print-receipt',
+          component: () => import('@/views/staff/PrintReceivePurchaseOrder.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'sales-order',
+          name: 'staff-sales-order',
+          component: SalesOrderList,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'sales-order/create',
+          name: 'staff-sales-order-create',
+          component: FormSalesOrder,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'sales-order/edit/:id',
+          name: 'staff-sales-order-edit',
+          component: FormSalesOrder,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'sales-order/detail/:id',
+          name: 'staff-sales-order-detail',
+          component: SalesOrderDetail,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'sales-orders/:id/print-issue',
+          name: 'staff-sales-order-print-issue',
+          component: () => import('@/views/staff/PrintIssueSalesOrder.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'purchase-orders',
+          name: 'staff-purchase-orders',
+          component: () => import('@/views/staff/PurchaseOrderList.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'aktivitas',
+          name: 'staff-aktivitas',
+          component: () => import('@/views/staff/MyActivities.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'received-items',
+          name: 'staff-received-items',
+          component: () => import('@/views/staff/ReceivedItemsHistoryStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'outgoing-items',
+          name: 'staff-outgoing-items',
+          component: () => import('@/views/staff/OutgoingItemsHistoryStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'non-po/receipt/create',
+          name: 'staff-non-po-receipt-create',
+          component: () => import('@/views/staff/NonPoReceiptFormStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'non-po/receipt/:id/detail',
+          name: 'staff-non-po-receipt-detail',
+          component: () => import('@/views/staff/NonPoReceiptDetailStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'non-po/receipt/:id/print',
+          name: 'staff-non-po-receipt-print',
+          component: () => import('@/views/staff/PrintNonPoReceiptStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'non-po/issue/create',
+          name: 'staff-non-po-issue-create',
+          component: () => import('@/views/staff/NonPoIssueFormStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'non-po/issue/:id/detail',
+          name: 'staff-non-po-issue-detail',
+          component: () => import('@/views/staff/NonPoIssueDetailStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'non-po/issue/:id/print',
+          name: 'staff-non-po-issue-print',
+          component: () => import('@/views/staff/PrintNonPoIssueStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'laporan',
+          name: 'staff-laporan',
+          component: StaffReportDashboard,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'laporan/stok',
+          name: 'staff-laporan-stok',
+          component: StaffReportStock,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'laporan/barang-masuk',
+          name: 'staff-laporan-barang-masuk',
+          component: StaffReportIncoming,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
+          path: 'laporan/barang-keluar',
+          name: 'staff-laporan-barang-keluar',
+          component: StaffReportOutgoing,
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+      ]
     },
   ]
 })
