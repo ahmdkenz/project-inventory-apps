@@ -129,12 +129,12 @@
                   <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Diterima oleh,</p>
                     <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ receipt.creator?.name || 'Staff' }})</p>
-                    <p class="text-xs text-gray-500">Staff Inventori</p>
+                    <p class="text-xs text-gray-500">Staff / Admin</p>
                   </div>
                   <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
                     <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ receipt.approver?.name || 'Admin' }})</p>
-                    <p class="text-xs text-gray-500">Admin</p>
+                    <p class="text-xs text-gray-500">Manajer / Owner</p>
                   </div>
                   <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Sumber,</p>
