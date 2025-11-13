@@ -42,7 +42,7 @@
               <tr>
                 <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Nama Barang</th>
                 <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 uppercase">Qty Diterima</th>
-                <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Harga Satuan (Est.)</th>
+                <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Harga Satuan</th>
                 <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</th>
               </tr>
             </thead>
@@ -77,12 +77,12 @@
           <div class="text-center">
             <p class="text-sm text-gray-700 mb-16">Diterima Oleh,</p>
             <p class="text-sm font-medium text-gray-900">({{ receipt.receiver?.name || receipt.approver?.name || receipt.creator?.name || 'Admin' }})</p>
-            <p class="text-sm text-gray-600">Staff Inventori</p>
+            <p class="text-sm text-gray-600">Staff / Admin</p>
           </div>
           <div class="text-center">
             <p class="text-sm text-gray-700 mb-16">Diketahui Oleh,</p>
             <p class="text-sm font-medium text-gray-900">(...........................)</p>
-            <p class="text-sm text-gray-600">Manajer / Admin</p>
+            <p class="text-sm text-gray-600">Manajer / Owner</p>
           </div>
         </div>
 
@@ -128,12 +128,25 @@ const loading = ref(true)
 const receipt = ref<any>(null)
 
 // Format No. Dokumen menjadi PO-NON-YYYYMMDD-0001
-const formatNoDokumen = (receiptId: number, createdAt: Date | string) => {
-  const date = new Date(createdAt)
+// Buat parsing yang aman: jika createdAt tidak ada atau invalid, gunakan tanggal now
+const formatNoDokumen = (receiptId: number | string | undefined, createdAt?: Date | string | null) => {
+  // pastikan kita punya tanggal yang valid
+  let date: Date
+  if (createdAt) {
+    const d = new Date(createdAt as any)
+    date = isNaN(d.getTime()) ? new Date() : d
+  } else {
+    date = new Date()
+  }
+
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
-  const sequence = String(receiptId).padStart(4, '0')
+
+  // pastikan sequence numeric dan fallback ke 0 jika tidak ada
+  const seqNum = Number(receiptId) || 0
+  const sequence = String(seqNum).padStart(4, '0')
+
   return `PO-NON-${year}${month}${day}-${sequence}`
 }
 

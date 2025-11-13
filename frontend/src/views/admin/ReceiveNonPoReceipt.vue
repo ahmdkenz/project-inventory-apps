@@ -84,7 +84,7 @@
                     <tr>
                       <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase">Nama Barang</th>
                       <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 uppercase">Qty Diterima</th>
-                      <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Harga Satuan (Est.)</th>
+                      <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Harga Satuan</th>
                       <th class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</th>
                     </tr>
                   </thead>
@@ -121,12 +121,12 @@
                 <div class="text-center">
                   <p class="text-sm text-gray-700 mb-16">Diterima Oleh,</p>
                   <p class="text-sm font-medium text-gray-900">({{ user?.name || 'Admin' }})</p>
-                  <p class="text-sm text-gray-600">Staff Inventori</p>
+                  <p class="text-sm text-gray-600">Staff / Admin</p>
                 </div>
                 <div class="text-center">
                   <p class="text-sm text-gray-700 mb-16">Diketahui Oleh,</p>
                   <p class="text-sm font-medium text-gray-900">(...........................)</p>
-                  <p class="text-sm text-gray-600">Manajer / Admin</p>
+                  <p class="text-sm text-gray-600">Manajer / Owner</p>
                 </div>
               </div>
             </div>

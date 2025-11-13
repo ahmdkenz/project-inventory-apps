@@ -129,12 +129,12 @@
                 <div class="text-center">
                   <p class="text-sm text-gray-700 mb-16">Diterima Oleh,</p>
                   <p class="text-sm font-medium text-gray-900">({{ user?.name || 'Admin' }})</p>
-                  <p class="text-sm text-gray-600">Staff Inventori</p>
+                  <p class="text-sm text-gray-600">Staff / Admin</p>
                 </div>
                 <div class="text-center">
                   <p class="text-sm text-gray-700 mb-16">Diketahui Oleh,</p>
                   <p class="text-sm font-medium text-gray-900">(...........................)</p>
-                  <p class="text-sm text-gray-600">Manajer / Admin</p>
+                  <p class="text-sm text-gray-600">Manajer / Owner</p>
                 </div>
               </div>
             </div>
