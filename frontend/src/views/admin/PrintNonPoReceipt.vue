@@ -72,7 +72,7 @@
           <div class="text-center">
             <p class="text-sm text-gray-700 mb-16">Diserahkan Oleh,</p>
             <p class="text-sm font-medium text-gray-900">(...........................)</p>
-            <p class="text-sm text-gray-600">Sumber/Pengirim</p>
+            <p class="text-sm text-gray-600">Pengirim</p>
           </div>
           <div class="text-center">
             <p class="text-sm text-gray-700 mb-16">Diterima Oleh,</p>
