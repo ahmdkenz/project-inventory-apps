@@ -258,6 +258,17 @@ const message = reactive({
   isError: false
 })
 
+// Format No. Dokumen untuk Non-PO menjadi PO-NON-YYYYMMDD-0001
+const formatNonPoNumber = (id: number, createdAt: string) => {
+  if (!createdAt) return '-'
+  const date = new Date(createdAt)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const sequence = String(id).padStart(4, '0')
+  return `PO-NON-${year}${month}${day}-${sequence}`
+}
+
 const filteredPurchaseOrders = computed(() => {
   let result = poList.value
 
@@ -305,8 +316,14 @@ const fetchPurchaseOrders = async () => {
       api.get('/staff/non-po/receipts')
     ])
 
+    console.log('PO Response:', poResponse)
+    console.log('Non-PO Response:', nonPoResponse)
+
     const regularPOs = Array.isArray(poResponse.data) ? poResponse.data : []
     const nonPOs = Array.isArray(nonPoResponse.data.data) ? nonPoResponse.data.data : []
+
+    console.log('Regular POs:', regularPOs)
+    console.log('Non-POs:', nonPOs)
 
     // Merge and add tipe field
     const allOrders = [
@@ -314,17 +331,21 @@ const fetchPurchaseOrders = async () => {
       ...nonPOs.map((nonPo: any) => ({
         ...nonPo,
         tipe: 'non-po',
-        no_po: nonPo.no_dokumen,
+        no_po: formatNonPoNumber(nonPo.id, nonPo.created_at),
         supplier: { nama: nonPo.source || '-' },
         receive_date: nonPo.receive_date,
         total: nonPo.total_value || 0
       }))
     ]
 
+    console.log('All Orders (merged):', allOrders)
+
     // Sort by created_at desc
     poList.value = allOrders.sort((a: any, b: any) => {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
+
+    console.log('Final poList:', poList.value)
   } catch (error: any) {
     console.error('Error loading purchase orders:', error)
     showMessage(error.response?.data?.message || 'Gagal memuat data purchase order', true)
