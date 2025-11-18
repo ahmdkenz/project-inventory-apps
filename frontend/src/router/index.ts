@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/auth/Login.vue'
 import AdminDashboard from '@/views/admin/dashboard/Dashboard.vue'
-import StaffDashboard from '@/views/staff/Dashboard.vue'
-import BarangListStaff from '@/views/staff/BarangList.vue'
-import PurchaseOrderList from '@/views/staff/PurchaseOrderList.vue'
-import FormPurchaseOrder from '@/views/staff/FormPurchaseOrder.vue'
-import SalesOrderList from '@/views/staff/SalesOrderList.vue'
-import FormSalesOrder from '@/views/staff/FormSalesOrder.vue'
-import SalesOrderDetail from '@/views/staff/SalesOrderDetail.vue'
+import StaffDashboard from '@/views/staff/dashboard/Dashboard.vue'
+import BarangListStaff from '@/views/staff/items/BarangList.vue'
+import PurchaseOrderList from '@/views/staff/purchase/PurchaseOrderList.vue'
+import FormPurchaseOrder from '@/views/staff/purchase/FormPurchaseOrder.vue'
+import SalesOrderList from '@/views/staff/sales/SalesOrderList.vue'
+import FormSalesOrder from '@/views/staff/sales/FormSalesOrder.vue'
+import SalesOrderDetail from '@/views/staff/sales/SalesOrderDetail.vue'
 import BarangManager from '@/views/admin/items/BarangManager.vue'
 import AddBarang from '@/views/admin/items/AddBarang.vue'
 import ManagementCategory from '@/views/admin/categories/ManagementCategory.vue'
@@ -28,10 +28,10 @@ import ReportUsers from '@/views/admin/reports/ReportUsers.vue'
 import ReportStock from '@/views/admin/reports/ReportStock.vue'
 import ReportIncoming from '@/views/admin/reports/ReportIncoming.vue'
 import ReportOutgoing from '@/views/admin/reports/ReportOutgoing.vue'
-import StaffReportDashboard from '@/views/staff/StaffReportDashboard.vue'
-import StaffReportStock from '@/views/staff/StaffReportStock.vue'
-import StaffReportIncoming from '@/views/staff/StaffReportIncoming.vue'
-import StaffReportOutgoing from '@/views/staff/StaffReportOutgoing.vue'
+import StaffReportDashboard from '@/views/staff/reports/StaffReportDashboard.vue'
+import StaffReportStock from '@/views/staff/reports/StaffReportStock.vue'
+import StaffReportIncoming from '@/views/staff/reports/StaffReportIncoming.vue'
+import StaffReportOutgoing from '@/views/staff/reports/StaffReportOutgoing.vue'
 import StaffLayout from '@/components/StaffLayout.vue'
 
 const router = createRouter({
@@ -332,13 +332,13 @@ const router = createRouter({
         {
           path: 'purchase-order/:id',
           name: 'staff-purchase-order-detail',
-          component: () => import('../views/staff/PurchaseOrderDetail.vue'),
+          component: () => import('@/views/staff/purchase/PurchaseOrderDetail.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'purchase-orders/:id/print-receipt',
           name: 'staff-purchase-order-print-receipt',
-          component: () => import('@/views/staff/PrintReceivePurchaseOrder.vue'),
+          component: () => import('@/views/staff/purchase/PrintReceivePurchaseOrder.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
@@ -368,67 +368,67 @@ const router = createRouter({
         {
           path: 'sales-orders/:id/print-issue',
           name: 'staff-sales-order-print-issue',
-          component: () => import('@/views/staff/PrintIssueSalesOrder.vue'),
+          component: () => import('@/views/staff/sales/PrintIssueSalesOrder.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'purchase-orders',
           name: 'staff-purchase-orders',
-          component: () => import('@/views/staff/PurchaseOrderList.vue'),
+          component: () => import('@/views/staff/purchase/PurchaseOrderList.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'aktivitas',
           name: 'staff-aktivitas',
-          component: () => import('@/views/staff/MyActivities.vue'),
+          component: () => import('@/views/staff/activities/MyActivities.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'received-items',
           name: 'staff-received-items',
-          component: () => import('@/views/staff/ReceivedItemsHistoryStaff.vue'),
+          component: () => import('@/views/staff/purchase/ReceivedItemsHistoryStaff.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'outgoing-items',
           name: 'staff-outgoing-items',
-          component: () => import('@/views/staff/OutgoingItemsHistoryStaff.vue'),
+          component: () => import('@/views/staff/outgoing/OutgoingItemsHistoryStaff.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'non-po/receipt/create',
           name: 'staff-non-po-receipt-create',
-          component: () => import('@/views/staff/NonPoReceiptFormStaff.vue'),
+          component: () => import('@/views/staff/non-po/NonPoReceiptFormStaff.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'non-po/receipt/:id/detail',
           name: 'staff-non-po-receipt-detail',
-          component: () => import('@/views/staff/NonPoReceiptDetailStaff.vue'),
+          component: () => import('@/views/staff/non-po/NonPoReceiptDetailStaff.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'non-po/receipt/:id/print',
           name: 'staff-non-po-receipt-print',
-          component: () => import('@/views/staff/PrintNonPoReceiptStaff.vue'),
+          component: () => import('@/views/staff/non-po/PrintNonPoReceiptStaff.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'non-po/issue/create',
           name: 'staff-non-po-issue-create',
-          component: () => import('@/views/staff/NonPoIssueFormStaff.vue'),
+          component: () => import('@/views/staff/non-po/NonPoIssueFormStaff.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'non-po/issue/:id/detail',
           name: 'staff-non-po-issue-detail',
-          component: () => import('@/views/staff/NonPoIssueDetailStaff.vue'),
+          component: () => import('@/views/staff/non-po/NonPoIssueDetailStaff.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
           path: 'non-po/issue/:id/print',
           name: 'staff-non-po-issue-print',
-          component: () => import('@/views/staff/PrintNonPoIssueStaff.vue'),
+          component: () => import('@/views/staff/non-po/PrintNonPoIssueStaff.vue'),
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
