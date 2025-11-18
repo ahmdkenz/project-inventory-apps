@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/auth/Login.vue'
-import AdminDashboard from '@/views/admin/Dashboard.vue'
+import AdminDashboard from '@/views/admin/dashboard/Dashboard.vue'
 import StaffDashboard from '@/views/staff/Dashboard.vue'
 import BarangListStaff from '@/views/staff/BarangList.vue'
 import PurchaseOrderList from '@/views/staff/PurchaseOrderList.vue'
@@ -8,26 +8,26 @@ import FormPurchaseOrder from '@/views/staff/FormPurchaseOrder.vue'
 import SalesOrderList from '@/views/staff/SalesOrderList.vue'
 import FormSalesOrder from '@/views/staff/FormSalesOrder.vue'
 import SalesOrderDetail from '@/views/staff/SalesOrderDetail.vue'
-import BarangManager from '@/views/admin/BarangManager.vue'
-import AddBarang from '@/views/admin/AddBarang.vue'
-import ManagementCategory from '@/views/admin/ManagementCategory.vue'
-import FormCategory from '@/views/admin/FormCategory.vue'
-import PurchaseOrdersAdmin from '@/views/admin/PurchaseOrdersAdmin.vue'
-import FormPurchaseOrderAdmin from '@/views/admin/FormPurchaseOrderAdmin.vue'
-import PurchaseOrderDetailAdmin from '@/views/admin/PurchaseOrderDetailAdmin.vue'
-import SalesOrdersAdmin from '@/views/admin/SalesOrdersAdmin.vue'
-import FormSalesOrderAdmin from '@/views/admin/FormSalesOrderAdmin.vue'
-import SalesOrderDetailAdmin from '@/views/admin/SalesOrderDetailAdmin.vue'
-import UserManagement from '@/views/admin/UserManagement.vue'
-import FormUserManagement from '@/views/admin/FormUserManagement.vue'
-import SupplierManagement from '@/views/admin/SupplierManagement.vue'
-import FormSupplier from '@/views/admin/FormSupplier.vue'
-import AuditLog from '@/views/admin/AuditLog.vue'
-import ReportDashboard from '@/views/admin/ReportDashboard.vue'
-import ReportUsers from '@/views/admin/ReportUsers.vue'
-import ReportStock from '@/views/admin/ReportStock.vue'
-import ReportIncoming from '@/views/admin/ReportIncoming.vue'
-import ReportOutgoing from '@/views/admin/ReportOutgoing.vue'
+import BarangManager from '@/views/admin/items/BarangManager.vue'
+import AddBarang from '@/views/admin/items/AddBarang.vue'
+import ManagementCategory from '@/views/admin/categories/ManagementCategory.vue'
+import FormCategory from '@/views/admin/categories/FormCategory.vue'
+import PurchaseOrdersAdmin from '@/views/admin/orders/purchase/PurchaseOrdersAdmin.vue'
+import FormPurchaseOrderAdmin from '@/views/admin/orders/purchase/FormPurchaseOrderAdmin.vue'
+import PurchaseOrderDetailAdmin from '@/views/admin/orders/purchase/PurchaseOrderDetailAdmin.vue'
+import SalesOrdersAdmin from '@/views/admin/orders/sales/SalesOrdersAdmin.vue'
+import FormSalesOrderAdmin from '@/views/admin/orders/sales/FormSalesOrderAdmin.vue'
+import SalesOrderDetailAdmin from '@/views/admin/orders/sales/SalesOrderDetailAdmin.vue'
+import UserManagement from '@/views/admin/users/UserManagement.vue'
+import FormUserManagement from '@/views/admin/users/FormUserManagement.vue'
+import SupplierManagement from '@/views/admin/suppliers/SupplierManagement.vue'
+import FormSupplier from '@/views/admin/suppliers/FormSupplier.vue'
+import AuditLog from '@/views/admin/audit/AuditLog.vue'
+import ReportDashboard from '@/views/admin/reports/ReportDashboard.vue'
+import ReportUsers from '@/views/admin/reports/ReportUsers.vue'
+import ReportStock from '@/views/admin/reports/ReportStock.vue'
+import ReportIncoming from '@/views/admin/reports/ReportIncoming.vue'
+import ReportOutgoing from '@/views/admin/reports/ReportOutgoing.vue'
 import StaffReportDashboard from '@/views/staff/StaffReportDashboard.vue'
 import StaffReportStock from '@/views/staff/StaffReportStock.vue'
 import StaffReportIncoming from '@/views/staff/StaffReportIncoming.vue'
@@ -104,19 +104,19 @@ const router = createRouter({
     {
       path: '/admin/purchase-orders/:id/receive',
       name: 'admin-purchase-order-receive',
-      component: () => import('@/views/admin/ReceivePurchaseOrderAdmin.vue'),
+      component: () => import('@/views/admin/orders/purchase/ReceivePurchaseOrderAdmin.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/purchase-orders/:id/print',
       name: 'admin-purchase-order-print',
-      component: () => import('@/views/admin/PrintPurchaseOrder.vue'),
+      component: () => import('@/views/admin/orders/purchase/PrintPurchaseOrder.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/purchase-orders/:id/print-receipt',
       name: 'admin-purchase-order-print-receipt',
-      component: () => import('@/views/admin/PrintReceivePurchaseOrder.vue'),
+      component: () => import('@/views/admin/orders/purchase/PrintReceivePurchaseOrder.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
@@ -140,13 +140,13 @@ const router = createRouter({
     {
       path: '/admin/sales-orders/:id/process',
       name: 'admin-sales-order-process',
-      component: () => import('@/views/admin/ProcessSalesOrderAdmin.vue'),
+      component: () => import('@/views/admin/orders/sales/ProcessSalesOrderAdmin.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/sales-orders/:id/print-issue',
       name: 'admin-sales-order-print-issue',
-      component: () => import('@/views/admin/PrintIssueSalesOrder.vue'),
+      component: () => import('@/views/admin/orders/sales/PrintIssueSalesOrder.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
@@ -188,19 +188,19 @@ const router = createRouter({
     {
       path: '/admin/customers',
       name: 'admin-customers',
-      component: () => import('@/views/admin/CustomerManagement.vue'),
+      component: () => import('@/views/admin/customers/CustomerManagement.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/customers/create',
       name: 'admin-customers-create',
-      component: () => import('@/views/admin/CustomerForm.vue'),
+      component: () => import('@/views/admin/customers/CustomerForm.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/customers/:id/edit',
       name: 'admin-customers-edit',
-      component: () => import('@/views/admin/CustomerForm.vue'),
+      component: () => import('@/views/admin/customers/CustomerForm.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
@@ -242,55 +242,55 @@ const router = createRouter({
     {
       path: '/admin/received-items',
       name: 'admin-received-items',
-      component: () => import('@/views/admin/ReceivedItemsHistory.vue'),
+      component: () => import('@/views/admin/orders/purchase/ReceivedItemsHistory.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/outgoing-items',
       name: 'admin-outgoing-items',
-      component: () => import('@/views/admin/RiwayatBarangKeluar.vue'),
+      component: () => import('@/views/admin/orders/sales/RiwayatBarangKeluar.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/non-po/receipt/create',
       name: 'admin-non-po-receipt-create',
-      component: () => import('@/views/admin/NonPoReceiptForm.vue'),
+      component: () => import('@/views/admin/orders/non-po/NonPoReceiptForm.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/non-po/receipt/:id/detail',
       name: 'admin-non-po-receipt-detail',
-      component: () => import('@/views/admin/NonPoReceiptDetailAdmin.vue'),
+      component: () => import('@/views/admin/orders/non-po/NonPoReceiptDetailAdmin.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/non-po/receipt/:id/receive',
       name: 'admin-non-po-receipt-receive',
-      component: () => import('@/views/admin/ReceiveNonPoReceipt.vue'),
+      component: () => import('@/views/admin/orders/non-po/ReceiveNonPoReceipt.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/non-po/receipt/:id/print',
       name: 'admin-non-po-receipt-print',
-      component: () => import('@/views/admin/PrintNonPoReceipt.vue'),
+      component: () => import('@/views/admin/orders/non-po/PrintNonPoReceipt.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/non-po/issue/create',
       name: 'admin-non-po-issue-create',
-      component: () => import('@/views/admin/NonPoIssueForm.vue'),
+      component: () => import('@/views/admin/orders/non-po/NonPoIssueForm.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/non-po/issue/:id/detail',
       name: 'admin-non-po-issue-detail',
-      component: () => import('@/views/admin/NonPoIssueDetailAdmin.vue'),
+      component: () => import('@/views/admin/orders/non-po/NonPoIssueDetailAdmin.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/non-po/issue/:id/print',
       name: 'admin-non-po-issue-print',
-      component: () => import('@/views/admin/PrintNonPoIssue.vue'),
+      component: () => import('@/views/admin/orders/non-po/PrintNonPoIssue.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     // Staff Routes - Nested under StaffLayout
