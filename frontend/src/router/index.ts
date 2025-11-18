@@ -66,6 +66,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/barang/edit/:id',
+      name: 'admin-barang-edit',
+      component: AddBarang,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/admin/kategori',
       name: 'admin-kategori',
       component: ManagementCategory,
