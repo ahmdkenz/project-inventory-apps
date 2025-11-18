@@ -229,7 +229,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
@@ -237,6 +237,7 @@ import barangService, { type Barang } from '@/services/barang.service'
 import kategoriService, { type Kategori } from '@/services/kategori.service'
 
 const router = useRouter()
+const route = useRoute()
 
 // User state
 const user = ref({
@@ -247,6 +248,7 @@ const user = ref({
 
 // UI state
 const isSubmitting = ref(false)
+const isEdit = ref(false)
 
 // Kategori list
 const kategoriList = ref<Kategori[]>([])
@@ -276,9 +278,39 @@ onMounted(async () => {
     const userData = JSON.parse(storedUser)
     user.value = userData
   }
-  
+
   // Load kategori
   await loadKategori()
+
+  // If route has id param -> edit mode
+  const idParam = route.params.id
+  if (idParam) {
+    const id = Number(idParam)
+    if (!isNaN(id)) {
+      isEdit.value = true
+      // Fetch barang data
+      try {
+        const resp = await barangService.getById(id)
+        if (resp.success && resp.data) {
+          const data = resp.data as Barang
+          formData.code = data.kode || ''
+          formData.name = data.nama || ''
+          formData.category = String(data.kategori_id || data.kategori?.id || '')
+          formData.unit = data.satuan || ''
+          formData.buyPrice = Number(data.harga_beli || 0)
+          formData.sellPrice = Number(data.harga_jual || 0)
+          formData.stock = Number(data.stok || 0)
+        } else {
+          showMessage('Gagal memuat data barang untuk diedit.', true)
+          router.push('/admin/barang')
+        }
+      } catch (error) {
+        console.error('Error loading barang for edit:', error)
+        showMessage('Terjadi kesalahan saat memuat data barang.', true)
+        router.push('/admin/barang')
+      }
+    }
+  }
 })
 
 // Load kategori from API
@@ -375,29 +407,34 @@ const handleSubmit = async () => {
       status: true
     }
 
-    // Send to API
-    const response = await barangService.create(barangData)
-    
+    let response
+    if (isEdit.value) {
+      const id = Number(route.params.id)
+      response = await barangService.update(id, barangData)
+    } else {
+      response = await barangService.create(barangData)
+    }
+
     if (response.success) {
-      showMessage('Data barang berhasil disimpan.', false)
-      
+      showMessage(isEdit.value ? 'Data barang berhasil diubah.' : 'Data barang berhasil disimpan.', false)
+
       // Redirect after successful save
       setTimeout(() => {
         router.push('/admin/barang')
       }, 1500)
     } else {
-      showMessage(response.message || 'Gagal menyimpan data barang.', true)
+      showMessage(response.message || (isEdit.value ? 'Gagal mengubah data barang.' : 'Gagal menyimpan data barang.'), true)
     }
   } catch (error: any) {
     console.error('Error saving data:', error)
-    
+
     // Handle validation errors
     if (error.response?.data?.errors) {
       const errors = error.response.data.errors
       const firstError = Object.values(errors)[0]
-      showMessage(Array.isArray(firstError) ? firstError[0] : 'Gagal menyimpan data barang.', true)
+      showMessage(Array.isArray(firstError) ? firstError[0] : (isEdit.value ? 'Gagal mengubah data barang.' : 'Gagal menyimpan data barang.'), true)
     } else {
-      showMessage(error.response?.data?.message || 'Gagal menyimpan data barang. Silakan coba lagi.', true)
+      showMessage(error.response?.data?.message || (isEdit.value ? 'Gagal mengubah data barang. Silakan coba lagi.' : 'Gagal menyimpan data barang. Silakan coba lagi.'), true)
     }
   } finally {
     isSubmitting.value = false
