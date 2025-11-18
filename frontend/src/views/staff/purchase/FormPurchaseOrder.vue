@@ -5,185 +5,144 @@
       {{ message.text }}
     </div>
 
-    <div class="flex items-center justify-between mb-6">
-          <h1 class="text-3xl font-bold text-gray-900">{{ isEditMode ? 'Edit' : 'Buat' }} Purchase Order</h1>
-          <router-link 
-            to="/staff/purchase-order" 
-            class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
-          >
-            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
+    <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+      <!-- Left column: Work area -->
+      <div class="lg:col-span-8 space-y-6">
+        <div class="flex items-center justify-between mb-4 lg:hidden">
+          <h1 class="text-2xl font-bold text-gray-900">{{ isEditMode ? 'Edit' : 'Buat' }} Purchase Order</h1>
+          <router-link to="/staff/purchase-order" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium py-2 px-3 rounded-lg text-sm">
             <span>Kembali</span>
           </router-link>
         </div>
-        
-        <div class="max-w-6xl mx-auto">
-          <!-- Informasi Transaksi -->
-          <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Informasi Transaksi</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label for="supplier" class="block text-sm font-medium text-gray-700 mb-1">Supplier <span class="text-red-500">*</span></label>
-                <select 
-                  v-model="form.supplier_id" 
-                  id="supplier" 
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  :class="{ 'border-red-500': errors.supplier_id, 'text-gray-500': !form.supplier_id, 'text-gray-900': form.supplier_id }"
-                >
-                  <option value="" class="text-gray-500">Pilih Supplier</option>
-                  <option v-for="supplier in supplierList" :key="supplier.id" :value="supplier.id" class="text-gray-900">
-                    {{ supplier.nama }}
-                  </option>
-                </select>
-                <span v-if="errors.supplier_id" class="text-red-500 text-xs">{{ errors.supplier_id }}</span>
-              </div>
-              <div>
-                <label for="tgl_pesan" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pesan <span class="text-red-500">*</span></label>
-                <input 
-                  v-model="form.tgl_pesan" 
-                  type="date" 
-                  id="tgl_pesan" 
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  :class="{ 'border-red-500': errors.tgl_pesan }"
-                >
-                <span v-if="errors.tgl_pesan" class="text-red-500 text-xs">{{ errors.tgl_pesan }}</span>
-              </div>
-              <div>
-                <label for="tgl_estimasi" class="block text-sm font-medium text-gray-700 mb-1">Estimasi Tgl. Tiba <span class="text-red-500">*</span></label>
-                <input 
-                  v-model="form.tgl_estimasi" 
-                  type="date" 
-                  id="tgl_estimasi" 
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  :class="{ 'border-red-500': errors.tgl_estimasi }"
-                >
-                <span v-if="errors.tgl_estimasi" class="text-red-500 text-xs">{{ errors.tgl_estimasi }}</span>
-              </div>
-              <div class="md:col-span-3">
-                <label for="catatan_po" class="block text-sm font-medium text-gray-700 mb-1">Catatan (Opsional)</label>
-                <textarea 
-                  v-model="form.catatan" 
-                  id="catatan_po" 
-                  rows="2" 
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500" 
-                  placeholder="Catatan untuk supplier..."
-                ></textarea>
-              </div>
-            </div>
-          </div>
 
-          <!-- Detail Barang -->
-          <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Detail Barang</h2>
-            <!-- Form Tambah Item -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end">
-              <div class="md:col-span-5">
-                <label for="item_select" class="block text-sm font-medium text-gray-700 mb-1">Pilih Barang</label>
-                <select 
-                  v-model="newItem.barang_id" 
-                  @change="onBarangSelect"
-                  id="item_select" 
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                  :class="{ 'text-gray-500': !newItem.barang_id, 'text-gray-900': newItem.barang_id }"
-                >
-                  <option value="" class="text-gray-500">Pilih barang...</option>
-                  <option v-for="barang in barangList" :key="barang.id" :value="barang.id" class="text-gray-900">
-                    {{ barang.kode }} - {{ barang.nama }}
-                  </option>
-                </select>
-              </div>
-              <div class="md:col-span-2">
-                <label for="item_qty" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-                <input 
-                  v-model.number="newItem.qty" 
-                  type="number" 
-                  id="item_qty" 
-                  min="1" 
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                >
-              </div>
-              <div class="md:col-span-3">
-                <label for="item_price" class="block text-sm font-medium text-gray-700 mb-1">Harga Beli (Satuan)</label>
-                <input 
-                  v-model.number="newItem.harga_satuan" 
-                  type="number" 
-                  id="item_price" 
-                  min="0" 
-                  class="w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-blue-500 focus:ring-blue-500"
-                >
-              </div>
-              <div class="md:col-span-2">
-                <button 
-                  @click="addItem" 
-                  type="button"
-                  class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150"
-                >
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  <span>Tambah</span>
-                </button>
-              </div>
-            </div>
-            
-            <!-- Tabel Item Ditambahkan -->
-            <div class="overflow-x-auto border rounded-lg">
-              <table class="w-full min-w-max">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Satuan</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                  <tr v-if="form.items.length === 0">
-                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                      Belum ada barang ditambahkan
-                    </td>
-                  </tr>
-                  <tr v-for="(item, index) in form.items" :key="index">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ item.qty }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">{{ formatCurrency(item.qty * item.harga_satuan) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                      <button @click="removeItem(index)" type="button" class="text-red-600 hover:text-red-800">
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 0c-.275.046-.55.097-.824.15" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-                <!-- Footer Kalkulasi -->
-                <tfoot class="bg-gray-50 border-t-2 border-gray-300">
-                  <tr>
-                    <td colspan="3" class="px-6 py-3 text-right text-base font-bold text-gray-900">Total</td>
-                    <td class="px-6 py-3 text-right text-base font-bold text-gray-900">{{ formatCurrency(total) }}</td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-            <span v-if="errors.items" class="text-red-500 text-xs mt-2 block">{{ errors.items }}</span>
-          </div>
+        <!-- Card Detail Barang -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+          <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center space-x-2">
+            <span>Detail Barang</span>
+          </h2>
 
-          <!-- Tombol Aksi Bawah -->
-          <div class="flex justify-end space-x-4">
-            <button 
-              @click="submitForm" 
-              :disabled="loading"
-              type="button" 
-              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-150 disabled:bg-gray-400"
-            >
-              {{ loading ? 'Menyimpan...' : (isEditMode ? 'Update PO' : 'Simpan & Kirim PO') }}
-            </button>
+          <!-- Form Tambah Item -->
+          <form @submit.prevent="addItem" class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end">
+            <div class="md:col-span-5">
+              <label for="item_select" class="block text-sm font-medium text-gray-700 mb-1">Pilih Barang</label>
+              <select v-model="newItem.barang_id" @change="onBarangSelect" id="item_select" class="w-full rounded-lg border-gray-300 shadow-sm p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-150">
+                <option value="">Pilih barang...</option>
+                <option v-for="barang in barangList" :key="barang.id" :value="barang.id" :data-nama="barang.nama" :data-price="barang.harga_beli">{{ barang.kode }} - {{ barang.nama }}</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label for="item_qty" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
+              <input v-model.number="newItem.qty" type="number" id="item_qty" min="1" class="w-full rounded-lg border-gray-300 shadow-sm p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-150">
+            </div>
+            <div class="md:col-span-3">
+              <label for="item_price" class="block text-sm font-medium text-gray-700 mb-1">Harga Satuan (Rp)</label>
+              <input v-model.number="newItem.harga_satuan" type="number" id="item_price" min="0" class="w-full rounded-lg border-gray-300 shadow-sm p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-150">
+            </div>
+            <div class="md:col-span-2">
+              <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                <span>Tambah</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Tabel Item Ditambahkan -->
+          <div class="overflow-x-auto border rounded-lg">
+            <table class="w-full min-w-max">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama Barang</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Jumlah</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Harga Satuan</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Subtotal</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <tr v-for="(item, index) in form.items" :key="index" class="hover:bg-slate-50 transition-colors duration-150">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.barang?.nama }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">{{ item.qty }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">{{ formatCurrency(item.harga_satuan) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold text-right">{{ formatCurrency(item.qty * item.harga_satuan) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    <button @click="removeItem(index)" type="button" class="text-red-500 hover:text-red-700">
+                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" /></svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="form.items.length === 0">
+                  <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-500">
+                    Keranjang PO masih kosong
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      </div>
+
+      <!-- Right column: Info & actions -->
+      <div class="lg:col-span-4 space-y-6">
+        <div class="lg:sticky lg:top-8 space-y-6">
+          <!-- Card Info Dokumen -->
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+            <div class="flex items-center justify-between mb-5">
+              <h2 class="text-xl font-semibold text-gray-900">Informasi Dokumen</h2>
+              <router-link to="/staff/purchase-order" class="hidden lg:block bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-medium py-2 px-3 rounded-lg text-sm">Kembali</router-link>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label for="supplier" class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                <select id="supplier" v-model="form.supplier_id" required class="w-full rounded-lg border-gray-300 shadow-sm p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-150">
+                  <option value="">Pilih Supplier...</option>
+                  <option v-for="s in supplierList" :key="s.id" :value="s.id">{{ s.nama }}</option>
+                </select>
+              </div>
+              <div>
+                <label for="po_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal PO</label>
+                <input type="date" id="po_date" v-model="form.tgl_pesan" required class="w-full rounded-lg border-gray-300 shadow-sm p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-150">
+              </div>
+              <div>
+                <label for="tgl_estimasi" class="block text-sm font-medium text-gray-700 mb-1">Estimasi Tgl. Tiba</label>
+                <input type="date" id="tgl_estimasi" v-model="form.tgl_estimasi" required class="w-full rounded-lg border-gray-300 shadow-sm p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-150">
+              </div>
+              <div>
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Catatan (Opsional)</label>
+                <textarea id="notes" v-model="form.catatan" rows="2" class="w-full rounded-lg border-gray-300 shadow-sm p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-150" placeholder="Termin pembayaran, dll..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Kalkulasi Total (menampilkan PPN 2%) -->
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Total Kalkulasi</h2>
+            <dl class="space-y-3">
+              <div class="flex justify-between items-center">
+                <dt class="text-sm text-gray-600">Subtotal</dt>
+                <dd class="text-base font-medium text-gray-900">{{ formatCurrency(subtotal) }}</dd>
+              </div>
+              <div class="flex justify-between items-center">
+                <dt class="text-sm text-gray-600">PPN (2%)</dt>
+                <dd class="text-base font-medium text-gray-900">{{ formatCurrency(ppn) }}</dd>
+              </div>
+              <div class="flex justify-between items-center pt-3 border-t border-slate-200">
+                <dt class="text-lg font-bold text-gray-900">Total</dt>
+                <dd class="text-xl font-bold text-gray-900">{{ formatCurrency(total) }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Card Aksi (CTA) -->
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Aksi</h2>
+            <div class="flex flex-col gap-3">
+              <button type="button" @click="saveDraft" class="w-full text-center bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-medium py-3 px-4 rounded-lg">Simpan sebagai Draft</button>
+              <button type="button" @click="submitForm" :disabled="loading" class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg shadow-lg">Simpan dan Ajukan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -235,8 +194,14 @@ const subtotal = computed(() => {
   return form.items.reduce((acc, item) => acc + (item.qty * item.harga_satuan), 0)
 })
 
+// PPN 2% (ditambahkan pada total)
+const ppn = computed(() => {
+  return Math.round(subtotal.value * 0.02)
+})
+
+// Total setelah menambahkan PPN 2%
 const total = computed(() => {
-  return subtotal.value
+  return subtotal.value + ppn.value
 })
 
 onMounted(async () => {
@@ -377,20 +342,21 @@ const validateForm = () => {
   return Object.keys(newErrors).length === 0
 }
 
-const submitForm = async () => {
+const submitForm = async (status: 'submit' | 'draft' = 'submit') => {
   if (!validateForm()) {
     showMessage('Mohon lengkapi semua field yang wajib diisi', true)
     return
   }
 
   loading.value = true
-  try {
+    try {
     // Prepare data
-    const data: PurchaseOrder = {
+    const data: any = {
       ...form,
       subtotal: subtotal.value,
-      ppn: 0,
-      total: total.value
+      ppn: ppn.value,
+      total: total.value,
+      status: status === 'draft' ? 'draft' : form.status || 'pending'
     }
 
     let response
@@ -413,6 +379,10 @@ const submitForm = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const saveDraft = async () => {
+  await submitForm('draft')
 }
 
 const formatCurrency = (value: number) => {
