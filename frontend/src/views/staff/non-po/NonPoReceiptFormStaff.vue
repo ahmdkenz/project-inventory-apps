@@ -13,8 +13,8 @@
         
         <!-- Header & Tombol Kembali (Mobile) -->
         <div class="flex items-center justify-between mb-4 lg:hidden">
-          <h1 class="text-2xl font-bold text-gray-900">Penerimaan Non-PO</h1>
-          <router-link to="/staff/non-po" class="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-medium py-2 px-3 rounded-lg text-sm">
+          <h1 class="text-2xl font-bold text-gray-900">{{ isEditMode ? 'Edit' : 'Buat' }} Penerimaan Non-PO</h1>
+          <router-link to="/staff/purchase-order" class="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-medium py-2 px-3 rounded-lg text-sm">
             <span>Kembali</span>
           </router-link>
         </div>
@@ -111,7 +111,7 @@
                 <svg class="h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
                 <span>Informasi Dokumen</span>
               </h2>
-              <router-link to="/staff/non-po" class="hidden lg:block bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-medium py-2 px-3 rounded-lg text-sm transition-colors duration-150">
+              <router-link to="/staff/purchase-order" class="hidden lg:block bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-medium py-2 px-3 rounded-lg text-sm transition-colors duration-150">
                 <span>Kembali</span>
               </router-link>
             </div>
@@ -149,11 +149,11 @@
             </h2>
             <p class="text-sm text-gray-500 mb-4">Pastikan data sudah benar. Stok barang akan langsung bertambah setelah disimpan.</p>
             <div class="flex flex-col gap-3">
-              <router-link to="/staff/non-po" class="w-full text-center bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+              <router-link to="/staff/purchase-order" class="w-full text-center bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
                 Batal
               </router-link>
               <button type="button" @click="submitReceipt" :disabled="saving" class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 transition-all duration-300 transform hover:-translate-y-0.5">
-                {{ saving ? 'Menyimpan...' : 'Simpan Penerimaan' }}
+                {{ saving ? 'Menyimpan...' : (isEditMode ? 'Update Penerimaan' : 'Simpan Penerimaan') }}
               </button>
             </div>
           </div>
@@ -166,10 +166,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
 const router = useRouter()
+const route = useRoute()
+
+const isEditMode = computed(() => !!route.params.id)
+const receiptId = computed(() => route.params.id as string)
 
 const formData = ref({
   source: '',
@@ -218,6 +222,38 @@ const fetchBarangList = async () => {
     }
   } catch (error) {
     console.error('Error fetching barang:', error)
+  }
+}
+
+const fetchReceiptDetail = async () => {
+  if (!isEditMode.value) return
+  
+  try {
+    const token = localStorage.getItem('token')
+    const response = await axios.get(`http://localhost:8000/api/staff/non-po/receipt/${receiptId.value}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    })
+    
+    if (response.data.success) {
+      const receipt = response.data.data
+      formData.value.source = receipt.source
+      formData.value.receive_date = receipt.receive_date
+      formData.value.notes = receipt.notes
+      
+      // Map items
+      formData.value.items = receipt.items.map((item: any) => ({
+        barang_id: item.barang_id,
+        name: `${item.barang.kode} - ${item.barang.nama}`,
+        qty: item.qty,
+        price: item.price || 0
+      }))
+    }
+  } catch (error) {
+    console.error('Error fetching receipt:', error)
+    showAlertMessage('Gagal memuat data penerimaan Non-PO', 'danger')
   }
 }
 
@@ -276,7 +312,13 @@ const submitReceipt = async () => {
   saving.value = true
   try {
     const token = localStorage.getItem('token')
-    const response = await axios.post('http://localhost:8000/api/staff/non-po/receipt', formData.value, {
+    const url = isEditMode.value 
+      ? `http://localhost:8000/api/staff/non-po/receipt/${receiptId.value}`
+      : 'http://localhost:8000/api/staff/non-po/receipt'
+    
+    const method = isEditMode.value ? 'put' : 'post'
+    
+    const response = await axios[method](url, formData.value, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
@@ -285,10 +327,15 @@ const submitReceipt = async () => {
     })
 
     if (response.data.success) {
-      showAlertMessage('Penerimaan Non-PO berhasil disimpan!', 'success')
+      showAlertMessage(
+        isEditMode.value 
+          ? 'Penerimaan Non-PO berhasil diupdate dan menunggu persetujuan admin!' 
+          : 'Penerimaan Non-PO berhasil disimpan dan menunggu persetujuan admin!', 
+        'success'
+      )
       
       setTimeout(() => {
-        router.push(`/staff/non-po/receipt/${response.data.data.id}/print`)
+        router.push('/staff/purchase-order')
       }, 1500)
     } else {
       showAlertMessage(response.data.message || 'Gagal menyimpan data', 'danger')
@@ -313,6 +360,9 @@ const showAlertMessage = (message: string, type: 'success' | 'danger') => {
 
 onMounted(() => {
   fetchBarangList()
+  if (isEditMode.value) {
+    fetchReceiptDetail()
+  }
 })
 </script>
 

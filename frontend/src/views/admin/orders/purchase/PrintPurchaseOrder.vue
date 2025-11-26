@@ -114,22 +114,22 @@
         <div class="grid grid-cols-3 gap-8 mt-12">
           <div class="text-center">
             <p class="text-sm font-medium text-gray-700 mb-16">Dibuat Oleh,</p>
-            <div class="border-t border-gray-400 pt-2">
-              <p class="font-semibold text-gray-900">{{ purchaseOrder.creator?.name || '________________' }}</p>
+            <div class="border-t border-gray-400 pt-1">
+              <p class="text-sm font-semibold text-gray-900">{{ purchaseOrder.creator?.name || '..............................' }}</p>
               <p class="text-xs text-gray-500">Staff</p>
             </div>
           </div>
           <div class="text-center">
             <p class="text-sm font-medium text-gray-700 mb-16">Disetujui Oleh,</p>
-            <div class="border-t border-gray-400 pt-2">
-              <p class="font-semibold text-gray-900">{{ purchaseOrder.approver?.name || '________________' }}</p>
+            <div class="border-t border-gray-400 pt-1">
+              <p class="text-sm font-semibold text-gray-900">{{ purchaseOrder.approver?.name || '..............................' }}</p>
               <p class="text-xs text-gray-500">Admin</p>
             </div>
           </div>
           <div class="text-center">
             <p class="text-sm font-medium text-gray-700 mb-16">Diterima Oleh,</p>
-            <div class="border-t border-gray-400 pt-2">
-              <p class="font-semibold text-gray-900">________________</p>
+            <div class="border-t border-gray-400 pt-1">
+              <p class="text-sm font-semibold text-gray-900">..............................</p>
               <p class="text-xs text-gray-500">Penerima</p>
             </div>
           </div>

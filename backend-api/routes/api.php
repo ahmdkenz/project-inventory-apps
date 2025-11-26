@@ -149,10 +149,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/non-po/receipts', [NonPoController::class, 'getStaffReceipts']);
         Route::post('/non-po/receipt', [NonPoController::class, 'storeReceipt']);
         Route::get('/non-po/receipt/{id}', [NonPoController::class, 'getReceiptDetail']);
+        Route::put('/non-po/receipt/{id}', [NonPoController::class, 'updateReceipt']);
+        Route::delete('/non-po/receipt/{id}', [NonPoController::class, 'deleteReceipt']);
         Route::get('/non-po/receipt/{id}/print', [NonPoController::class, 'getReceiptPrintData']);
         Route::get('/non-po/issues', [NonPoController::class, 'getStaffIssues']);
         Route::post('/non-po/issue', [NonPoController::class, 'storeIssue']);
         Route::get('/non-po/issue/{id}', [NonPoController::class, 'getIssueDetail']);
+        Route::delete('/non-po/issue/{id}', [NonPoController::class, 'deleteIssue']);
         Route::get('/non-po/issue/{id}/print', [NonPoController::class, 'getIssuePrintData']);
         
         // Staff Report routes

@@ -97,18 +97,29 @@
               <div class="pt-6 border-t border-gray-200 print-no-break">
                 <div class="mb-6">
                   <p class="text-sm font-semibold text-gray-500 uppercase mb-2">Catatan:</p>
-                  <p class="text-sm text-gray-600">{{ receipt.notes }}</p>
+                  <p class="text-sm text-gray-600">{{ receipt.notes || '-' }}</p>
                 </div>
-                <div class="grid grid-cols-2 gap-4 text-center">
+                <div class="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p class="text-sm text-gray-700 mb-16">Diterima oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Staff Gudang)</p>
-                    <p class="text-xs text-gray-500">Nama Jelas</p>
+                    <p class="text-sm text-gray-700 mb-16">Diserahkan Oleh,</p>
+                    <div class="border-t border-gray-400 pt-1">
+                      <p class="text-sm font-semibold text-gray-900">..............................</p>
+                      <p class="text-xs text-gray-500">Pengirim</p>
+                    </div>
                   </div>
                   <div>
-                    <p class="text-sm text-gray-700 mb-16">Mengetahui,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(Admin / SPV)</p>
-                    <p class="text-xs text-gray-500">Nama Jelas</p>
+                    <p class="text-sm text-gray-700 mb-16">Diterima Oleh,</p>
+                    <div class="border-t border-gray-400 pt-1">
+                      <p class="text-sm font-semibold text-gray-900">{{ receipt.creator?.name || '..............................' }}</p>
+                      <p class="text-xs text-gray-500">Staff</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700 mb-16">Disetujui Oleh,</p>
+                    <div class="border-t border-gray-400 pt-1">
+                      <p class="text-sm font-semibold text-gray-900">..............................</p>
+                      <p class="text-xs text-gray-500">Admin</p>
+                    </div>
                   </div>
                 </div>
               </div>

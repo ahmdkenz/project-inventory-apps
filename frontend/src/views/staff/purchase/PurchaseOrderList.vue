@@ -140,6 +140,30 @@
                           </svg>
                           Cetak Bukti
                         </router-link>
+                        
+                        <!-- Tombol Edit (hanya untuk pending) -->
+                        <router-link 
+                          v-if="po.status === 'pending'" 
+                          :to="`/staff/non-po/receipt/${po.id}/edit`" 
+                          class="inline-flex items-center px-3 py-1.5 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 rounded-lg transition"
+                        >
+                          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit
+                        </router-link>
+                        
+                        <!-- Tombol Hapus (hanya untuk pending) -->
+                        <button 
+                          v-if="po.status === 'pending'" 
+                          @click="confirmDelete(po)" 
+                          class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition"
+                        >
+                          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Hapus
+                        </button>
                       </template>
                       
                       <!-- Regular PO Actions -->
@@ -371,15 +395,25 @@ const deletePO = async () => {
   if (!selectedPO.value?.id) return
   
   try {
-    const response = await purchaseOrderService.delete(selectedPO.value.id)
-    if (response.success) {
-      showMessage('Purchase order berhasil dihapus', false)
+    let response
+    
+    // Check if it's Non-PO or regular PO
+    if (selectedPO.value.tipe === 'non-po') {
+      // Delete Non-PO receipt
+      response = await api.delete(`/staff/non-po/receipt/${selectedPO.value.id}`)
+    } else {
+      // Delete regular PO
+      response = await purchaseOrderService.delete(selectedPO.value.id)
+    }
+    
+    if (response.data?.success || response.success) {
+      showMessage(selectedPO.value.tipe === 'non-po' ? 'Non-PO berhasil dihapus' : 'Purchase order berhasil dihapus', false)
       await fetchPurchaseOrders()
       showDeleteModal.value = false
     }
   } catch (error: any) {
-    console.error('Error deleting purchase order:', error)
-    showMessage(error.response?.data?.message || 'Gagal menghapus purchase order', true)
+    console.error('Error deleting:', error)
+    showMessage(error.response?.data?.message || 'Gagal menghapus data', true)
   }
 }
 

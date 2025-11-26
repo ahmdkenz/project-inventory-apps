@@ -80,18 +80,24 @@
         <div class="grid grid-cols-3 gap-8 pt-12">
           <div class="text-center">
             <p class="text-sm text-gray-700 mb-16">Diserahkan Oleh,</p>
-            <p class="text-sm font-medium text-gray-900">(...........................)</p>
-            <p class="text-sm text-gray-600">Pengirim</p>
+            <div class="border-t border-gray-400 pt-1">
+              <p class="text-sm font-semibold text-gray-900">..............................</p>
+              <p class="text-xs text-gray-500">Pengirim</p>
+            </div>
           </div>
           <div class="text-center">
             <p class="text-sm text-gray-700 mb-16">Diterima Oleh,</p>
-            <p class="text-sm font-medium text-gray-900">({{ purchaseOrder.receiver?.name || purchaseOrder.approver?.name || 'Admin' }})</p>
-            <p class="text-sm text-gray-600">Staff Inventori</p>
+            <div class="border-t border-gray-400 pt-1">
+              <p class="text-sm font-semibold text-gray-900">{{ purchaseOrder.receiver?.name || purchaseOrder.processor?.name || '..............................' }}</p>
+              <p class="text-xs text-gray-500">Staff</p>
+            </div>
           </div>
           <div class="text-center">
-            <p class="text-sm text-gray-700 mb-16">Diketahui Oleh,</p>
-            <p class="text-sm font-medium text-gray-900">(...........................)</p>
-            <p class="text-sm text-gray-600">Manajer / Admin</p>
+            <p class="text-sm text-gray-700 mb-16">Disetujui Oleh,</p>
+            <div class="border-t border-gray-400 pt-1">
+              <p class="text-sm font-semibold text-gray-900">{{ purchaseOrder.approver?.name || '..............................' }}</p>
+              <p class="text-xs text-gray-500">Admin</p>
+            </div>
           </div>
         </div>
 

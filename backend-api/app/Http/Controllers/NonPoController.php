@@ -125,6 +125,16 @@ class NonPoController extends Controller
 
         DB::beginTransaction();
         try {
+            $currentUser = $request->user();
+            
+            // Log untuk debugging - pastikan user yang benar
+            \Log::info('NON-PO Receipt dibuat oleh:', [
+                'user_id' => $currentUser->id,
+                'username' => $currentUser->username,
+                'name' => $currentUser->name,
+                'role' => $currentUser->role
+            ]);
+            
             // Generate nomor dokumen
             $lastReceipt = NonPoReceipt::whereYear('created_at', date('Y'))
                 ->whereMonth('created_at', date('m'))
@@ -148,7 +158,7 @@ class NonPoController extends Controller
                 'receive_date' => $request->receive_date,
                 'notes' => $request->notes,
                 'total_value' => $total_value,
-                'created_by' => $request->user()->id,
+                'created_by' => $currentUser->id, // Gunakan user yang sedang login
                 'status' => 'pending'
             ]);
 
@@ -181,7 +191,12 @@ class NonPoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Penerimaan barang Non-PO berhasil dibuat dan menunggu persetujuan admin',
-                'data' => $receipt
+                'data' => $receipt,
+                'debug_info' => [ // Tambahkan info debug
+                    'created_by_id' => $receipt->created_by,
+                    'created_by_name' => $receipt->creator->name ?? 'Unknown',
+                    'created_by_role' => $receipt->creator->role ?? 'Unknown'
+                ]
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -288,6 +303,16 @@ class NonPoController extends Controller
 
         DB::beginTransaction();
         try {
+            $currentUser = $request->user();
+            
+            // Log untuk debugging - pastikan user yang benar
+            \Log::info('NON-PO Issue dibuat oleh:', [
+                'user_id' => $currentUser->id,
+                'username' => $currentUser->username,
+                'name' => $currentUser->name,
+                'role' => $currentUser->role
+            ]);
+            
             // Validate stock availability (untuk validasi awal)
             foreach ($request->items as $item) {
                 $barang = Barang::findOrFail($item['barang_id']);
@@ -316,7 +341,7 @@ class NonPoController extends Controller
                 'subtotal' => $request->subtotal,
                 'ppn' => $request->ppn,
                 'total' => $request->total,
-                'created_by' => $request->user()->id,
+                'created_by' => $currentUser->id, // Gunakan user yang sedang login
                 'status' => 'pending'
             ]);
 
@@ -346,7 +371,12 @@ class NonPoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Pengeluaran barang Non-SO berhasil dibuat dan menunggu persetujuan admin',
-                'data' => $issue
+                'data' => $issue,
+                'debug_info' => [ // Tambahkan info debug
+                    'created_by_id' => $issue->created_by,
+                    'created_by_name' => $issue->creator->name ?? 'Unknown',
+                    'created_by_role' => $issue->creator->role ?? 'Unknown'
+                ]
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -751,6 +781,219 @@ class NonPoController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menolak pengeluaran Non-SO: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update Non-PO Receipt (staff only - only if status is pending)
+     */
+    public function updateReceipt(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'source' => 'required|string',
+            'receive_date' => 'required|date',
+            'notes' => 'required|string',
+            'items' => 'required|array|min:1',
+            'items.*.barang_id' => 'required|exists:barang,id',
+            'items.*.qty' => 'required|integer|min:1',
+            'items.*.price' => 'nullable|numeric|min:0'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $receipt = NonPoReceipt::with('items')->findOrFail($id);
+
+            // Check if receipt belongs to current user
+            if ($receipt->created_by !== $request->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses untuk mengedit penerimaan Non-PO ini'
+                ], 403);
+            }
+
+            // Only allow update if status is pending
+            if ($receipt->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Penerimaan Non-PO yang sudah diproses tidak dapat diubah'
+                ], 400);
+            }
+
+            // Calculate total value
+            $total_value = 0;
+            foreach ($request->items as $item) {
+                $price = $item['price'] ?? 0;
+                $total_value += $item['qty'] * $price;
+            }
+
+            // Update receipt
+            $receipt->update([
+                'source' => $request->source,
+                'receive_date' => $request->receive_date,
+                'notes' => $request->notes,
+                'total_value' => $total_value,
+            ]);
+
+            // Delete old items
+            NonPoReceiptItem::where('non_po_receipt_id', $receipt->id)->delete();
+
+            // Create new items
+            foreach ($request->items as $item) {
+                $price = $item['price'] ?? 0;
+                $subtotal = $item['qty'] * $price;
+
+                NonPoReceiptItem::create([
+                    'non_po_receipt_id' => $receipt->id,
+                    'barang_id' => $item['barang_id'],
+                    'qty' => $item['qty'],
+                    'price' => $price,
+                    'subtotal' => $subtotal
+                ]);
+            }
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'update',
+                'mengupdate penerimaan barang Non-PO: ' . $receipt->no_dokumen,
+                'NonPoReceipt',
+                $receipt->id
+            );
+
+            $receipt->load(['items.barang', 'creator']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Penerimaan barang Non-PO berhasil diupdate',
+                'data' => $receipt
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate penerimaan barang: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete Non-PO Receipt (staff only - only if status is pending)
+     */
+    public function deleteReceipt(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $receipt = NonPoReceipt::findOrFail($id);
+
+            // Check if receipt belongs to current user
+            if ($receipt->created_by !== $request->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses untuk menghapus penerimaan Non-PO ini'
+                ], 403);
+            }
+
+            // Only allow delete if status is pending
+            if ($receipt->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Penerimaan Non-PO yang sudah diproses tidak dapat dihapus'
+                ], 400);
+            }
+
+            $no_dokumen = $receipt->no_dokumen;
+
+            // Delete items first
+            NonPoReceiptItem::where('non_po_receipt_id', $receipt->id)->delete();
+
+            // Delete receipt
+            $receipt->delete();
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'delete',
+                'menghapus penerimaan barang Non-PO: ' . $no_dokumen,
+                'NonPoReceipt',
+                $id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Penerimaan barang Non-PO berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus penerimaan barang: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete Non-PO Issue (staff only - only if status is pending)
+     */
+    public function deleteIssue(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $issue = NonPoIssue::findOrFail($id);
+
+            // Check if issue belongs to current user
+            if ($issue->created_by !== $request->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses untuk menghapus pengeluaran Non-SO ini'
+                ], 403);
+            }
+
+            // Only allow delete if status is pending
+            if ($issue->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengeluaran Non-SO yang sudah diproses tidak dapat dihapus'
+                ], 400);
+            }
+
+            $no_dokumen = $issue->no_dokumen;
+
+            // Delete items first
+            NonPoIssueItem::where('non_po_issue_id', $issue->id)->delete();
+
+            // Delete issue
+            $issue->delete();
+
+            DB::commit();
+
+            // Log activity
+            AuditLogController::log(
+                'delete',
+                'menghapus pengeluaran barang Non-SO: ' . $no_dokumen,
+                'NonPoIssue',
+                $id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengeluaran barang Non-SO berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus pengeluaran barang: ' . $e->getMessage()
             ], 500);
         }
     }

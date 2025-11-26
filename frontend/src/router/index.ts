@@ -408,6 +408,12 @@ const router = createRouter({
           meta: { requiresAuth: true, requiresStaff: true }
         },
         {
+          path: 'non-po/receipt/:id/edit',
+          name: 'staff-non-po-receipt-edit',
+          component: () => import('@/views/staff/non-po/NonPoReceiptFormStaff.vue'),
+          meta: { requiresAuth: true, requiresStaff: true }
+        },
+        {
           path: 'non-po/receipt/:id/detail',
           name: 'staff-non-po-receipt-detail',
           component: () => import('@/views/staff/non-po/NonPoReceiptDetailStaff.vue'),
