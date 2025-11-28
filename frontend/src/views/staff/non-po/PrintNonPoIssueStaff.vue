@@ -66,7 +66,7 @@
               </tr>
               <tr>
                 <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">PPN ({{ ppnPercent }}%)</td>
-                <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(issueData.ppn || 0) }}</td>
+                <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(ppnValue) }}</td>
               </tr>
               <tr class="bg-gray-50">
                 <td colspan="4" class="px-4 py-3 text-right text-base font-bold text-gray-900 uppercase">Grand Total</td>
@@ -135,6 +135,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
+import { computePpn, computePpnPercent, formatCurrency as formatCurrencyUtil } from '@/utils/ppn'
 
 const route = useRoute()
 const router = useRouter()
@@ -158,6 +159,9 @@ interface IssueData {
   creator: {
     name: string
   } | null
+  approved_by?: {
+    name: string
+  } | null
   items: IssueItem[]
   subtotal?: number
   ppn?: number
@@ -167,9 +171,15 @@ interface IssueData {
 const issueData = ref<IssueData | null>(null)
 const isLoading = ref(true)
 
+const ppnValue = computed(() => {
+  if (!issueData.value) return 0
+  const subtotal = issueData.value.subtotal || 0
+  return issueData.value.ppn ?? computePpn(subtotal)
+})
+
 const ppnPercent = computed(() => {
-  if (!issueData.value || !issueData.value.subtotal || issueData.value.subtotal === 0) return 0
-  return Math.round(((issueData.value.ppn || 0) / issueData.value.subtotal) * 100)
+  if (!issueData.value) return 2
+  return computePpnPercent(issueData.value.ppn, issueData.value.subtotal)
 })
 
 // Generate No. Surat Jalan jika tidak ada
@@ -230,11 +240,7 @@ const fetchIssueData = async () => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value || 0)
+  return formatCurrencyUtil(value)
 }
 
 const formatDate = (date: Date | string) => {

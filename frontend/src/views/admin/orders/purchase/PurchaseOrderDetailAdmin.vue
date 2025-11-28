@@ -107,15 +107,15 @@
                   <tfoot class="border-t-2 border-gray-300">
                     <tr>
                       <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</td>
-                      <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(purchaseOrder.subtotal) }}</td>
+                      <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(subtotalValue) }}</td>
                     </tr>
                     <tr>
                       <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">PPN ({{ ppnPercent }}%)</td>
-                      <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(purchaseOrder.ppn) }}</td>
+                      <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(ppnValue) }}</td>
                     </tr>
                     <tr class="bg-gray-50">
                       <td colspan="4" class="px-4 py-3 text-right text-base font-bold text-gray-900 uppercase">Grand Total</td>
-                      <td class="px-4 py-3 text-right text-base font-bold text-gray-900">{{ formatCurrency(purchaseOrder.total) }}</td>
+                      <td class="px-4 py-3 text-right text-base font-bold text-gray-900">{{ formatCurrency(grandTotalValue) }}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -264,6 +264,7 @@ import AdminNavigation from '@/components/AdminNavigation.vue'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import purchaseOrderService from '@/services/purchaseOrder.service'
+import { computePpn, computePpnPercent, formatCurrency as formatCurrencyUtil, testPpnCalculation } from '@/utils/ppn'
 
 const router = useRouter()
 const route = useRoute()
@@ -274,9 +275,101 @@ const showRejectModal = ref(false)
 const rejectReason = ref('')
 const rejectReasonError = ref('')
 
+const subtotalValue = computed(() => {
+  console.log('=== Admin Subtotal Calculation Debug ===')
+  
+  if (!purchaseOrder.value) {
+    console.log('No purchase order data')
+    return 0
+  }
+  
+  console.log('Raw purchase order data:', {
+    subtotal: purchaseOrder.value.subtotal,
+    itemsCount: purchaseOrder.value.items?.length,
+    items: purchaseOrder.value.items
+  })
+  
+  // Gunakan subtotal dari backend jika ada
+  if (purchaseOrder.value.subtotal && purchaseOrder.value.subtotal > 0) {
+    console.log('Admin using backend subtotal:', purchaseOrder.value.subtotal)
+    return purchaseOrder.value.subtotal
+  }
+  
+  // Jika tidak ada, hitung dari items
+  if (purchaseOrder.value.items && purchaseOrder.value.items.length > 0) {
+    const calculatedSubtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => {
+      // Coba ambil subtotal dari item, atau hitung dari qty * harga_satuan
+      const itemSubtotal = item.subtotal || (item.qty * (item.harga_satuan || 0))
+      console.log('Admin item calculation:', { 
+        nama: item.barang?.nama,
+        qty: item.qty, 
+        harga_satuan: item.harga_satuan, 
+        item_subtotal: item.subtotal,
+        calculated: itemSubtotal 
+      })
+      return sum + itemSubtotal
+    }, 0)
+    console.log('Admin calculated subtotal from items:', calculatedSubtotal)
+    return calculatedSubtotal
+  }
+  
+  console.warn('Admin no subtotal data available')
+  return 0
+})
+
+const ppnValue = computed(() => {
+  if (!purchaseOrder.value) return 0
+  
+  // Gunakan subtotalValue yang sudah dihitung dengan benar
+  const subtotal = subtotalValue.value
+  
+  console.log('Admin PPN Value Calculation:', {
+    hasOrder: !!purchaseOrder.value,
+    backendPpn: purchaseOrder.value.ppn,
+    calculatedSubtotal: subtotal,
+    ppnRate: '2%'
+  })
+  
+  // Jika ada PPN dari backend, gunakan itu
+  if (purchaseOrder.value.ppn && purchaseOrder.value.ppn > 0) {
+    console.log('Admin using backend PPN:', purchaseOrder.value.ppn)
+    return purchaseOrder.value.ppn
+  }
+  
+  // Jika subtotal > 0, hitung PPN 2%
+  if (subtotal > 0) {
+    const calculatedPpn = computePpn(subtotal)
+    console.log('Admin PPN Calculation Result:', {
+      subtotal,
+      rate: '2%',
+      calculatedPpn,
+      backendPpn: purchaseOrder.value.ppn
+    })
+    return calculatedPpn
+  }
+  
+  // Jika semua gagal, return 0
+  console.warn('Admin PPN calculation failed: no subtotal or backend data')
+  return 0
+})
+
 const ppnPercent = computed(() => {
-  if (!purchaseOrder.value || !purchaseOrder.value.subtotal || purchaseOrder.value.subtotal === 0) return 0
-  return Math.round((purchaseOrder.value.ppn / purchaseOrder.value.subtotal) * 100)
+  // Selalu return 2% karena aplikasi menggunakan PPN 2% tetap
+  const percent = computePpnPercent(purchaseOrder.value?.ppn, subtotalValue.value)
+  console.log('Admin PPN Percent:', percent)
+  return percent
+})
+
+const grandTotalValue = computed(() => {
+  if (!purchaseOrder.value) return 0
+  
+  // Gunakan total dari backend jika ada dan valid
+  if (purchaseOrder.value.total && purchaseOrder.value.total > 0) {
+    return purchaseOrder.value.total
+  }
+  
+  // Jika tidak ada, hitung dari subtotal + PPN
+  return subtotalValue.value + ppnValue.value
 })
 
 const toggleSidebar = () => {
@@ -297,11 +390,7 @@ const printDocument = () => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value || 0)
+  return formatCurrencyUtil(value)
 }
 
 const formatDate = (date: string) => {
@@ -345,14 +434,63 @@ const getStatusColor = (status: string) => {
 
 const fetchPurchaseOrder = async () => {
   loading.value = true
+  
+  // Test perhitungan PPN
+  console.log('=== Admin Purchase Order Detail - Testing PPN ===')
+  const testResult = testPpnCalculation()
+  console.log('Admin PPN calculation test passed:', testResult)
+  console.log('=== End Admin PPN Test ===')
+  
   try {
     const id = route.params.id as string
+    console.log('Admin fetching purchase order with ID:', id)
+    
     const response = await purchaseOrderService.adminGetById(parseInt(id))
+    console.log('Admin raw API response:', response)
+    
     if (response.success && !Array.isArray(response.data)) {
       purchaseOrder.value = response.data
+      console.log('=== Admin Purchase Order Data Full Debug ===')
+      console.log('Complete object:', JSON.stringify(purchaseOrder.value, null, 2))
+      console.log('Key fields check:', {
+        id: purchaseOrder.value.id,
+        subtotal: purchaseOrder.value.subtotal,
+        subtotalType: typeof purchaseOrder.value.subtotal,
+        ppn: purchaseOrder.value.ppn,
+        ppnType: typeof purchaseOrder.value.ppn,
+        total: purchaseOrder.value.total,
+        totalType: typeof purchaseOrder.value.total,
+        itemsCount: purchaseOrder.value.items?.length,
+        hasItems: !!purchaseOrder.value.items
+      })
+      
+      if (purchaseOrder.value.items && purchaseOrder.value.items.length > 0) {
+        console.log('Admin items detailed analysis:')
+        purchaseOrder.value.items.forEach((item: any, index: number) => {
+          console.log(`Admin Item ${index + 1}:`, {
+            id: item.id,
+            barang: item.barang?.nama,
+            qty: item.qty,
+            qtyType: typeof item.qty,
+            harga_satuan: item.harga_satuan,
+            hargaType: typeof item.harga_satuan,
+            subtotal: item.subtotal,
+            subtotalType: typeof item.subtotal,
+            manual_calculation: item.qty * item.harga_satuan
+          })
+        })
+      }
+      console.log('=== End Admin Purchase Order Debug ===')
+    } else {
+      console.error('Admin invalid response format:', response)
     }
   } catch (error: any) {
-    console.error('Error fetching purchase order:', error)
+    console.error('Admin error fetching purchase order:', error)
+    console.error('Admin error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    })
   } finally {
     loading.value = false
   }
@@ -401,6 +539,11 @@ const rejectOrder = async () => {
 }
 
 onMounted(() => {
+  // Test PPN calculation functionality
+  console.log('=== Admin Purchase Order Detail - Testing PPN ===')
+  testPpnCalculation()
+  console.log('=== End PPN Test ===')
+  
   fetchPurchaseOrder()
 })
 </script>

@@ -93,15 +93,15 @@
                           <p class="text-sm text-gray-600">{{ purchaseOrder.catatan || 'Harap sertakan No. PO pada faktur. Pembayaran 30 hari.' }}</p>
                         </td>
                         <td class="px-6 py-3 text-right text-sm text-gray-700 uppercase">Subtotal</td>
-                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(purchaseOrder.subtotal) }}</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(subtotalValue) }}</td>
                       </tr>
                       <tr>
                         <td class="px-6 py-3 text-right text-sm text-gray-700 uppercase">PPN ({{ ppnPercent }}%)</td>
-                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(purchaseOrder.ppn) }}</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(ppnValue) }}</td>
                       </tr>
                       <tr class="text-base font-semibold">
                         <td class="px-6 py-4 text-right text-gray-900 uppercase">Total</td>
-                        <td class="px-6 py-4 text-right text-gray-900">{{ formatCurrency(purchaseOrder.total) }}</td>
+                        <td class="px-6 py-4 text-right text-gray-900">{{ formatCurrency(grandTotalValue) }}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -207,6 +207,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import purchaseOrderService from '@/services/purchaseOrder.service'
+import { computePpn, computePpnPercent, formatCurrency as formatCurrencyUtil, testPpnCalculation } from '@/utils/ppn'
 
 const router = useRouter()
 const route = useRoute()
@@ -214,9 +215,101 @@ const route = useRoute()
 const loading = ref(false)
 const purchaseOrder = ref<any>(null)
 
+const subtotalValue = computed(() => {
+  console.log('=== Staff Subtotal Calculation Debug ===')
+  
+  if (!purchaseOrder.value) {
+    console.log('No purchase order data')
+    return 0
+  }
+  
+  console.log('Raw purchase order data:', {
+    subtotal: purchaseOrder.value.subtotal,
+    itemsCount: purchaseOrder.value.items?.length,
+    items: purchaseOrder.value.items
+  })
+  
+  // Gunakan subtotal dari backend jika ada
+  if (purchaseOrder.value.subtotal && purchaseOrder.value.subtotal > 0) {
+    console.log('Using backend subtotal:', purchaseOrder.value.subtotal)
+    return purchaseOrder.value.subtotal
+  }
+  
+  // Jika tidak ada, hitung dari items
+  if (purchaseOrder.value.items && purchaseOrder.value.items.length > 0) {
+    const calculatedSubtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => {
+      // Coba ambil subtotal dari item, atau hitung dari qty * harga_satuan
+      const itemSubtotal = item.subtotal || (item.qty * (item.harga_satuan || 0))
+      console.log('Item calculation:', { 
+        nama: item.barang?.nama,
+        qty: item.qty, 
+        harga_satuan: item.harga_satuan, 
+        item_subtotal: item.subtotal,
+        calculated: itemSubtotal 
+      })
+      return sum + itemSubtotal
+    }, 0)
+    console.log('Calculated subtotal from items:', calculatedSubtotal)
+    return calculatedSubtotal
+  }
+  
+  console.warn('No subtotal data available')
+  return 0
+})
+
+const ppnValue = computed(() => {
+  if (!purchaseOrder.value) return 0
+  
+  // Gunakan subtotalValue yang sudah dihitung dengan benar
+  const subtotal = subtotalValue.value
+  
+  console.log('Staff PPN Value Calculation:', {
+    hasOrder: !!purchaseOrder.value,
+    backendPpn: purchaseOrder.value.ppn,
+    calculatedSubtotal: subtotal,
+    ppnRate: '2%'
+  })
+  
+  // Jika ada PPN dari backend, gunakan itu
+  if (purchaseOrder.value.ppn && purchaseOrder.value.ppn > 0) {
+    console.log('Staff using backend PPN:', purchaseOrder.value.ppn)
+    return purchaseOrder.value.ppn
+  }
+  
+  // Jika subtotal > 0, hitung PPN 2%
+  if (subtotal > 0) {
+    const calculatedPpn = computePpn(subtotal)
+    console.log('Staff PPN Calculation Result:', {
+      subtotal,
+      rate: '2%',
+      calculatedPpn,
+      backendPpn: purchaseOrder.value.ppn
+    })
+    return calculatedPpn
+  }
+  
+  // Jika semua gagal, return 0
+  console.warn('Staff PPN calculation failed: no subtotal or backend data')
+  return 0
+})
+
 const ppnPercent = computed(() => {
-  if (!purchaseOrder.value || !purchaseOrder.value.subtotal || purchaseOrder.value.subtotal === 0) return 0
-  return Math.round((purchaseOrder.value.ppn / purchaseOrder.value.subtotal) * 100)
+  // Selalu return 2% karena aplikasi menggunakan PPN 2% tetap
+  const percent = computePpnPercent(purchaseOrder.value?.ppn, subtotalValue.value)
+  console.log('Staff PPN Percent:', percent)
+  return percent
+})
+
+const grandTotalValue = computed(() => {
+  if (!purchaseOrder.value) return 0
+  
+  // Gunakan total dari backend jika ada dan valid
+  if (purchaseOrder.value.total && purchaseOrder.value.total > 0) {
+    return purchaseOrder.value.total
+  }
+  
+  // Jika tidak ada, hitung dari subtotal + PPN
+  return subtotalValue.value + ppnValue.value
 })
 
 const goBack = () => {
@@ -228,11 +321,7 @@ const printDocument = () => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value || 0)
+  return formatCurrencyUtil(value)
 }
 
 const formatDate = (date: string) => {
@@ -286,20 +375,74 @@ const getStatusColor = (status: string) => {
 
 const fetchPurchaseOrder = async () => {
   loading.value = true
+  
+  // Test perhitungan PPN
+  console.log('=== Staff Purchase Order Detail - Testing PPN ===')
+  const testResult = testPpnCalculation()
+  console.log('PPN calculation test passed:', testResult)
+  console.log('=== End PPN Test ===')
+  
   try {
     const id = route.params.id as string
+    console.log('Fetching purchase order with ID:', id)
+    
     const response = await purchaseOrderService.getById(parseInt(id))
+    console.log('Raw API response:', response)
+    
     if (response.success && !Array.isArray(response.data)) {
       purchaseOrder.value = response.data
+      console.log('=== Purchase Order Data Full Debug ===')
+      console.log('Complete object:', JSON.stringify(purchaseOrder.value, null, 2))
+      console.log('Key fields check:', {
+        id: purchaseOrder.value.id,
+        subtotal: purchaseOrder.value.subtotal,
+        subtotalType: typeof purchaseOrder.value.subtotal,
+        ppn: purchaseOrder.value.ppn,
+        ppnType: typeof purchaseOrder.value.ppn,
+        total: purchaseOrder.value.total,
+        totalType: typeof purchaseOrder.value.total,
+        itemsCount: purchaseOrder.value.items?.length,
+        hasItems: !!purchaseOrder.value.items
+      })
+      
+      if (purchaseOrder.value.items && purchaseOrder.value.items.length > 0) {
+        console.log('Items detailed analysis:')
+        purchaseOrder.value.items.forEach((item: any, index: number) => {
+          console.log(`Item ${index + 1}:`, {
+            id: item.id,
+            barang: item.barang?.nama,
+            qty: item.qty,
+            qtyType: typeof item.qty,
+            harga_satuan: item.harga_satuan,
+            hargaType: typeof item.harga_satuan,
+            subtotal: item.subtotal,
+            subtotalType: typeof item.subtotal,
+            manual_calculation: item.qty * item.harga_satuan
+          })
+        })
+      }
+      console.log('=== End Purchase Order Debug ===')
+    } else {
+      console.error('Invalid response format:', response)
     }
   } catch (error: any) {
     console.error('Error fetching purchase order:', error)
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    })
   } finally {
     loading.value = false
   }
 }
 
 onMounted(() => {
+  // Test PPN calculation functionality
+  console.log('=== Staff Purchase Order Detail - Testing PPN ===')
+  testPpnCalculation()
+  console.log('=== End PPN Test ===')
+  
   fetchPurchaseOrder()
 })
 </script>

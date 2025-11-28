@@ -192,6 +192,9 @@ interface ReceiptData {
   creator: {
     name: string
   } | null
+  approver?: {
+    name: string
+  } | null
   items: ReceiptItem[]
 }
 

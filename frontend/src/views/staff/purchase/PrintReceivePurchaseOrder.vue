@@ -66,7 +66,7 @@
               </tr>
               <tr>
                 <td colspan="4" class="px-4 py-3 text-right text-sm font-medium text-gray-600 uppercase">PPN ({{ ppnPercent }}%)</td>
-                <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(purchaseOrder.ppn || 0) }}</td>
+                <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900">{{ formatCurrency(ppnValue) }}</td>
               </tr>
               <tr class="bg-gray-50">
                 <td colspan="4" class="px-4 py-3 text-right text-base font-bold text-gray-900 uppercase">Grand Total</td>
@@ -132,19 +132,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import purchaseOrderService from '@/services/purchaseOrder.service'
+import { computePpn, computePpnPercent, formatCurrency as formatCurrencyUtil } from '@/utils/ppn'
 
-const route = useRoute()
 const router = useRouter()
+const route = useRoute()
 
-const loading = ref(true)
+const loading = ref(false)
 const purchaseOrder = ref<any>(null)
 
+const ppnValue = computed(() => {
+  if (!purchaseOrder.value) return 0
+  
+  // Ambil subtotal dari data atau hitung dari items
+  let subtotal = purchaseOrder.value.subtotal || 0
+  if (subtotal <= 0 && purchaseOrder.value.items) {
+    subtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => sum + (item.subtotal || 0), 0)
+  }
+  
+  // Gunakan PPN dari backend, atau hitung 2% dari subtotal
+  return purchaseOrder.value.ppn ?? computePpn(subtotal)
+})
+
 const ppnPercent = computed(() => {
-  if (!purchaseOrder.value || !purchaseOrder.value.subtotal || purchaseOrder.value.subtotal === 0) return 0
-  return Math.round((purchaseOrder.value.ppn / purchaseOrder.value.subtotal) * 100)
+  if (!purchaseOrder.value) return 2
+  
+  let subtotal = purchaseOrder.value.subtotal || 0
+  if (subtotal <= 0 && purchaseOrder.value.items) {
+    subtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => sum + (item.subtotal || 0), 0)
+  }
+  
+  // Selalu tampilkan 2% jika ada subtotal
+  if (subtotal > 0) return 2
+  return computePpnPercent(purchaseOrder.value.ppn, subtotal)
 })
 
 // Generate No. Penerimaan dengan format IN-YYYYMMDD-{PO_ID}
@@ -177,11 +199,7 @@ const fetchPrintData = async () => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value || 0)
+  return formatCurrencyUtil(value)
 }
 
 const formatDate = (date: Date | string) => {

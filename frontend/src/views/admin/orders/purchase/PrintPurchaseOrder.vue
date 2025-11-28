@@ -94,7 +94,7 @@
               </tr>
               <tr>
                 <td colspan="6" class="px-4 py-3 text-right font-semibold text-gray-700">PPN ({{ ppnPercentage }}%):</td>
-                <td class="px-4 py-3 text-right font-semibold text-gray-900">{{ formatCurrency(purchaseOrder.ppn) }}</td>
+                <td class="px-4 py-3 text-right font-semibold text-gray-900">{{ formatCurrency(ppnValue) }}</td>
               </tr>
               <tr class="bg-gray-50">
                 <td colspan="6" class="px-4 py-4 text-right font-bold text-gray-900 text-lg">GRAND TOTAL:</td>
@@ -169,6 +169,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { computePpn, computePpnPercent, formatCurrency as formatCurrencyUtil } from '@/utils/ppn'
 
 const route = useRoute()
 const router = useRouter()
@@ -176,9 +177,30 @@ const router = useRouter()
 const loading = ref(true)
 const purchaseOrder = ref<any>(null)
 
+const ppnValue = computed(() => {
+  if (!purchaseOrder.value) return 0
+  
+  // Ambil subtotal dari data atau hitung dari items
+  let subtotal = purchaseOrder.value.subtotal || 0
+  if (subtotal <= 0 && purchaseOrder.value.items) {
+    subtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => sum + (item.subtotal || 0), 0)
+  }
+  
+  // Gunakan PPN dari backend, atau hitung 2% dari subtotal
+  return purchaseOrder.value.ppn ?? computePpn(subtotal)
+})
+
 const ppnPercentage = computed(() => {
-  if (!purchaseOrder.value || !purchaseOrder.value.subtotal || purchaseOrder.value.subtotal === 0) return 0
-  return Math.round((purchaseOrder.value.ppn / purchaseOrder.value.subtotal) * 100)
+  if (!purchaseOrder.value) return 2
+  
+  let subtotal = purchaseOrder.value.subtotal || 0
+  if (subtotal <= 0 && purchaseOrder.value.items) {
+    subtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => sum + (item.subtotal || 0), 0)
+  }
+  
+  // Selalu tampilkan 2% jika ada subtotal
+  if (subtotal > 0) return 2
+  return computePpnPercent(purchaseOrder.value.ppn, subtotal)
 })
 
 const fetchPrintData = async () => {
@@ -210,11 +232,7 @@ const fetchPrintData = async () => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value || 0)
+  return formatCurrencyUtil(value)
 }
 
 const formatDate = (date: Date | string) => {

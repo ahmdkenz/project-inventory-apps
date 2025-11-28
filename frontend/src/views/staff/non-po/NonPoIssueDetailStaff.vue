@@ -99,7 +99,7 @@
                       </tr>
                       <tr>
                         <td class="px-6 py-3 text-right text-sm text-gray-700 uppercase">PPN ({{ ppnPercent }}%)</td>
-                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(issueData.ppn || 0) }}</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(ppnValue) }}</td>
                       </tr>
                       <tr class="text-base font-semibold">
                         <td class="px-6 py-4 text-right text-gray-900 uppercase">Total</td>
@@ -172,6 +172,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '@/services/api'
+import { computePpn, computePpnPercent, formatCurrency as formatCurrencyUtil } from '@/utils/ppn'
 
 const router = useRouter()
 const route = useRoute()
@@ -204,9 +205,15 @@ interface IssueData {
 const loading = ref(false)
 const issueData = ref<IssueData | null>(null)
 
+const ppnValue = computed(() => {
+  if (!issueData.value) return 0
+  const subtotal = issueData.value.subtotal || 0
+  return issueData.value.ppn ?? computePpn(subtotal)
+})
+
 const ppnPercent = computed(() => {
-  if (!issueData.value || !issueData.value.subtotal || issueData.value.subtotal === 0) return 0
-  return Math.round(((issueData.value.ppn || 0) / issueData.value.subtotal) * 100)
+  if (!issueData.value) return 2
+  return computePpnPercent(issueData.value.ppn, issueData.value.subtotal)
 })
 
 const goBack = () => {
@@ -223,11 +230,7 @@ const formatDate = (date: string) => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value || 0)
+  return formatCurrencyUtil(value)
 }
 
 const fetchIssueData = async () => {

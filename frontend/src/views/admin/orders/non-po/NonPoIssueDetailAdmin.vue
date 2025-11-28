@@ -127,7 +127,7 @@
                       </tr>
                       <tr>
                         <td class="px-6 py-3 text-right text-sm text-gray-700 uppercase">PPN ({{ ppnPercent }}%)</td>
-                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(issue.ppn || 0) }}</td>
+                        <td class="px-6 py-3 text-right text-sm text-gray-900">{{ formatCurrency(ppnValue) }}</td>
                       </tr>
                       <tr class="text-base font-semibold">
                         <td class="px-6 py-4 text-right text-gray-900 uppercase">Total</td>
@@ -329,12 +329,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminNavigation from '@/components/AdminNavigation.vue'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import api from '@/services/api'
+import { computePpn, computePpnPercent, formatCurrency as formatCurrencyUtil } from '@/utils/ppn'
 
 const router = useRouter()
 const route = useRoute()
@@ -380,9 +381,15 @@ const rejectReason = ref('')
 const rejectReasonError = ref('')
 const message = ref({ show: false, text: '', isError: false })
 
+const ppnValue = computed(() => {
+  if (!issue.value) return 0
+  const subtotal = issue.value.subtotal || 0
+  return issue.value.ppn ?? computePpn(subtotal)
+})
+
 const ppnPercent = computed(() => {
-  if (!issue.value || !issue.value.subtotal || issue.value.subtotal === 0) return 0
-  return Math.round(((issue.value.ppn || 0) / issue.value.subtotal) * 100)
+  if (!issue.value) return 2
+  return computePpnPercent(issue.value.ppn, issue.value.subtotal)
 })
 
 const toggleSidebar = () => {
@@ -408,11 +415,7 @@ const formatDate = (date: string) => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value || 0)
+  return formatCurrencyUtil(value)
 }
 
 const getStatusText = (status: string) => {
