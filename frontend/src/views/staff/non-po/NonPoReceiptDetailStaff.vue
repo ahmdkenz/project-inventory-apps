@@ -102,16 +102,21 @@
                 </div>
 
                 <!-- Tanda Tangan -->
-                <div class="grid grid-cols-2 gap-8 pt-6 border-t border-gray-200">
-                  <div>
+                <div class="grid grid-cols-3 gap-8 pt-6 border-t border-gray-200">
+                  <div class="text-center">
                     <p class="text-sm text-gray-700 mb-16">Diterima oleh,</p>
                     <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ receiptData.creator?.name || 'Staff' }})</p>
-                    <p class="text-xs text-gray-500">Staff Inventori</p>
+                    <p class="text-xs text-gray-500">Staff / Admin</p>
                   </div>
                   <div class="text-center">
-                    <p class="text-sm text-gray-700 mb-16">Diserahkan oleh,</p>
-                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">(...........................)</p>
-                    <p class="text-xs text-gray-500">Pengirim</p>
+                    <p class="text-sm text-gray-700 mb-16">Disetujui oleh,</p>
+                    <p class="text-sm font-medium text-gray-900 border-t border-gray-400 pt-1">({{ receiptData.approver?.name || 'Admin' }})</p>
+                    <p class="text-xs text-gray-500">Manajer / Owner</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-sm text-gray-700 mb-16">Sumber,</p>
+                    <p class="text-sm font-medium text-gray-400 border-t border-dashed border-gray-300 pt-1"></p>
+                    <p class="text-xs text-gray-700">{{ receiptData.source || '-' }}</p>
                   </div>
                 </div>
               </div>
