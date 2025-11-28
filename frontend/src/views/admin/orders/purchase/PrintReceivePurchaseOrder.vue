@@ -144,29 +144,59 @@ const loading = ref(false)
 const purchaseOrder = ref<any>(null)
 
 const ppnValue = computed(() => {
-  if (!purchaseOrder.value) return 0
+  console.log('=== Admin Receipt PPN Value Calculation ===')
+  if (!purchaseOrder.value) {
+    console.log('No purchase order data for PPN calculation')
+    return 0
+  }
   
-  // Ambil subtotal dari data atau hitung dari items
+  console.log('Admin receipt raw data:', {
+    subtotal: purchaseOrder.value.subtotal,
+    ppn: purchaseOrder.value.ppn,
+    itemsCount: purchaseOrder.value.items?.length
+  })
+  
+  // Ambil subtotal dari data backend atau hitung dari items
   let subtotal = purchaseOrder.value.subtotal || 0
-  if (subtotal <= 0 && purchaseOrder.value.items) {
-    subtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => sum + (item.subtotal || 0), 0)
+  
+  if (subtotal <= 0 && purchaseOrder.value.items && purchaseOrder.value.items.length > 0) {
+    subtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => {
+      const itemSubtotal = item.subtotal || (item.qty * (item.harga_satuan || 0))
+      console.log('Admin receipt item calculation:', {
+        nama: item.barang?.nama,
+        qty: item.qty,
+        harga_satuan: item.harga_satuan,
+        item_subtotal: item.subtotal,
+        calculated: itemSubtotal
+      })
+      return sum + itemSubtotal
+    }, 0)
+    console.log('Admin receipt calculated subtotal from items:', subtotal)
+  } else {
+    console.log('Admin receipt using backend subtotal:', subtotal)
   }
   
   // Gunakan PPN dari backend, atau hitung 2% dari subtotal
-  return purchaseOrder.value.ppn ?? computePpn(subtotal)
+  const ppnResult = purchaseOrder.value.ppn && purchaseOrder.value.ppn > 0 
+    ? purchaseOrder.value.ppn 
+    : computePpn(subtotal)
+    
+  console.log('Admin receipt PPN calculation result:', {
+    subtotal,
+    backendPpn: purchaseOrder.value.ppn,
+    calculatedPpn: computePpn(subtotal),
+    finalPpn: ppnResult
+  })
+  
+  return ppnResult
 })
 
 const ppnPercent = computed(() => {
-  if (!purchaseOrder.value) return 2
+  console.log('=== Admin Receipt PPN Percent Calculation ===')
   
-  let subtotal = purchaseOrder.value.subtotal || 0
-  if (subtotal <= 0 && purchaseOrder.value.items) {
-    subtotal = purchaseOrder.value.items.reduce((sum: number, item: any) => sum + (item.subtotal || 0), 0)
-  }
-  
-  // Selalu tampilkan 2% jika ada subtotal
-  if (subtotal > 0) return 2
-  return computePpnPercent(purchaseOrder.value.ppn, subtotal)
+  const percent = computePpnPercent(purchaseOrder.value?.ppn, 0)
+  console.log('Admin receipt PPN percent:', percent)
+  return percent
 })
 
 // Generate No. Penerimaan dengan format IN-YYYYMMDD-{PO_ID}
@@ -180,17 +210,48 @@ const generateReceiptNumber = (poId: number, completedDate: Date | string) => {
 
 const fetchPrintData = async () => {
   loading.value = true
+  console.log('=== Admin Receipt - Fetching Print Data ===')
+  
   try {
     const id = route.params.id as string
+    console.log('Admin fetching receipt for PO ID:', id)
+    
     const response = await purchaseOrderService.adminGetById(parseInt(id))
+    console.log('Admin receipt raw API response:', response)
     
     if (response.success && !Array.isArray(response.data)) {
       purchaseOrder.value = response.data
+      
+      console.log('=== Admin Receipt Data Analysis ===')
+      console.log('Full object:', JSON.stringify(purchaseOrder.value, null, 2))
+      console.log('Key admin receipt fields:', {
+        id: purchaseOrder.value.id,
+        subtotal: purchaseOrder.value.subtotal,
+        subtotalType: typeof purchaseOrder.value.subtotal,
+        ppn: purchaseOrder.value.ppn,
+        ppnType: typeof purchaseOrder.value.ppn,
+        total: purchaseOrder.value.total,
+        itemsCount: purchaseOrder.value.items?.length
+      })
+      
+      if (purchaseOrder.value.items && purchaseOrder.value.items.length > 0) {
+        console.log('Admin receipt items analysis:')
+        purchaseOrder.value.items.forEach((item: any, index: number) => {
+          console.log(`Admin Receipt Item ${index + 1}:`, {
+            nama: item.barang?.nama,
+            qty: item.qty,
+            harga_satuan: item.harga_satuan,
+            subtotal: item.subtotal,
+            calculation_check: item.qty * item.harga_satuan
+          })
+        })
+      }
+      console.log('=== End Admin Receipt Analysis ===')
     } else {
       throw new Error('Data tidak ditemukan')
     }
   } catch (error: any) {
-    console.error('Error fetching print data:', error)
+    console.error('Error fetching admin receipt print data:', error)
     alert('Gagal memuat data untuk cetak')
     router.back()
   } finally {
